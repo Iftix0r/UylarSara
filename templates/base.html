@@ -1,0 +1,943 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}Sara Uylar - O'zbekistondagi eng sara uylar{% endblock %}</title>
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="Sara Uylar - O'zbekistondagi eng sara va zamonaviy uylar platformasi.">
+    <meta name="theme-color" content="#2563eb">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- TWA SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/logo.png' %}">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}">
+    <!-- Top Progress Bar -->
+    <div id="top-progress-bar"></div>
+    
+    <!-- City Selection Modal -->
+    <div id="city-modal" class="modal-overlay">
+        <div class="modal-content city-modal-content animate-scale">
+            <div class="modal-header">
+                <h3>{% if request.session.lang == 'ru' %}Выберите город{% else %}Shaharni tanlang{% endif %}</h3>
+                <button class="close-btn" onclick="closeCityModal()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-search">
+                <i data-lucide="search"></i>
+                <input type="text" id="city-search" placeholder="{% if request.session.lang == 'ru' %}Поиск города...{% else %}Shaharni topish...{% endif %}" oninput="filterCities()">
+            </div>
+            <div class="city-list" id="city-list">
+                <!-- Cities will be injected here -->
+            </div>
+        </div>
+    </div>
+    <!-- Header -->
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; height: 100%;">
+            <div class="city-selector" onclick="openCityModal()">
+                <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
+                <span id="current-city">{% if request.session.city %}{{ request.session.city }}{% else %}{% if request.session.lang == 'ru' %}Ташкент{% else %}Toshkent{% endif %}{% endif %}</span>
+            </div>
+            <div class="top-links">
+                <a href="{% url 'about' %}">{% if request.session.lang == 'ru' %}О нас{% else %}Biz haqimizda{% endif %}</a>
+                <a href="{% url 'help' %}">{% if request.session.lang == 'ru' %}Помощь{% else %}Yordam{% endif %}</a>
+            </div>
+        </div>
+    </div>
+
+    <header id="main-header">
+        <div class="container nav-wrapper">
+            <a href="/" class="logo" style="display: flex; align-items: center; gap: 12px; height: 100%;">
+                <img src="{% static 'img/logo.png' %}" alt="SaraUylar Logo" style="height: 48px; width: auto; object-fit: contain;">
+                <span style="display: none;">Sara<span>Uylar</span></span>
+            </a>
+            
+            <div class="search-container">
+                <form action="/" method="GET" id="search-form">
+                    <div class="search-input-wrapper">
+                        <i data-lucide="search" class="search-icon-abs"></i>
+                        <input type="text" name="q" id="search-input" class="search-input" autocomplete="off" placeholder="{% if request.session.lang == 'ru' %}Город, район или адрес...{% else %}Shahar, tuman yoki manzil...{% endif %}" value="{{ request.GET.q }}" onfocus="showSearchHistory()">
+                        <button type="button" class="voice-search-btn" id="voice-search-btn" title="{% if request.session.lang == 'ru' %}Голосовой поиск{% else %}Ovozli qidiruv{% endif %}">
+                            <i data-lucide="mic" style="width: 20px; height: 20px;"></i>
+                        </button>
+                        <!-- Search History Dropdown -->
+                        <div id="search-history-dropdown" class="search-history-dropdown">
+                            <div class="history-header">
+                                <span>{% if request.session.lang == 'ru' %}Недавние поиски{% else %}Yaqinda qidirilganlar{% endif %}</span>
+                                <button type="button" onclick="clearSearchHistory()">{% if request.session.lang == 'ru' %}Tozalash{% else %}Tozalash{% endif %}</button>
+                            </div>
+                            <div id="history-items"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="header-actions">
+                <nav class="desktop-nav">
+                    <a href="{% url 'favorites' %}" class="btn-text">
+                        <i data-lucide="heart" style="width: 18px; height: 18px;"></i>
+                        {% if request.session.lang == 'ru' %}Избранное{% else %}Saralangan{% endif %}
+                    </a>
+                    <a href="{% url 'add_property' %}" class="btn-text">
+                        <i data-lucide="plus-square" style="width: 18px; height: 18px;"></i>
+                        {% if request.session.lang == 'ru' %}Подать объявление{% else %}E'lon berish{% endif %}
+                    </a>
+                </nav>
+                
+                {% if user.is_authenticated %}
+                    <form action="{% url 'logout' %}" method="POST" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-text" style="background: none; border: none; padding: 0; font: inherit;">{% if request.session.lang == 'ru' %}Выход{% else %}Chiqish{% endif %}</button>
+                    </form>
+                    <a href="{% url 'profile' %}" class="user-profile">
+                        <i data-lucide="user"></i>
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-sm">{% if request.session.lang == 'ru' %}Вход{% else %}Kirish{% endif %}</a>
+                {% endif %}
+                
+                <div class="theme-toggle" id="theme-toggle" title="Mavzuni o'zgartirish">
+                    <i data-lucide="moon"></i>
+                </div>
+
+                <div class="lang-switcher" style="display: flex; gap: 5px; background: var(--border-light); padding: 4px; border-radius: var(--radius-sm);">
+                    <a href="{% url 'set_language' 'uz' %}" class="lang-btn {% if request.session.lang == 'uz' or not request.session.lang %}active{% endif %}" style="text-decoration: none; padding: 2px 8px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.75rem; font-weight: 700;">UZ</a>
+                    <a href="{% url 'set_language' 'ru' %}" class="lang-btn {% if request.session.lang == 'ru' %}active{% endif %}" style="text-decoration: none; padding: 2px 8px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.75rem; font-weight: 700;">RU</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav">
+        <a href="{% url 'home' %}" class="nav-item active">
+            <i data-lucide="home"></i>
+            <span>{% if request.session.lang == 'ru' %}Главная{% else %}Asosiy{% endif %}</span>
+        </a>
+        <a href="{% url 'favorites' %}" class="nav-item">
+            <i data-lucide="heart"></i>
+            <span>{% if request.session.lang == 'ru' %}Избранное{% else %}Saralangan{% endif %}</span>
+        </a>
+        <a href="{% url 'add_property' %}" class="nav-item">
+            <i data-lucide="plus-square"></i>
+            <span>{% if request.session.lang == 'ru' %}Объявление{% else %}Elon{% endif %}</span>
+        </a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'profile' %}" class="nav-item">
+                <i data-lucide="user"></i>
+                <span>{% if request.session.lang == 'ru' %}Профиль{% else %}Profil{% endif %}</span>
+            </a>
+        {% else %}
+            <a href="{% url 'signup' %}" class="nav-item">
+                <i data-lucide="user-plus"></i>
+                <span>{% if request.session.lang == 'ru' %}Регистрация{% else %}Ro'yxat{% endif %}</span>
+            </a>
+            <a href="{% url 'login' %}" class="nav-item">
+                <i data-lucide="user"></i>
+                <span>{% if request.session.lang == 'ru' %}Вход{% else %}Kirish{% endif %}</span>
+            </a>
+        {% endif %}
+    </nav>
+
+    <!-- AI Assistant -->
+    <div class="ai-bubble" id="ai-bubble" title="AI Yordamchi">
+        <i data-lucide="sparkles"></i>
+    </div>
+
+    <div class="ai-chat-window" id="ai-chat-window">
+        <div class="ai-chat-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="bot"></i>
+                <span style="font-weight: 700;">SaraUylar AI</span>
+            </div>
+            <div class="header-controls">
+                <div onclick="clearChat()" class="control-btn" title="Tozalash"><i data-lucide="trash-2" style="width: 18px; height: 18px;"></i></div>
+                <div onclick="toggleMaximize()" class="control-btn" id="maximize-btn" title="Kattalashtirish"><i data-lucide="maximize-2"></i></div>
+                <div onclick="toggleAiChat()" class="control-btn" title="Yopish"><i data-lucide="x"></i></div>
+            </div>
+        </div>
+        <div class="ai-chat-messages" id="ai-chat-messages">
+            <div class="chat-msg msg-ai">
+                {% if request.session.lang == 'ru' %}Здравствуйте! Я ИИ-помощник SaraUylar. Как я могу помочь вам найти дом? Вы можете отправить ID объявления (например: #1024) для анализа.{% else %}Salom! Men SaraUylar sun'iy intellekt yordamchisiman. Sizga qanday uy topishda yordam bera olaman? E'lon raqamini yuborsangiz (masalan: #1024), uni tahlil qilib beraman.{% endif %}
+            </div>
+        </div>
+        <div class="ai-chat-input">
+            <button id="ai-voice-btn" class="voice-btn-ai"><i data-lucide="mic"></i></button>
+            <input type="text" id="ai-chat-input" placeholder="{% if request.session.lang == 'ru' %}Спросите что-нибудь...{% else %}Savol yoki ID...{% endif %}">
+            <button onclick="sendAiMessage()"><i data-lucide="send"></i></button>
+        </div>
+    </div>
+
+    <!-- Footer (Desktop Only) -->
+    <footer style="margin-top: 40px; padding: 40px 0; border-top: 1px solid var(--border); background: #fcfcfc;">
+        <div class="container" style="text-align: center;">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">&copy; 2026 Sara Uylar Platformasi. {% if request.session.lang == 'ru' %}Все права защищены.{% else %}Barcha huquqlar himoyalangan.{% endif %}</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize TWA
+        const tg = window.Telegram?.WebApp;
+        if (tg && tg.initData) {
+            document.body.classList.add('twa');
+            tg.expand();
+            tg.ready();
+            
+            // Set header color
+            tg.setHeaderColor(tg.themeParams?.secondary_bg_color || '#ffffff');
+        }
+
+        // Initialize Icons
+        lucide.createIcons();
+        
+        // Theme Toggle Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        const updateThemeIcon = (isDark) => {
+            const icon = themeToggle.querySelector('i');
+            if (icon) {
+                icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+                if (window.lucide) lucide.createIcons();
+            }
+        };
+
+        const savedTheme = localStorage.getItem('theme');
+        let currentTheme = savedTheme;
+
+        // TWA Theme Sync (only if no manual theme saved)
+        if (!savedTheme && window.Telegram?.WebApp?.colorScheme) {
+            currentTheme = window.Telegram.WebApp.colorScheme;
+        } else if (!savedTheme) {
+            currentTheme = 'light';
+        }
+
+        if (currentTheme === 'dark') {
+            body.classList.add('dark-mode');
+            updateThemeIcon(true);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const isDarkNow = body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', isDarkNow ? 'dark' : 'light');
+            updateThemeIcon(isDarkNow);
+        });
+        // Header Scroll Effect
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('main-header');
+            if (window.scrollY > 20) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Active Nav Logic
+        const currentPath = window.location.pathname;
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            if (item.getAttribute('href') === currentPath) {
+                navItems.forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+            }
+        });
+
+        // Voice Search Logic (Whisper)
+        let searchMediaRecorder;
+        let searchAudioChunks = [];
+        const voiceBtn = document.getElementById('voice-search-btn');
+        const searchInput = document.getElementById('search-input');
+        const searchForm = document.getElementById('search-form');
+
+        if (voiceBtn && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            voiceBtn.addEventListener('click', async () => {
+                if (searchMediaRecorder && searchMediaRecorder.state === 'recording') {
+                    searchMediaRecorder.stop();
+                    return;
+                }
+
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    searchMediaRecorder = new MediaRecorder(stream);
+                    searchAudioChunks = [];
+
+                    searchMediaRecorder.ondataavailable = (event) => searchAudioChunks.push(event.data);
+
+                    searchMediaRecorder.onstart = () => {
+                        voiceBtn.classList.add('active');
+                        searchInput.placeholder = "{% if request.session.lang == 'ru' %}Слушаю...{% else %}Eshitilmoqda...{% endif %}";
+                    };
+
+                    searchMediaRecorder.onstop = async () => {
+                        voiceBtn.classList.remove('active');
+                        searchInput.placeholder = "{% if request.session.lang == 'ru' %}Обработка...{% else %}Tahlil qilinmoqda...{% endif %}";
+                        
+                        const audioBlob = new Blob(searchAudioChunks, { type: 'audio/webm' });
+                        const formData = new FormData();
+                        formData.append('audio', audioBlob, 'search.webm');
+
+                        try {
+                            const response = await fetch('/ai-whisper/', { method: 'POST', body: formData });
+                            const data = await response.json();
+                            if (data.text) {
+                                // Smart Redirection: If AI window is open, send to AI
+                                const isAiOpen = aiWindow && window.getComputedStyle(aiWindow).display === 'flex';
+                                if (isAiOpen) {
+                                    aiInput.value = data.text;
+                                    sendAiMessage();
+                                } else {
+                                    searchInput.value = data.text;
+                                    setTimeout(() => searchForm.submit(), 500);
+                                }
+                            }
+                        } catch (err) {
+                            console.error("Whisper search error:", err);
+                        } finally {
+                            searchInput.placeholder = "Shahar, tuman yoki manzil...";
+                        }
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    searchMediaRecorder.start();
+                } catch (err) {
+                    console.error("Mic access error:", err);
+                }
+            });
+        } else if (voiceBtn) {
+            voiceBtn.style.display = 'none';
+        }
+
+        // AI Chat Logic
+        const aiBubble = document.getElementById('ai-bubble');
+        const aiWindow = document.getElementById('ai-chat-window');
+        const aiMessages = document.getElementById('ai-chat-messages');
+        const aiInput = document.getElementById('ai-chat-input');
+
+        function toggleAiChat() {
+            if (!aiWindow) return;
+            const isVisible = window.getComputedStyle(aiWindow).display === 'flex';
+            aiWindow.style.display = isVisible ? 'none' : 'flex';
+            if (!isVisible) {
+                setTimeout(() => aiInput?.focus(), 100);
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        if (aiBubble) aiBubble.addEventListener('click', toggleAiChat);
+
+        function toggleMaximize() {
+            aiWindow.classList.toggle('maximized');
+            const icon = document.querySelector('#maximize-btn i');
+            if (aiWindow.classList.contains('maximized')) {
+                icon.setAttribute('data-lucide', 'minimize-2');
+            } else {
+                icon.setAttribute('data-lucide', 'maximize-2');
+            }
+            lucide.createIcons();
+        }
+
+        function saveChat(text, isAi) {
+            const history = JSON.parse(localStorage.getItem('ai_chat_history') || '[]');
+            history.push({ text, isAi });
+            localStorage.setItem('ai_chat_history', JSON.stringify(history));
+        }
+
+        function loadChat() {
+            const history = JSON.parse(localStorage.getItem('ai_chat_history') || '[]');
+            if (history.length > 0) {
+                // Keep the first welcome message
+                const welcome = aiMessages.firstElementChild;
+                aiMessages.innerHTML = '';
+                if (welcome) aiMessages.appendChild(welcome);
+                history.forEach(msg => addMessage(msg.text, msg.isAi, false));
+            }
+        }
+
+        function clearChat() {
+            if (confirm("{% if request.session.lang == 'ru' %}Очистить историю чата?{% else %}Hamma xabarlarni o'chirib yuborasizmi?{% endif %}")) {
+                localStorage.removeItem('ai_chat_history');
+                const welcomeText = "{% if request.session.lang == 'ru' %}Здравствуйте! Я ИИ-помощник SaraUylar. Как я могу помочь вам find дом? Вы можете отправить ID объявления (например: #1024) для анализа.{% else %}Salom! Men SaraUylar sun'iy intellekt yordamchisiman. Sizga qanday uy topishda yordam bera olaman? E'lon raqamini yuborsangiz (masalan: #1024), uni tahlil qilib beraman.{% endif %}";
+                aiMessages.innerHTML = `<div class="chat-msg msg-ai">${welcomeText}</div>`;
+            }
+        }
+
+        function addMessage(text, isAi, shouldSave = true) {
+            if (!text) return;
+            const msg = document.createElement('div');
+            msg.className = `chat-msg ${isAi ? 'msg-ai' : 'msg-user'}`;
+            msg.innerHTML = String(text).replace(/\n/g, '<br>');
+            aiMessages.appendChild(msg);
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+            if (shouldSave) saveChat(text, isAi);
+        }
+
+        // AI TTS Logic
+        let ttsEnabled = localStorage.getItem('ai_tts_enabled') === 'true';
+        const ttsBtn = document.getElementById('tts-toggle-btn');
+        
+        function updateTtsIcon() {
+            if (!ttsBtn) return;
+            const icon = ttsBtn.querySelector('i');
+            if (icon) {
+                icon.setAttribute('data-lucide', ttsEnabled ? 'volume-2' : 'volume-x');
+                if (window.lucide) lucide.createIcons();
+            }
+            ttsBtn.classList.toggle('active', ttsEnabled);
+        }
+        updateTtsIcon();
+
+        function toggleTts() {
+            ttsEnabled = !ttsEnabled;
+            localStorage.setItem('ai_tts_enabled', ttsEnabled);
+            updateTtsIcon();
+        }
+
+        async function playTts(text) {
+            if (!ttsEnabled) return;
+            try {
+                const response = await fetch('/ai-tts/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const audio = new Audio(url);
+                audio.play();
+            } catch (err) {
+                console.error("TTS Error:", err);
+            }
+        }
+
+        async function sendAiMessage() {
+            const text = aiInput.value.trim();
+            if (!text) return;
+
+            const history = JSON.parse(localStorage.getItem('ai_chat_history') || '[]');
+            addMessage(text, false, true); // shouldSave = true
+            aiInput.value = '';
+
+            const typingMsg = document.createElement('div');
+            typingMsg.className = 'chat-msg msg-ai';
+            typingMsg.textContent = '...';
+            aiMessages.appendChild(typingMsg);
+
+            try {
+                const response = await fetch('/ai-chat/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ message: text, history: history })
+                });
+                const data = await response.json();
+                typingMsg.remove();
+                addMessage(data.message, true);
+                if (window.lucide) lucide.createIcons();
+                
+                // Play TTS
+                if (ttsEnabled) playTts(data.message);
+                
+            } catch (err) {
+                typingMsg.remove();
+                addMessage("Kechirasiz, xatolik yuz berdi.", true);
+            }
+        }
+
+        aiInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendAiMessage();
+        });
+
+        // AI Voice Recognition (OpenAI Whisper Integration)
+        let mediaRecorder;
+        let audioChunks = [];
+        const aiVoiceBtn = document.getElementById('ai-voice-btn');
+
+        if (aiVoiceBtn && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            aiVoiceBtn.addEventListener('click', async () => {
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                    return;
+                }
+
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstart = () => {
+                        aiVoiceBtn.classList.add('recording');
+                        aiInput.placeholder = "{% if request.session.lang == 'ru' %}Слушаю (OpenAI)...{% else %}Eshitilmoqda (OpenAI)...{% endif %}";
+                    };
+
+                    mediaRecorder.onstop = async () => {
+                        aiVoiceBtn.classList.remove('recording');
+                        aiInput.placeholder = "Savol yoki ID...";
+                        
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const formData = new FormData();
+                        formData.append('audio', audioBlob, 'rec.webm');
+
+                        try {
+                            aiInput.placeholder = "{% if request.session.lang == 'ru' %}Обработка...{% else %}Tahlil qilinmoqda...{% endif %}";
+                            const response = await fetch('/ai-whisper/', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const data = await response.json();
+                            if (data.text) {
+                                aiInput.value = data.text;
+                                setTimeout(() => sendAiMessage(), 300);
+                            }
+                        } catch (err) {
+                            console.error("Whisper error:", err);
+                        } finally {
+                            aiInput.placeholder = "Savol yoki ID...";
+                        }
+                        
+                        // Stop all tracks to release mic
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorder.start();
+                } catch (err) {
+                    console.error("Mic access error:", err);
+                    alert("{% if request.session.lang == 'ru' %}Микрофон не доступен{% else %}Mikrofonga ruxsat berilmadi{% endif %}");
+                }
+            });
+        } else if (aiVoiceBtn) {
+            aiVoiceBtn.style.display = 'none';
+        }
+
+        // City Selection Logic
+        const cities = [
+            "Toshkent", "Andijon", "Buxoro", "Farg'ona", "Jizzax", "Namangan", 
+            "Navoiy", "Qashqadaryo", "Samarqand", "Sirdaryo", "Surxondaryo", "Xorazm", "Qoraqalpog'iston"
+        ];
+        
+        const cityModal = document.getElementById('city-modal');
+        const cityList = document.getElementById('city-list');
+        const currentCityEl = document.getElementById('current-city');
+
+        function openCityModal() {
+            if (cityModal) cityModal.style.display = 'flex';
+            renderCities(cities);
+        }
+
+        function closeCityModal() {
+            if (cityModal) cityModal.style.display = 'none';
+        }
+
+        function renderCities(list) {
+            if (!cityList) return;
+            const currentCity = currentCityEl.textContent.trim();
+            cityList.innerHTML = list.map(city => `
+                <div class="city-item ${city === currentCity ? 'active' : ''}" onclick="selectCity('${city}')">
+                    <span>${city}</span>
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                </div>
+            `).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function filterCities() {
+            const query = document.getElementById('city-search').value.toLowerCase();
+            const filtered = cities.filter(city => city.toLowerCase().includes(query));
+            renderCities(filtered);
+        }
+
+        async function selectCity(city) {
+            currentCityEl.textContent = city;
+            closeCityModal();
+            
+            // Save to session via backend
+            try {
+                await fetch(`/set-city/${encodeURIComponent(city)}/`);
+                window.location.reload(); // Reload to apply filters
+            } catch (err) {
+                console.error("Error saving city:", err);
+            }
+        }
+
+        // Close on overlay click
+        if (cityModal) {
+            cityModal.addEventListener('click', (e) => {
+                if (e.target === cityModal) closeCityModal();
+            });
+        }
+
+        // Search History Logic
+        const searchHistoryDropdown = document.getElementById('search-history-dropdown');
+        const searchInputEl = document.getElementById('search-input');
+        const searchFormEl = document.getElementById('search-form');
+
+        function getSearchHistory() {
+            return JSON.parse(localStorage.getItem('search_history') || '[]');
+        }
+
+        function saveSearch(query) {
+            if (!query || query.trim() === '') return;
+            let history = getSearchHistory();
+            history = history.filter(item => item !== query);
+            history.unshift(query);
+            localStorage.setItem('search_history', JSON.stringify(history.slice(0, 10)));
+        }
+
+        function showSearchHistory() {
+            const history = getSearchHistory();
+            if (history.length === 0) {
+                searchHistoryDropdown.style.display = 'none';
+                return;
+            }
+            const itemsContainer = document.getElementById('history-items');
+            itemsContainer.innerHTML = history.map(item => `
+                <div class="history-item" onclick="useHistoryItem('${item}')">
+                    <i data-lucide="clock"></i>
+                    <span>${item}</span>
+                    <div class="remove-item" onclick="event.stopPropagation(); removeHistoryItem('${item}')">
+                        <i data-lucide="x"></i>
+                    </div>
+                </div>
+            `).join('');
+            if (window.lucide) lucide.createIcons();
+            searchHistoryDropdown.style.display = 'flex';
+        }
+
+        function removeHistoryItem(item) {
+            let history = getSearchHistory();
+            history = history.filter(h => h !== item);
+            localStorage.setItem('search_history', JSON.stringify(history));
+            showSearchHistory();
+        }
+
+        function clearSearchHistory() {
+            localStorage.removeItem('search_history');
+            searchHistoryDropdown.style.display = 'none';
+        }
+
+        function useHistoryItem(item) {
+            searchInputEl.value = item;
+            searchFormEl.submit();
+        }
+
+        if (searchFormEl) {
+            searchFormEl.addEventListener('submit', () => {
+                saveSearch(searchInputEl.value);
+            });
+        }
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchHistoryDropdown) return;
+            if (!searchInputEl.contains(e.target) && !searchHistoryDropdown.contains(e.target)) {
+                searchHistoryDropdown.style.display = 'none';
+            }
+        });
+
+        // Property Hover Slider (Airbnb Style)
+        function handleHoverSlider(e, container) {
+            const gallery = JSON.parse(container.dataset.gallery || '[]');
+            if (gallery.length <= 1) return;
+
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const width = rect.width;
+            const segmentWidth = width / gallery.length;
+            const index = Math.floor(x / segmentWidth);
+            
+            const img = container.querySelector('.main-img');
+            if (img && gallery[index] && img.src !== gallery[index]) {
+                img.src = gallery[index];
+                updateSliderDots(container, index, gallery.length);
+            }
+        }
+
+        function updateSliderDots(container, activeIndex, total) {
+            let dotsContainer = container.querySelector('.slider-dots');
+            if (!dotsContainer) return;
+
+            if (dotsContainer.children.length !== total) {
+                dotsContainer.innerHTML = '';
+                for (let i = 0; i < total; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'dot';
+                    dotsContainer.appendChild(dot);
+                }
+            }
+
+            Array.from(dotsContainer.children).forEach((dot, i) => {
+                dot.classList.toggle('active', i === activeIndex);
+            });
+        }
+
+        function resetHoverSlider(container) {
+            const gallery = JSON.parse(container.dataset.gallery || '[]');
+            if (gallery.length <= 1) return;
+            
+            const img = container.querySelector('.main-img');
+            if (img && gallery[0]) {
+                img.src = gallery[0];
+            }
+            
+            const dotsContainer = container.querySelector('.slider-dots');
+            if (dotsContainer) dotsContainer.style.opacity = '0';
+        }
+
+        // Top Progress Bar Logic
+        const progressBar = document.getElementById('top-progress-bar');
+        if (progressBar) {
+            function startTopLoading() {
+                progressBar.style.transition = 'width 0.4s ease, opacity 0.3s ease';
+                progressBar.style.opacity = '1';
+                progressBar.style.width = '30%';
+                setTimeout(() => { if (progressBar.style.width === '30%') progressBar.style.width = '60%'; }, 500);
+            }
+
+            function finishTopLoading() {
+                progressBar.style.width = '100%';
+                setTimeout(() => {
+                    progressBar.style.opacity = '0';
+                    setTimeout(() => { 
+                        progressBar.style.transition = 'none';
+                        progressBar.style.width = '0%'; 
+                    }, 300);
+                }, 400);
+            }
+
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (link && link.href && !link.href.startsWith('#') && !link.href.startsWith('javascript:') && link.target !== '_blank' && !e.ctrlKey && !e.metaKey) {
+                    startTopLoading();
+                }
+            });
+
+            document.addEventListener('submit', () => {
+                startTopLoading();
+            });
+
+            window.addEventListener('load', finishTopLoading);
+
+            // On initial parse
+            startTopLoading();
+            if (document.readyState === 'complete') finishTopLoading();
+        }
+
+        // Search Placeholder Typing Animation
+        const searchInputAnim = document.getElementById('search-input');
+        if (searchInputAnim) {
+            const placeholders = [
+                "{% if request.session.lang == 'ru' %}Квартира в Ташкенте...{% else %}Toshkentdan kvartira...{% endif %}",
+                "{% if request.session.lang == 'ru' %}Дом с двором...{% else %}Hovli joylar...{% endif %}",
+                "{% if request.session.lang == 'ru' %}Новостройки...{% else %}Yangi qurilayotgan uylar...{% endif %}",
+                "{% if request.session.lang == 'ru' %}Коммерческая недвижимость...{% else %}Tijorat joylari...{% endif %}",
+                "{% if request.session.lang == 'ru' %}Город, район или адрес...{% else %}Shahar, tuman yoki manzil...{% endif %}"
+            ];
+            let pIdx = 0;
+            let cIdx = 0;
+            let deleting = false;
+            let typingTimer;
+
+            function runTypingEffect() {
+                if (document.activeElement === searchInputAnim || searchInputAnim.value.length > 0) {
+                    searchInputAnim.setAttribute('placeholder', "{% if request.session.lang == 'ru' %}Поиск...{% else %}Qidiruv...{% endif %}");
+                    typingTimer = setTimeout(runTypingEffect, 1000);
+                    return;
+                }
+                
+                const currentText = placeholders[pIdx];
+                
+                if (deleting) {
+                    cIdx--;
+                    searchInputAnim.setAttribute('placeholder', currentText.substring(0, cIdx));
+                } else {
+                    cIdx++;
+                    searchInputAnim.setAttribute('placeholder', currentText.substring(0, cIdx));
+                }
+
+                let speed = deleting ? 40 : 80;
+
+                if (!deleting && cIdx === currentText.length) {
+                    speed = 2000;
+                    deleting = true;
+                } else if (deleting && cIdx === 0) {
+                    deleting = false;
+                    pIdx = (pIdx + 1) % placeholders.length;
+                    speed = 500;
+                }
+
+                typingTimer = setTimeout(runTypingEffect, speed);
+            }
+            runTypingEffect();
+        }
+
+        // Initialize chat history
+        loadChat();
+    </script>
+
+    <!-- Custom Context Menu -->
+    <div id="property-context-menu" class="custom-context-menu">
+        <div class="context-menu-item" id="ctx-open-new">
+            <i data-lucide="external-link"></i>
+            <span>{% if request.session.lang == 'ru' %}Открыть в новой вкладке{% else %}Yangi oynada ochish{% endif %}</span>
+        </div>
+        <div class="context-menu-item" id="ctx-copy-link">
+            <i data-lucide="link"></i>
+            <span>{% if request.session.lang == 'ru' %}Копировать ссылку{% else %}Havolani nusxalash{% endif %}</span>
+        </div>
+        <div class="context-menu-item" id="ctx-favorite">
+            <i data-lucide="heart"></i>
+            <span>{% if request.session.lang == 'ru' %}В избранное{% else %}Saralash{% endif %}</span>
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" id="ctx-compare">
+            <i data-lucide="layers"></i>
+            <span>{% if request.session.lang == 'ru' %}Сравнить{% else %}Solishtirish{% endif %}</span>
+        </div>
+        <div class="context-menu-item" id="ctx-share">
+            <i data-lucide="share-2"></i>
+            <span>{% if request.session.lang == 'ru' %}Поделиться{% else %}Ulashish{% endif %}</span>
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" id="ctx-ai-analyze">
+            <i data-lucide="bot"></i>
+            <span style="background: linear-gradient(90deg, var(--primary), #EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;">{% if request.session.lang == 'ru' %}Анализ с Sara AI{% else %}Sara AI orqali tahlil{% endif %}</span>
+        </div>
+    </div>
+    
+    <script>
+        // Context Menu Logic
+        const ctxMenu = document.getElementById('property-context-menu');
+        let ctxPropertyUrl = '';
+        let ctxPropertyId = '';
+        let ctxPropertyTitle = '';
+    
+        document.addEventListener('contextmenu', function(e) {
+            const card = e.target.closest('.property-card');
+            if (card) {
+                e.preventDefault(); // Prevent standard browser menu
+                
+                // Get property data
+                const link = card.closest('a') || card.querySelector('a');
+                if (link) ctxPropertyUrl = link.href;
+                
+                const favBtn = card.parentElement.querySelector('.fav-btn');
+                if (favBtn) ctxPropertyId = favBtn.dataset.id;
+                
+                const titleEl = card.querySelector('.card-title');
+                if (titleEl) ctxPropertyTitle = titleEl.innerText;
+    
+                // Position Menu
+                ctxMenu.style.display = 'block';
+                const rect = ctxMenu.getBoundingClientRect();
+                let x = e.clientX;
+                let y = e.clientY;
+                
+                if (x + rect.width > window.innerWidth) x = window.innerWidth - rect.width - 10;
+                if (y + rect.height > window.innerHeight) y = window.innerHeight - rect.height - 10;
+                
+                ctxMenu.style.left = `${x}px`;
+                ctxMenu.style.top = `${y}px`;
+                lucide.createIcons(); // refresh icons
+            } else {
+                ctxMenu.style.display = 'none';
+            }
+        });
+    
+        document.addEventListener('click', function(e) {
+            if (!ctxMenu.contains(e.target)) {
+                ctxMenu.style.display = 'none';
+            }
+        });
+    
+        document.getElementById('ctx-open-new')?.addEventListener('click', () => {
+            if (ctxPropertyUrl) window.open(ctxPropertyUrl, '_blank');
+            ctxMenu.style.display = 'none';
+        });
+    
+        document.getElementById('ctx-copy-link')?.addEventListener('click', () => {
+            if (ctxPropertyUrl) {
+                navigator.clipboard.writeText(ctxPropertyUrl).then(() => {
+                    alert("{% if request.session.lang == 'ru' %}Ссылка скопирована!{% else %}Havola nusxalandi!{% endif %}");
+                });
+            }
+            ctxMenu.style.display = 'none';
+        });
+    
+        document.getElementById('ctx-favorite')?.addEventListener('click', () => {
+            if (ctxPropertyId) {
+                const actualBtn = document.querySelector(`.fav-btn[data-id="${ctxPropertyId}"]`);
+                if (actualBtn) toggleFav(actualBtn, ctxPropertyId);
+            }
+            ctxMenu.style.display = 'none';
+        });
+        
+        document.getElementById('ctx-compare')?.addEventListener('click', () => {
+            if (ctxPropertyId) {
+                const cb = document.querySelector(`.compare-checkbox[data-id="${ctxPropertyId}"]`);
+                if (cb) cb.click();
+            }
+            ctxMenu.style.display = 'none';
+        });
+    
+        document.getElementById('ctx-share')?.addEventListener('click', () => {
+            if (navigator.share && ctxPropertyUrl) {
+                navigator.share({
+                    title: ctxPropertyTitle,
+                    url: ctxPropertyUrl
+                }).catch(console.error);
+            } else if (ctxPropertyUrl) {
+                navigator.clipboard.writeText(ctxPropertyUrl);
+                alert("{% if request.session.lang == 'ru' %}Ссылка скопирована!{% else %}Havola nusxalandi!{% endif %}");
+            }
+            ctxMenu.style.display = 'none';
+        });
+        
+        document.getElementById('ctx-ai-analyze')?.addEventListener('click', () => {
+            if (ctxPropertyId && ctxPropertyTitle) {
+                const chatContainer = document.getElementById('aiChat');
+                if (chatContainer.style.display === 'none' || chatContainer.style.display === '') {
+                    toggleAiChat();
+                }
+                
+                const aiInput = document.getElementById('ai-input');
+                if (aiInput) {
+                    const prompt = `Iltimos, ushbu e'lonni tahlil qilib bering: "${ctxPropertyTitle}" (ID: #${parseInt(ctxPropertyId) + 1024})`;
+                    aiInput.value = prompt;
+                    setTimeout(() => sendAiMessage(), 300);
+                }
+            }
+            ctxMenu.style.display = 'none';
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

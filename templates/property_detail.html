@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+{% block title %}{{ property.title }} - SaraUylar{% endblock %}
+{% load static %}
+
+{% block content %}
+<div class="container animate-fade-in">
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs" style="padding: 16px 0; font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+        <a href="/" style="text-decoration: none; color: inherit;">{% if request.session.lang == 'ru' %}Главная{% else %}Asosiy{% endif %}</a>
+        <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+        <a href="/?category={{ property.category.slug }}" style="text-decoration: none; color: inherit;">{{ property.category.name }}</a>
+        <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+        <span style="color: var(--text-main); font-weight: 600;">{{ property.title }}</span>
+    </nav>
+
+    <div class="detail-layout" style="display: grid; grid-template-columns: 1fr; gap: 32px;">
+        <!-- Image Gallery -->
+        <div class="image-gallery-hero" style="position: relative; border-radius: var(--radius-lg); overflow: hidden; height: 450px; background: var(--bg-card); box-shadow: var(--shadow-lg);">
+            {% if property.image %}
+                <img src="{{ property.image.url }}" alt="{{ property.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--border-light); color: var(--text-muted);">
+                    <i data-lucide="image" style="width: 80px; height: 80px;"></i>
+                </div>
+            {% endif %}
+            
+            <div class="gallery-badges" style="position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 10;">
+                <span class="card-badge" style="position: static;">{{ property.get_property_type_display }}</span>
+                {% if property.is_premium %}
+                    <span class="premium-tag" style="position: static;">
+                        <i data-lucide="star" style="width: 12px; height: 12px; fill: currentColor; margin-right: 4px;"></i>
+                        Premium
+                    </span>
+                {% endif %}
+            </div>
+
+            <button type="button" onclick="shareProperty()" style="position: absolute; top: 20px; right: 80px; z-index: 10; background: rgba(255,255,255,0.9); border: none; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #4a5568; box-shadow: var(--shadow-lg); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                <i data-lucide="share-2" style="width: 24px; height: 24px;"></i>
+            </button>
+
+            <button type="button" class="fav-btn {% if is_favorited %}is-favorited{% endif %}" data-id="{{ property.pk }}" style="position: absolute; top: 20px; right: 20px; z-index: 10; background: rgba(255,255,255,0.9); border: none; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #cbd5e0; box-shadow: var(--shadow-lg);">
+                <i data-lucide="heart" style="width: 24px; height: 24px;"></i>
+            </button>
+        </div>
+
+        <div class="detail-grid" style="display: grid; grid-template-columns: 1fr; gap: 32px;">
+            <!-- Main Info -->
+            <div class="main-info-card" style="background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-md);">
+                <div class="price-header" style="margin-bottom: 24px;">
+                    <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--primary); letter-spacing: -0.03em;">${{ property.price|floatformat:0 }}</h2>
+                    <div class="price-meta" style="color: var(--text-muted); font-size: 0.95rem; margin-top: 4px;">{% if request.session.lang == 'ru' %}Эта цена включает все налоги{% else %}Ushbu narx barcha soliqlarni o'z ichiga oladi{% endif %}</div>
+                </div>
+                
+                <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.02em;">{{ property.title }}</h1>
+                <div class="card-loc" style="font-size: 1.1rem; margin-bottom: 32px; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;">
+                    <span><i data-lucide="map-pin"></i> {{ property.location }}</span>
+                    <span style="display: flex; align-items: center; gap: 6px; font-size: 0.95rem; background: var(--bg-main); padding: 4px 12px; border-radius: 20px; color: var(--primary); font-weight: 600;">
+                        <i data-lucide="eye" style="width: 16px; height: 16px;"></i> {{ property.views_count }} {% if request.session.lang == 'ru' %}просмотров{% else %}marta ko'rilgan{% endif %}
+                    </span>
+                </div>
+                
+                <div class="feature-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 24px; background: var(--bg-main); border-radius: var(--radius-md); margin-bottom: 32px;">
+                    <div style="text-align: center;">
+                        <div style="color: var(--primary); margin-bottom: 8px;"><i data-lucide="door-open" style="width: 24px; height: 24px;"></i></div>
+                        <div style="font-weight: 800; font-size: 1.25rem; color: var(--text-main);">{{ property.rooms }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">{% if request.session.lang == 'ru' %}Комнаты{% else %}Xonalar{% endif %}</div>
+                    </div>
+                    <div style="text-align: center; border-left: 1px solid var(--border); border-right: 1px solid var(--border);">
+                        <div style="color: var(--primary); margin-bottom: 8px;"><i data-lucide="maximize-2" style="width: 24px; height: 24px;"></i></div>
+                        <div style="font-weight: 800; font-size: 1.25rem; color: var(--text-main);">{{ property.area }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">{% if request.session.lang == 'ru' %}Площадь (м²){% else %}Maydon (m²){% endif %}</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: var(--primary); margin-bottom: 8px;"><i data-lucide="calendar" style="width: 24px; height: 24px;"></i></div>
+                        <div style="font-weight: 800; font-size: 1.25rem; color: var(--text-main);">{{ property.created_at|date:"Y" }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">{% if request.session.lang == 'ru' %}Год постройки{% else %}Qurilgan yil{% endif %}</div>
+                    </div>
+                </div>
+
+                <div class="description-sect">
+                    <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 16px;">{% if request.session.lang == 'ru' %}Описание{% else %}Tavsif{% endif %}</h3>
+                    <p style="line-height: 1.8; color: var(--text-muted); font-size: 1.05rem;">{{ property.description }}</p>
+                </div>
+
+                <!-- Mortgage Calculator Widget -->
+                <div class="mortgage-calc-card">
+                    <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="calculator" style="color: var(--primary);"></i> {% if request.session.lang == 'ru' %}Ипотечный калькулятор{% else %}Ipateka Kalkulyatori{% endif %}
+                    </h3>
+
+                    <div class="calc-slider-group">
+                        <div class="calc-label-row">
+                            <span>{% if request.session.lang == 'ru' %}Первоначальный взнос{% else %}Boshlang'ich to'lov{% endif %}</span>
+                            <span id="label-downpayment">30%</span>
+                        </div>
+                        <input type="range" class="calc-slider" id="slider-downpayment" min="10" max="100" step="5" value="30">
+                    </div>
+
+                    <div class="calc-slider-group">
+                        <div class="calc-label-row">
+                            <span>{% if request.session.lang == 'ru' %}Срок кредита{% else %}Kredit muddati{% endif %}</span>
+                            <span id="label-term">15 yil</span>
+                        </div>
+                        <input type="range" class="calc-slider" id="slider-term" min="1" max="30" step="1" value="15">
+                    </div>
+
+                    <div class="calc-slider-group" style="margin-bottom: 0;">
+                        <div class="calc-label-row">
+                            <span>{% if request.session.lang == 'ru' %}Годовая процентная ставка{% else %}Yillik foiz stavkasi{% endif %}</span>
+                            <span id="label-rate">18%</span>
+                        </div>
+                        <input type="range" class="calc-slider" id="slider-rate" min="1" max="30" step="0.5" value="18">
+                    </div>
+
+                    <div class="calc-results">
+                        <div class="result-item result-monthly">
+                            <label>{% if request.session.lang == 'ru' %}Ежемесячный платеж{% else %}Oylik to'lov{% endif %}</label>
+                            <span id="res-monthly">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <label>{% if request.session.lang == 'ru' %}Сумма кредита{% else %}Kredit miqdori{% endif %}</label>
+                            <span id="res-loan">$0</span>
+                        </div>
+                        <div class="result-item">
+                            <label>{% if request.session.lang == 'ru' %}Общий процент{% else %}Umumiy foiz{% endif %}</label>
+                            <span id="res-interest">$0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticky Sidebar -->
+            <div class="sidebar-contact" style="height: fit-content; position: sticky; top: 100px;">
+                <div style="background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); border: 2px solid var(--primary); box-shadow: var(--shadow-lg);">
+                    <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 24px;">{% if request.session.lang == 'ru' %}Связаться с продавцом{% else %}Sotuvchi bilan bog'lanish{% endif %}</h3>
+                    
+                    {% if property.owner %}
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-light);">
+                        {% if property.owner.profile.avatar %}
+                            <img src="{{ property.owner.profile.avatar.url }}" alt="{{ property.owner.get_full_name|default:property.owner.username }}" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover;">
+                        {% else %}
+                            <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--bg-main); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                <i data-lucide="user" style="width: 32px; height: 32px;"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-main);">{{ property.owner.get_full_name|default:property.owner.username|title }}</div>
+                            <a href="{% url 'seller_profile' property.owner.username %}" style="font-size: 0.9rem; color: var(--primary); text-decoration: none; font-weight: 600; margin-top: 4px; display: inline-block;">{% if request.session.lang == 'ru' %}Смотреть профиль{% else %}Profilni ko'rish{% endif %}</a>
+                        </div>
+                    </div>
+
+                    {% if property.owner.profile.phone_number %}
+                    <a href="tel:{{ property.owner.profile.phone_number }}" class="btn btn-primary" style="width: 100%; padding: 16px; margin-bottom: 16px; font-size: 1.1rem; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);">
+                        <i data-lucide="phone"></i> {{ property.owner.profile.phone_number }}
+                    </a>
+                    {% else %}
+                    <a href="tel:+998000000000" class="btn btn-primary" style="width: 100%; padding: 16px; margin-bottom: 16px; font-size: 1.1rem; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);">
+                        <i data-lucide="phone"></i> {% if request.session.lang == 'ru' %}Позвонить{% else %}Qo'ng'iroq qilish{% endif %}
+                    </a>
+                    {% endif %}
+
+                    {% if property.owner.profile.telegram_username %}
+                    <a href="https://t.me/{{ property.owner.profile.telegram_username }}" class="btn" style="width: 100%; padding: 16px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;">
+                        <i data-lucide="send"></i> Telegram
+                    </a>
+                    {% else %}
+                    <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ property.title }}" class="btn" style="width: 100%; padding: 16px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;">
+                        <i data-lucide="send"></i> {% if request.session.lang == 'ru' %}Поделиться в Telegram{% else %}Telegramda ulashish{% endif %}
+                    </a>
+                    {% endif %}
+
+                    {% else %}
+                        <!-- Fallback if no owner -->
+                        <a href="tel:+998000000000" class="btn btn-primary" style="width: 100%; padding: 16px; margin-bottom: 16px; font-size: 1.1rem; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);">
+                            <i data-lucide="phone"></i> {% if request.session.lang == 'ru' %}Позвонить{% else %}Qo'ng'iroq qilish{% endif %}
+                        </a>
+                        
+                        <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ property.title }}" class="btn" style="width: 100%; padding: 16px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;">
+                            <i data-lucide="send"></i> {% if request.session.lang == 'ru' %}Поделиться в Telegram{% else %}Telegramda ulashish{% endif %}
+                        </a>
+                    {% endif %}
+                    
+                    <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">{% if request.session.lang == 'ru' %}Номер объявления{% else %}E'lon raqami{% endif %}:</span>
+                        <button type="button" onclick="copyPropertyId('{{ property.id|add:1024 }}')" style="background: var(--bg-main); border: 1px solid var(--border-light); font-weight: 800; font-size: 0.95rem; color: var(--primary); cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-sm); transition: all 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='var(--bg-main)'; this.style.color='var(--primary)'">
+                            #{{ property.id|add:1024 }}
+                            <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Similar Listings Section -->
+    {% if similar_properties %}
+    <div class="similar-listings" style="margin-top: 64px; margin-bottom: 64px; border-top: 1px solid var(--border-light); padding-top: 48px;">
+        <h2 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 32px; letter-spacing: -0.02em;">{% if request.session.lang == 'ru' %}Похожие объявления{% else %}O'xshash e'lonlar{% endif %}</h2>
+        
+        <div class="property-list" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+            {% for item in similar_properties %}
+            <a href="{% url 'property_detail' item.pk %}" style="text-decoration: none; color: inherit;" class="animate-fade-in property-item" data-index="{{ forloop.counter }}">
+            <div class="property-card" style="box-shadow: var(--shadow-sm);">
+                <div class="card-image-wrapper">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.title }}" class="card-img" style="aspect-ratio: 4/3;">
+                    {% else %}
+                        <div class="card-img" style="aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; background: #f1f5f9;">
+                            <i data-lucide="image" style="width: 32px; height: 32px; color: #cbd5e0;"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="card-overlay"></div>
+                    <div class="card-badge" style="font-size: 0.75rem;">{{ item.get_property_type_display }}</div>
+                    
+                    <button type="button" class="fav-btn {% if item.pk in favorited_ids %}is-favorited{% endif %}" data-id="{{ item.pk }}" style="position: absolute; top: 12px; right: 12px; z-index: 10; background: rgba(255,255,255,0.9); border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #cbd5e0; box-shadow: var(--shadow-sm); font-size: 0.8rem;">
+                        <i data-lucide="heart" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </div>
+                
+                <div class="card-content" style="padding: 20px;">
+                    <div class="card-price" style="font-size: 1.25rem;">${{ item.price|floatformat:0 }}</div>
+                    <h3 class="card-title" style="font-size: 1rem; margin-bottom: 8px;">{{ item.title }}</h3>
+                    <div class="card-loc" style="font-size: 0.85rem;">
+                        <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
+                        {{ item.location }}
+                    </div>
+                </div>
+            </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    @media (min-width: 1024px) {
+        .detail-grid { grid-template-columns: 2fr 1fr !important; }
+        .image-gallery-hero { height: 550px !important; }
+    }
+</style>
+
+<script>
+    // TWA MainButton Integration
+    const tgMain = window.Telegram?.WebApp;
+    if (tgMain && tgMain.initData) {
+        tgMain.MainButton.setText("BOG'LANISH");
+        tgMain.MainButton.setParams({
+            color: '#2563eb',
+            text_color: '#ffffff'
+        });
+        tgMain.MainButton.show();
+        tgMain.MainButton.onClick(function() {
+            window.location.href = "tel:+998900000000";
+        });
+        
+        // Show BackButton in detail page
+        tgMain.BackButton.show();
+        tgMain.BackButton.onClick(function() {
+            window.location.href = "/";
+        });
+    }
+
+    function shareProperty() {
+        const url = window.location.href;
+        const text = "SaraUylar - {{ property.title }}\nNarxi: ${{ property.price|floatformat:0 }}\nManzil: {{ property.location }}";
+        
+        if (window.Telegram?.WebApp && window.Telegram.WebApp.initData) {
+            window.Telegram.WebApp.switchInlineQuery(text, ['users', 'groups', 'channels']);
+        } else if (navigator.share) {
+            navigator.share({
+                title: '{{ property.title }}',
+                text: text,
+                url: url,
+            }).catch(console.error);
+        } else {
+            alert("Havola nusxalandi!");
+            navigator.clipboard.writeText(url);
+        }
+    }
+    function toggleFavorite(btn, pk) {
+        const isAuth = document.body.dataset.isAuthenticated === 'true';
+        if (!isAuth) {
+            window.location.href = "{% url 'login' %}?next=" + window.location.pathname;
+            return;
+        }
+
+        fetch(`/favorite/toggle/${pk}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.is_favorite) {
+                btn.classList.add('is-favorited');
+            } else {
+                btn.classList.remove('is-favorited');
+            }
+        })
+        .catch(err => console.error('Error:', err));
+    }
+
+    // Mortgage Calculator Logic
+    const propertyPrice = parseFloat("{{ property.price|stringformat:'.2f' }}");
+    const sDown = document.getElementById('slider-downpayment');
+    const sTerm = document.getElementById('slider-term');
+    const sRate = document.getElementById('slider-rate');
+
+    const lDown = document.getElementById('label-downpayment');
+    const lTerm = document.getElementById('label-term');
+    const lRate = document.getElementById('label-rate');
+
+    const rMonthly = document.getElementById('res-monthly');
+    const rLoan = document.getElementById('res-loan');
+    const rInterest = document.getElementById('res-interest');
+
+    function updateCalc() {
+        const downPercent = sDown.value;
+        const termYears = sTerm.value;
+        const annualRate = sRate.value;
+
+        lDown.innerText = downPercent + '%';
+        lTerm.innerText = termYears + ( '{% if request.session.lang == "ru" %} лет{% else %} yil{% endif %}' );
+        lRate.innerText = annualRate + '%';
+
+        const downPayment = (propertyPrice * downPercent) / 100;
+        const loanAmount = propertyPrice - downPayment;
+        const monthlyRate = (annualRate / 100) / 12;
+        const numPayments = termYears * 12;
+
+        const x = Math.pow(1 + monthlyRate, numPayments);
+        const monthly = (loanAmount * x * monthlyRate) / (x - 1);
+
+        if (isFinite(monthly)) {
+            rMonthly.innerText = '$' + Math.round(monthly).toLocaleString();
+            rLoan.innerText = '$' + Math.round(loanAmount).toLocaleString();
+            rInterest.innerText = '$' + Math.round((monthly * numPayments) - loanAmount).toLocaleString();
+        } else {
+            rMonthly.innerText = 'Noma\'lum';
+        }
+    }
+
+    [sDown, sTerm, sRate].forEach(s => s.addEventListener('input', updateCalc));
+    updateCalc();
+
+    // Connect favorite buttons
+    document.querySelectorAll('.fav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleFavorite(btn, btn.dataset.id);
+        });
+    });
+
+    function shareProperty() {
+        if (navigator.share) {
+            navigator.share({
+                title: "{{ property.title|escapejs }}",
+                url: window.location.href
+            }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert("{% if request.session.lang == 'ru' %}Ссылка скопирована!{% else %}Havola nusxalandi!{% endif %}");
+            });
+        }
+    }
+
+    function copyPropertyId(idText) {
+        navigator.clipboard.writeText(idText).then(() => {
+            alert("{% if request.session.lang == 'ru' %}Номер объявления скопирован!{% else %}E'lon raqami nusxalandi!{% endif %}");
+        });
+    }
+</script>
+{% endblock %}

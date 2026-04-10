@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% if request.session.lang == 'ru' %}Помощь и поддержка - SaraUylar{% else %}Yordam va qo'llab-quvvatlash - SaraUylar{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container animate-fade-in" style="padding-top: 40px; padding-bottom: 80px;">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <h1 style="font-weight: 800; font-size: 2.5rem; margin-bottom: 24px; text-align: center;">
+            {% if request.session.lang == 'ru' %}Как мы можем вам помочь?{% else %}Sizga qanday yordam bera olamiz?{% endif %}
+        </h1>
+        
+        <div style="display: grid; gap: 24px; margin-top: 40px;">
+            <!-- FAQ Item 1 -->
+            <div class="card" style="padding: 24px;">
+                <h3 style="margin-bottom: 12px; color: var(--primary);">{% if request.session.lang == 'ru' %}Как разместить объявление?{% else %}Qanday qilib e'lon berish mumkin?{% endif %}</h3>
+                <p style="color: var(--text-muted); line-height: 1.6;">
+                    {% if request.session.lang == 'ru' %}
+                    Нажмите кнопку "Подать объявление" в верхней части сайта, заполните детали недвижимости и загрузите фотографии. После проверки объявление появится на сайте.
+                    {% else %}
+                    Saytning yuqori qismidagi "E'lon berish" tugmasini bosing, ko'chmas mulk tafsilotlarini to'ldiring va rasmlarni yuklang. Tekshiruvdan so'ng e'lon saytda e'lon qilinadi.
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- FAQ Item 2 -->
+            <div class="card" style="padding: 24px;">
+                <h3 style="margin-bottom: 12px; color: var(--primary);">{% if request.session.lang == 'ru' %}Как пользоваться Sara AI?{% else %}Sara AI'dan qanday foydalanish kerak?{% endif %}</h3>
+                <p style="color: var(--text-muted); line-height: 1.6;">
+                    {% if request.session.lang == 'ru' %}
+                    Вы можете общаться с Sara AI текстом или голосом. Спросите её о ценах на квартиры в Ташкенте или отправьте ID объявления (например #1024) для детального анализа.
+                    {% else %}
+                    Siz Sara AI bilan matn yoki ovoz orqali muloqot qilishingiz mumkin. Undan Toshkentdagi uylar narxi haqida so'rang yoki e'lon raqamini (#1024 kabi) yuborib tahlil qildiring.
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- FAQ Item 3 -->
+            <div class="card" style="padding: 24px;">
+                <h3 style="margin-bottom: 12px; color: var(--primary);">{% if request.session.lang == 'ru' %}Это бесплатно?{% else %}Bu bepulmi?{% endif %}</h3>
+                <p style="color: var(--text-muted); line-height: 1.6;">
+                    {% if request.session.lang == 'ru' %}
+                    Да, базовые функции поиска и общения с ИИ бесплатны для всех пользователей платформы.
+                    {% else %}
+                    Ha, qidirish va sun'iy intellekt bilan muloqot qilishning asosiy funksiyalari barcha foydalanuvchilar uchun bepul.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div style="margin-top: 60px; text-align: center; padding: 40px; background: var(--bg-card); border-radius: var(--radius-lg);">
+            <h2 style="margin-bottom: 16px;">{% if request.session.lang == 'ru' %}Остались вопросы?{% else %}Savollaringiz bormi?{% endif %}</h2>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">{% if request.session.lang == 'ru' %}Свяжитесь с нашей службой поддержки{% else %}Bizning qo'llab-quvvatlash xizmati bilan bog'laning{% endif %}</p>
+            <div style="display: flex; justify-content: center; gap: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 600;">
+                    <i data-lucide="mail"></i> info@sarauylar.uz
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 600;">
+                    <i data-lucide="phone"></i> +998 90 123-45-67
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

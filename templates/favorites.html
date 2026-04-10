@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}{% if request.session.lang == 'ru' %}Избранное{% else %}Saralanganlar{% endif %} - SaraUylar{% endblock %}
+{% load static %}
+
+{% block content %}
+<div class="container animate-fade-in" style="padding-top: 24px;">
+    <div style="margin-bottom: 32px;">
+        <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.03em;">Saralanganlar</h1>
+        <p style="color: var(--text-muted);">Sizga yoqqan va saqlab qo'yilgan e'lonlar</p>
+    </div>
+
+    <div class="property-list">
+        {% for fav in favorites %}
+        <div class="property-item animate-fade-in" data-index="{{ forloop.counter }}" style="position: relative;">
+            <a href="{% url 'property_detail' fav.property.pk %}" style="text-decoration: none; color: inherit;">
+                <div class="property-card">
+                    <div class="card-image-wrapper">
+                        {% if fav.property.image %}
+                            <img src="{{ fav.property.image.url }}" alt="{{ fav.property.title }}" class="card-img">
+                        {% else %}
+                            <div class="card-img" style="display: flex; align-items: center; justify-content: center; background: #f1f5f9;">
+                                <i data-lucide="image" style="width: 48px; height: 48px; color: #cbd5e0;"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-badge">{{ fav.property.get_property_type_display }}</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-price">${{ fav.property.price|floatformat:0 }}</div>
+                        <h3 class="card-title">{{ fav.property.title }}</h3>
+                        <div class="card-loc"><i data-lucide="map-pin"></i> {{ fav.property.location }}</div>
+                    </div>
+                </div>
+            </a>
+            <button onclick="toggleFavorite(this)" data-pk="{{ fav.property.pk }}" class="fav-btn active" 
+                <i data-lucide="heart" style="fill: currentColor;"></i>
+            </button>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 100px 0;">
+            <div style="background: var(--bg-card); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                <i data-lucide="heart" style="width: 40px; height: 40px; color: #cbd5e0;"></i>
+            </div>
+            <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;">Saralangan e'lonlar yo'q</h3>
+            <p style="color: var(--text-muted);">O'zingizga yoqqan e'lonlarni saqlab qo'ying.</p>
+            <a href="/" class="btn btn-primary" style="margin-top: 24px;">E'lonlarni ko'rish</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function toggleFavorite(btn) {
+        const pk = btn.getAttribute('data-pk');
+        fetch(`/favorite/toggle/${pk}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.is_favorite) {
+                // Remove from view if on favorites page
+                btn.closest('.property-item').remove();
+            }
+        });
+    }
+</script>
+{% endblock %}

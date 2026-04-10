@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}{{ seller.get_full_name|default:seller.username|title }} - {% if request.session.lang == 'ru' %}Профиль продавца{% else %}Sotuvchi profili{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container animate-fade-in" style="margin-top: 40px; margin-bottom: 60px;">
+    
+    <!-- Seller Info Header -->
+    <div style="background: var(--bg-card); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border-light); display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 48px;">
+        {% if seller.profile.avatar %}
+            <img src="{{ seller.profile.avatar.url }}" alt="{{ seller.get_full_name|default:seller.username }}" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 24px; border: 4px solid var(--border-light);">
+        {% else %}
+            <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--bg-main); display: flex; align-items: center; justify-content: center; color: var(--primary); margin-bottom: 24px; border: 4px solid var(--border-light);">
+                <i data-lucide="user" style="width: 64px; height: 64px;"></i>
+            </div>
+        {% endif %}
+        
+        <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 16px;">{{ seller.get_full_name|default:seller.username|title }}</h1>
+        
+        <div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); padding: 8px 20px; border-radius: 20px; color: var(--text-muted); font-size: 0.95rem; display: flex; align-items: center; gap: 8px; font-weight: 600;">
+                <i data-lucide="calendar" style="width: 16px; height: 16px;"></i> {% if request.session.lang == 'ru' %}На платформе с{% else %}Platformada:{% endif %} {{ seller.date_joined|date:"F Y" }}
+            </div>
+            
+            <div style="background: rgba(37, 99, 235, 0.1); padding: 8px 20px; border-radius: 20px; color: var(--primary); font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="eye" style="width: 16px; height: 16px;"></i> {{ total_views }} {% if request.session.lang == 'ru' %}просмотров объявлений{% else %}marta e'lonlari ko'rilgan{% endif %}
+            </div>
+        </div>
+        
+        {% if seller.profile.bio %}
+            <p style="max-width: 600px; line-height: 1.6; color: var(--text-main); margin-bottom: 32px;">{{ seller.profile.bio }}</p>
+        {% endif %}
+
+        <div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
+            {% if seller.profile.phone_number %}
+            <a href="tel:{{ seller.profile.phone_number }}" class="btn btn-primary" style="padding: 14px 28px; font-weight: 700;">
+                <i data-lucide="phone"></i> {{ seller.profile.phone_number }}
+            </a>
+            {% endif %}
+            
+            {% if seller.profile.telegram_username %}
+            <a href="https://t.me/{{ seller.profile.telegram_username }}" class="btn" style="padding: 14px 28px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="send"></i> Telegram
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Seller's Listings -->
+    <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 32px; border-bottom: 2px solid var(--border-light); padding-bottom: 16px;">
+        {% if request.session.lang == 'ru' %}Объявления этого продавца{% else %}Mijozning e'lonlari{% endif %} <span style="color: var(--text-muted); font-size: 1.2rem; font-weight: 600;">({{ properties.count }})</span>
+    </h2>
+
+    {% if properties %}
+    <div class="property-list" style="margin-top: 0;">
+        {% for item in properties %}
+            <a href="{% url 'property_detail' item.pk %}" style="text-decoration: none; color: inherit;" class="animate-fade-in property-item" data-index="{{ forloop.counter }}">
+                <div class="property-card" 
+                     data-gallery="[{% for img in item.images.all %}'{{ img.image.url }}'{% if not forloop.last %},{% endif %}{% endfor %}]"
+                     onmousemove="handleHoverSlider(event, this)" 
+                     onmouseleave="resetHoverSlider(this)">
+                    <div class="card-image-wrapper">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="card-img main-img">
+                        {% else %}
+                            <div class="card-img" style="aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; background: #f1f5f9;">
+                                <i data-lucide="image" style="width: 48px; height: 48px; color: #cbd5e0;"></i>
+                            </div>
+                        {% endif %}
+                        <div class="slider-dots"></div>
+                        <div class="card-overlay"></div>
+                        <div class="card-badge">{{ item.get_property_type_display }}</div>
+                        {% if item.is_premium %}
+                            <div class="premium-tag">
+                                <i data-lucide="star" style="width: 12px; height: 12px; fill: currentColor; margin-right: 4px;"></i>
+                                Premium
+                            </div>
+                        {% endif %}
+                        
+                        <button type="button" class="fav-btn {% if item.pk in favorited_ids %}is-favorited{% endif %}" data-id="{{ item.pk }}" onclick="event.preventDefault(); toggleFav(this, {{ item.pk }})">
+                            <i data-lucide="heart"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="card-price">${{ item.price|floatformat:0 }}</div>
+                        <h3 class="card-title">{{ item.title }}</h3>
+                        <div class="card-loc">
+                            <i data-lucide="map-pin"></i> {{ item.location }}
+                        </div>
+                        <div class="card-meta">
+                            <div class="meta-item">
+                                <i data-lucide="door-open"></i> {{ item.rooms }} xona
+                            </div>
+                            <div class="meta-item">
+                                <i data-lucide="maximize-2"></i> {{ item.area }} m²
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+    {% else %}
+        <div style="text-align: center; padding: 60px 20px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px dashed var(--border);">
+            <i data-lucide="inbox" style="width: 48px; height: 48px; color: var(--text-muted); margin-bottom: 20px;"></i>
+            <h3 style="font-size: 1.5rem; color: var(--text-main); margin-bottom: 10px;">
+                {% if request.session.lang == 'ru' %}Пока нет объявлений{% else %}Hozircha e'lonlar yo'q{% endif %}
+            </h3>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

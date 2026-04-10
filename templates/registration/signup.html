@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container animate-fade-in" style="padding-top: 64px; max-width: 480px;">
+    <div style="background: var(--bg-card); padding: 48px; border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-lg); text-align: center;">
+        <div style="background: var(--primary-light); color: var(--primary); width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+            <i data-lucide="user-plus" style="width: 36px; height: 36px;"></i>
+        </div>
+        
+        <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em;">Hisob yaratish</h1>
+        <p style="color: var(--text-muted); margin-bottom: 40px; font-size: 1rem;">O'zingizga mos uyni topishda davom eting</p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
+                {% for field in form %}
+                <div class="form-group" style="text-align: left;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.95rem;">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div style="color: var(--danger); font-size: 0.85rem; margin-top: 6px;">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 1.1rem; margin-top: 32px; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);">
+                Ro'yxatdan o'tish
+            </button>
+        </form>
+        
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-light); font-size: 0.95rem; color: var(--text-muted);">
+            Hisobingiz bormi? <a href="{% url 'login' %}" style="color: var(--primary); font-weight: 700; text-decoration: none;">Kirish</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    input {
+        width: 100%;
+        border-radius: var(--radius-md);
+        border: 2px solid var(--border-light);
+        padding: 14px 16px;
+        font-size: 1rem;
+        transition: all 0.2s;
+        background: var(--bg-main);
+    }
+    input:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: var(--bg-card);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+    ul.errorlist {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        color: var(--danger);
+    }
+</style>
+
+<script>
+    // TWA Integration for Signup Page
+    const tgSignup = window.Telegram?.WebApp;
+    if (tgSignup && tgSignup.initData) {
+        tgSignup.BackButton.show();
+        tgSignup.BackButton.onClick(() => {
+            window.location.href = "{% url 'login' %}";
+        });
+    }
+</script>
+{% endblock %}

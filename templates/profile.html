@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% if request.session.lang == 'ru' %}Профиль{% else %}Profil{% endif %} - SaraUylar{% endblock %}
+
+{% block content %}
+<div class="container animate-fade-in" style="padding-top: 32px; padding-bottom: 64px;">
+    <!-- Profile Header -->
+    <div class="profile-header" style="background: var(--bg-card); border-radius: var(--radius-lg); padding: 40px; border: 1px solid var(--border-light); box-shadow: var(--shadow-md); margin-bottom: 32px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap;">
+        <div class="profile-avatar" style="width: 100px; height: 100px; background: var(--primary-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; font-weight: 800;">
+            {{ user.username|first|upper }}
+        </div>
+        <div class="profile-info" style="flex: 1; min-width: 250px;">
+            <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 8px;">{{ user.username }}</h1>
+            <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 16px;">{{ user.email|default:"Email manzili ko'rsatilmagan" }}</p>
+            <div class="profile-stats" style="display: flex; gap: 24px;">
+                <div class="stat-item">
+                    <span style="font-weight: 800; font-size: 1.25rem; color: var(--primary);">{{ total_ads }}</span>
+                    <span style="color: var(--text-muted); font-size: 0.9rem; margin-left: 4px;">E'lonlar</span>
+                </div>
+                <div class="stat-item">
+                    <span style="font-weight: 800; font-size: 1.25rem; color: var(--primary);">{{ favorites_count }}</span>
+                    <span style="color: var(--text-muted); font-size: 0.9rem; margin-left: 4px;">Saralangan</span>
+                </div>
+            </div>
+        </div>
+        <div class="profile-actions">
+            <a href="{% url 'add_property' %}" class="btn btn-primary">
+                <i data-lucide="plus-square"></i> Yangi e'lon
+            </a>
+        </div>
+    </div>
+
+    <!-- My Listings Section -->
+    <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 24px;">Mening e'lonlarim</h2>
+    
+    {% if user_properties %}
+        <div class="property-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
+            {% for property in user_properties %}
+                <div class="property-card" style="position: relative;">
+                    <a href="{% url 'property_detail' property.pk %}" style="text-decoration: none; color: inherit;">
+                        <div class="card-image-wrapper">
+                            {% if property.image %}
+                                <img src="{{ property.image.url }}" alt="{{ property.title }}" class="card-img" style="aspect-ratio: 16/10;">
+                            {% else %}
+                                <div class="card-img" style="aspect-ratio: 16/10; display: flex; align-items: center; justify-content: center; background: #f1f5f9;">
+                                    <i data-lucide="image" style="width: 48px; height: 48px; color: #cbd5e0;"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-content" style="padding: 20px;">
+                            <div class="card-price" style="font-size: 1.25rem; color: var(--primary); font-weight: 800; margin-bottom: 8px;">
+                                ${{ property.price|floatformat:0 }}
+                            </div>
+                            <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px;">{{ property.title }}</h3>
+                            <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+                                <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
+                                {{ property.location }}
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state" style="text-align: center; padding: 64px 20px; background: var(--bg-card); border-radius: var(--radius-lg); border: 2px dashed var(--border);">
+            <i data-lucide="home" style="width: 64px; height: 64px; color: var(--border); margin-bottom: 20px;"></i>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-muted);">Sizda hali e'lonlar yo'q</h3>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Birinchi e'loningizni hoziroq joylashtiring!</p>
+            <a href="{% url 'add_property' %}" class="btn btn-primary" style="display: inline-flex;">
+                E'lon berish
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

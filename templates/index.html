@@ -1,0 +1,413 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% if request.session.lang == 'ru' %}Главная{% else %}Asosiy sahifa{% endif %} - SaraUylar{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero animate-fade-in">
+        <h1>
+            {% if hero_title %}
+                {{ hero_title|safe }}
+            {% else %}
+                {% if request.session.lang == 'ru' %}Найдите свой идеальный <span>Дом</span>{% else %}O'zingizga mos <span>Uyni</span> toping{% endif %}
+            {% endif %}
+        </h1>
+        <p>
+            {% if hero_subtitle %}
+                {{ hero_subtitle|safe }}
+            {% else %}
+                {% if request.session.lang == 'ru' %}Платформа самых отборных и современных домов в Узбекистане. Напрямую от застройщика по самым доступным ценам.{% else %}O'zbekistondagi eng sara va ishonchli yangi qurilgan uylar platformasi. To'g'ridan-to'g'ri quruvchidan va eng hamyonbop narxlarda.{% endif %}
+            {% endif %}
+        </p>
+    </section>
+
+    <!-- Categories Scroll -->
+    <section class="category-container animate-fade-in" style="animation-delay: 200ms;">
+        <div class="category-flex">
+            <a href="/" class="category-pill {% if not request.GET.category %}active{% endif %}">
+                <i data-lucide="layout-grid"></i>
+                <span>{% if request.session.lang == 'ru' %}Все{% else %}Barchasi{% endif %}</span>
+            </a>
+            {% for cat in categories %}
+            <a href="?category={{ cat.slug }}" class="category-pill {% if request.GET.category == cat.slug %}active{% endif %}">
+                <i data-lucide="{{ cat.icon|default:'home' }}"></i>
+                <span>{{ cat.name }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Title Section -->
+    <div class="section-header animate-fade-in" style="animation-delay: 400ms; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; margin-top: 12px;">
+        <div>
+            <h2 style="font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em;">{% if request.session.lang == 'ru' %}Новые объявления{% else %}Yangi e'lonlar{% endif %}</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">{% if request.session.lang == 'ru' %}Лучшие предложения, выбранные для вас{% else %}Siz uchun tanlangan eng yaxshi takliflar{% endif %}</p>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <div class="view-toggles" style="display: none; gap: 4px; background: var(--bg-card); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border-light); margin-right: 4px;">
+                <button type="button" class="view-btn active" data-view="grid" onclick="setViewMode('grid')" title="{% if request.session.lang == 'ru' %}Плитка{% else %}To'r ko'rinishi{% endif %}" style="border: none; background: transparent; padding: 6px; cursor: pointer; border-radius: var(--radius-sm); color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                    <i data-lucide="layout-grid" style="width: 18px; height: 18px;"></i>
+                </button>
+                <button type="button" class="view-btn" data-view="list" onclick="setViewMode('list')" title="{% if request.session.lang == 'ru' %}Список{% else %}Ro'yxat ko'rinishi{% endif %}" style="border: none; background: transparent; padding: 6px; cursor: pointer; border-radius: var(--radius-sm); color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                    <i data-lucide="list" style="width: 18px; height: 18px;"></i>
+                </button>
+            </div>
+            <div onclick="getNearby()" class="filter-btn {% if nearby_active %}active{% endif %}">
+                <i data-lucide="map-pin" style="width: 18px; height: 18px;"></i>
+                {% if request.session.lang == 'ru' %}Рядом{% else %}Yaqinimda{% endif %}
+            </div>
+            <div class="filter-btn">
+                <i data-lucide="sliders-horizontal" style="width: 18px; height: 18px;"></i>
+                {% if request.session.lang == 'ru' %}Фильтр{% else %}Filter{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Listings Grid -->
+    <div class="property-list">
+        {% for property in properties %}
+        <div class="property-item animate-fade-in" data-index="{{ forloop.counter }}" style="position: relative;">
+            <a href="{% url 'property_detail' property.pk %}" style="text-decoration: none; color: inherit;">
+            <div class="property-card">
+                <div class="card-image-wrapper" 
+                     data-gallery='["{% if property.image %}{{ property.image.url }}{% endif %}"{% for img in property.images.all %}, "{{ img.image.url }}"{% endfor %}]'
+                     onmousemove="handleHoverSlider(event, this)" 
+                     onmouseleave="resetHoverSlider(this)">
+                    
+                    {% if property.image %}
+                        <img src="{{ property.image.url }}" alt="{{ property.title }}" class="card-img main-img">
+                    {% else %}
+                        <div class="card-img no-img" style="display: flex; align-items: center; justify-content: center; background: #f1f5f9;">
+                            <i data-lucide="image" style="width: 48px; height: 48px; color: #cbd5e0;"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Preload other images (hidden) -->
+                    {% for img in property.images.all %}
+                        <link rel="prefetch" href="{{ img.image.url }}">
+                    {% endfor %}
+
+                    <div class="slider-dots"></div>
+                    
+                    <div class="card-overlay"></div>
+                    <div class="card-badge">{{ property.get_property_type_display }}</div>
+                    {% if property.is_premium %}
+                        <div class="premium-tag">
+                            <i data-lucide="star" style="width: 12px; height: 12px; fill: currentColor; margin-right: 4px;"></i>
+                            Premium
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-content">
+                    <div class="card-price">${{ property.price|floatformat:0 }}</div>
+                    <h3 class="card-title">{{ property.title }}</h3>
+                    <div class="card-loc">
+                        <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i>
+                        {{ property.location }}
+                    </div>
+                </div>
+            </div>
+            </a>
+            <button type="button" class="fav-btn {% if property.pk in favorited_ids %}is-favorited{% endif %}" data-id="{{ property.pk }}" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: rgba(255,255,255,0.9); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #cbd5e0; box-shadow: var(--shadow-sm);">
+                <i data-lucide="heart" style="width: 20px; height: 20px;"></i>
+            </button>
+            <div class="compare-checkbox" data-id="{{ property.pk }}" data-title="{{ property.title }}" data-price="{{ property.price }}" data-rooms="{{ property.rooms }}" data-area="{{ property.area }}" data-image="{% if property.image %}{{ property.image.url }}{% endif %}" title="{% if request.session.lang == 'ru' %}Сравнить{% else %}Solishtirish{% endif %}">
+                <i data-lucide="layers" style="width: 14px; height: 14px;"></i>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 100px 0;">
+            <div style="background: var(--bg-card); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: var(--shadow-md);">
+                <i data-lucide="search-x" style="width: 40px; height: 40px; color: #cbd5e0;"></i>
+            </div>
+            <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;">{% if request.session.lang == 'ru' %}Объявлений не найдено{% else %}Hech qanday e'lon topilmadi{% endif %}</h3>
+            <p style="color: var(--text-muted);">{% if request.session.lang == 'ru' %}Попробуйте другое слово для поиска или сбросьте фильтры.{% else %}Boshqa qidiruv so'zini sinab ko'ring yoki filterlarni tozalang.{% endif %}</p>
+            <a href="/" class="btn btn-primary" style="margin-top: 24px;">{% if request.session.lang == 'ru' %}Показать все{% else %}Barchasini ko'rish{% endif %}</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Filter Modal -->
+<div id="filter-modal" class="modal" style="display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); align-items: flex-end; justify-content: center;">
+    <div class="modal-content animate-slide-up" style="background: var(--bg-card); width: 100%; max-width: 500px; padding: 32px; border-radius: var(--radius-xl) var(--radius-xl) 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="font-size: 1.5rem; font-weight: 800;">{% if request.session.lang == 'ru' %}Фильтры{% else %}Filterlar{% endif %}</h3>
+            <div onclick="closeFilter()" style="cursor: pointer; padding: 8px; border-radius: 50%; background: var(--border-light); color: var(--text-muted);"><i data-lucide="x"></i></div>
+        </div>
+        
+        <form action="/" method="GET" id="filter-form">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
+                <div class="form-group">
+                    <label style="display: block; font-weight: 700; margin-bottom: 12px;">{% if request.session.lang == 'ru' %}Количество комнат{% else %}Xonalar soni{% endif %}</label>
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
+                        {% for i in "1234"|make_list %}<button type="button" class="room-btn" onclick="setRooms(this, '{{ i }}')" style="padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-card); font-weight: 700; cursor: pointer;">{{ i }}</button>{% endfor %}
+                        <button type="button" class="room-btn" onclick="setRooms(this, '5+')" style="padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-card); font-weight: 700; cursor: pointer;">5+</button>
+                    </div>
+                    <input type="hidden" name="rooms" id="rooms-input">
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: block; font-weight: 700; margin-bottom: 12px;">{% if request.session.lang == 'ru' %}Ценовой диапазон (USD){% else %}Narx oralig'i (USD){% endif %}</label>
+                    <div style="display: flex; gap: 12px;">
+                        <input type="number" name="min_price" placeholder="Min" style="flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-main);">
+                        <input type="number" name="max_price" placeholder="Max" style="flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-main);">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 32px; display: grid; grid-template-columns: 1fr 2fr; gap: 12px;">
+                <button type="reset" class="btn" onclick="resetForm()" style="background: var(--border-light); font-weight: 700;">{% if request.session.lang == 'ru' %}Сбросить{% else %}Tozalash{% endif %}</button>
+                <button type="submit" class="btn btn-primary">{% if request.session.lang == 'ru' %}Показать результаты{% else %}Natijalarni ko'rish{% endif %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .modal {
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .modal-content {
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .animate-slide-up {
+        animation: slideUpModal 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes slideUpModal {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+    .room-btn.active {
+        background: var(--primary) !important;
+        color: white !important;
+        border-color: var(--primary) !important;
+    }
+</style>
+
+<script>
+    function openFilter() {
+        document.getElementById('filter-modal').style.display = 'flex';
+        lucide.createIcons();
+    }
+    function closeFilter() {
+        document.getElementById('filter-modal').style.display = 'none';
+    }
+    function setRooms(btn, val) {
+        document.querySelectorAll('.room-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('rooms-input').value = val;
+    }
+    function resetForm() {
+        document.querySelectorAll('.room-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('rooms-input').value = '';
+    }
+
+    // Connect trigger
+    const filterBtn = document.querySelector('.filter-btn');
+    if (filterBtn) {
+        filterBtn.addEventListener('click', openFilter);
+    }
+
+    function toggleFavorite(btn, pk) {
+        const isAuth = document.body.dataset.isAuthenticated === 'true';
+        if (!isAuth) {
+            window.location.href = "{% url 'login' %}?next=" + window.location.pathname;
+            return;
+        }
+
+        fetch(`/favorite/toggle/${pk}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.is_favorite) {
+                btn.classList.add('is-favorited');
+            } else {
+                btn.classList.remove('is-favorited');
+            }
+        })
+        .catch(err => console.error('Error:', err));
+    }
+
+    // Connect favorite buttons
+    document.querySelectorAll('.fav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleFavorite(btn, btn.dataset.id);
+        });
+    });
+
+    // Set animation delay for each item
+    document.querySelectorAll('.property-item').forEach(item => {
+        const index = item.getAttribute('data-index');
+        item.style.setProperty('--delay', parseInt(index) + 5);
+    });
+
+    // Reset TWA state on main page
+    const tgReset = window.Telegram?.WebApp;
+    if (tgReset && tgReset.initData) {
+        tgReset.MainButton.hide();
+        tgReset.BackButton.hide();
+    }
+
+    function getNearby() {
+        if (window.Telegram?.WebApp && window.Telegram.WebApp.LocationManager) {
+            // TWA Native Location
+            const lm = window.Telegram.WebApp.LocationManager;
+            if (!lm.isInited) {
+                lm.init(() => {
+                    lm.getLocation((data) => {
+                        if (data) {
+                            window.location.href = `/?lat=${data.latitude}&lng=${data.longitude}`;
+                        }
+                    });
+                });
+            } else {
+                lm.getLocation((data) => {
+                    if (data) {
+                        window.location.href = `/?lat=${data.latitude}&lng=${data.longitude}`;
+                    }
+                });
+            }
+        } else if (navigator.geolocation) {
+            // Browser Location
+            navigator.geolocation.getCurrentPosition((pos) => {
+                window.location.href = `/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`;
+            }, (err) => {
+                alert("Joylashuvni aniqlash imkoni bo'lmadi.");
+            });
+        } else {
+            alert("Sizning qurilmangiz joylashuvni aniqlashni qo'llab-quvvatlamaydi.");
+        }
+    }
+
+    // Comparison Logic
+    let comparedItems = [];
+    const compareBar = document.getElementById('compare-bar');
+    const compareCount = document.getElementById('compare-count');
+
+    function updateCompareBar() {
+        if (comparedItems.length > 0) {
+            compareBar.style.display = 'flex';
+            compareCount.innerText = comparedItems.length;
+        } else {
+            compareBar.style.display = 'none';
+        }
+    }
+
+    document.querySelectorAll('.compare-checkbox').forEach(box => {
+        box.addEventListener('click', (e) => {
+            const id = box.dataset.id;
+            const index = comparedItems.findIndex(i => i.id === id);
+            
+            if (index > -1) {
+                comparedItems.splice(index, 1);
+                box.classList.remove('active');
+            } else {
+                if (comparedItems.length >= 4) {
+                    alert("{% if request.session.lang == 'ru' %}Максимум 4 объявления{% else %}Maksimal 4 ta e'lon{% endif %}");
+                    return;
+                }
+                comparedItems.push({
+                    id: box.dataset.id,
+                    title: box.dataset.title,
+                    price: box.dataset.price,
+                    rooms: box.dataset.rooms,
+                    area: box.dataset.area,
+                    image: box.dataset.image
+                });
+                box.classList.add('active');
+            }
+            updateCompareBar();
+        });
+    });
+
+    function clearComparison() {
+        comparedItems = [];
+        document.querySelectorAll('.compare-checkbox').forEach(box => box.classList.remove('active'));
+        updateCompareBar();
+    }
+
+    function showComparison() {
+        if (comparedItems.length < 2) {
+            alert("{% if request.session.lang == 'ru' %}Выберите минимум 2 объявления{% else %}Kamida 2 ta e'lon tanlang{% endif %}");
+            return;
+        }
+        
+        const container = document.getElementById('compare-table-container');
+        let html = '<div style="overflow-x: auto;"><table class="compare-table">';
+        
+        // Rows
+        const rows = [
+            { label: '{% if request.session.lang == "ru" %}Фото{% else %}Rasm{% endif %}', key: 'image', isImage: true },
+            { label: '{% if request.session.lang == "ru" %}Название{% else %}Nomi{% endif %}', key: 'title' },
+            { label: '{% if request.session.lang == "ru" %}Цена{% else %}Narxi{% endif %}', key: 'price', prefix: '$' },
+            { label: '{% if request.session.lang == "ru" %}Комнаты{% else %}Xonalar{% endif %}', key: 'rooms' },
+            { label: '{% if request.session.lang == "ru" %}Площадь{% else %}Maydon{% endif %}', key: 'area', suffix: ' m²' }
+        ];
+
+        rows.forEach(row => {
+            html += `<tr><th>${row.label}</th>`;
+            comparedItems.forEach(item => {
+                let val = item[row.key];
+                if (row.isImage) {
+                    val = val ? `<img src="${val}" style="width: 100px; height: 70px; object-fit: cover; border-radius: 8px;">` : '-';
+                } else {
+                    val = (row.prefix || '') + val + (row.suffix || '');
+                }
+                html += `<td style="font-weight: 700; color: var(--text-main);">${val}</td>`;
+            });
+            html += '</tr>';
+        });
+
+        html += '</table></div>';
+        container.innerHTML = html;
+        document.getElementById('compare-modal').style.display = 'flex';
+        lucide.createIcons();
+    }
+    
+    // View Toggle Logic
+    function setViewMode(mode) {
+        const propList = document.querySelector('.property-list');
+        const btns = document.querySelectorAll('.view-btn');
+        if (!propList) return;
+        
+        if (mode === 'list') {
+            propList.classList.add('list-view');
+        } else {
+            propList.classList.remove('list-view');
+        }
+        
+        btns.forEach(btn => {
+            if (btn.dataset.view === mode) {
+                btn.style.background = 'var(--bg-main)';
+                btn.style.color = 'var(--primary)';
+            } else {
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--text-muted)';
+            }
+        });
+        
+        localStorage.setItem('sara_view_mode', mode);
+    }
+
+    // Initialize View Mode
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggles = document.querySelector('.view-toggles');
+        const propList = document.querySelector('.property-list');
+        if (toggles && propList && propList.querySelectorAll('.property-item').length > 0) {
+            toggles.style.display = 'flex';
+            const savedMode = localStorage.getItem('sara_view_mode') || 'grid';
+            setViewMode(savedMode);
+        }
+    });
+</script>
+{% endblock %}

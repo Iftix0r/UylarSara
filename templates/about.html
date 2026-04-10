@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% if request.session.lang == 'ru' %}О нас - SaraUylar{% else %}Biz haqimizda - SaraUylar{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container animate-fade-in" style="padding-top: 40px; padding-bottom: 80px;">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <h1 style="font-weight: 800; font-size: 2.5rem; margin-bottom: 24px; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            {% if request.session.lang == 'ru' %}О проекте SaraUylar{% else %}SaraUylar loyihasi haqida{% endif %}
+        </h1>
+        
+        <div class="card" style="padding: 40px; line-height: 1.8; font-size: 1.1rem; color: var(--text-muted);">
+            <p style="margin-bottom: 24px;">
+                {% if request.session.lang == 'ru' %}
+                <strong>SaraUylar</strong> — это инновационная платформа по недвижимости в Узбекистане, которая переосмысливает процесс поиска жилья с помощью искусственного интеллекта.
+                {% else %}
+                <strong>SaraUylar</strong> — bu O'zbekistondagi ko'chmas mulk bo'yicha innovatsion platforma bo'lib, sun'iy intellekt yordamida uy qidirish jarayonini butunlay yangi darajaga olib chiqadi.
+                {% endif %}
+            </p>
+
+            <h2 style="color: var(--text-main); margin: 32px 0 16px;">{% if request.session.lang == 'ru' %}Наша миссия{% else %}Bizning maqsadimiz{% endif %}</h2>
+            <p>
+                {% if request.session.lang == 'ru' %}
+                Мы стремимся сделать рынок недвижимости прозрачным, доступным и технологичным. Наша цель — помочь каждому гражданину Узбекистана найти идеальный дом быстро и безопасно.
+                {% else %}
+                Biz ko'chmas mulk bozorini shaffof, qulay va texnologik qilishga intilamiz. Maqsadimiz — O'zbekistonning har bir fuqarosiga o'zi uchun ideal uyni tez va xavfsiz topishga yordam berish.
+                {% endif %}
+            </p>
+
+            <h2 style="color: var(--text-main); margin: 32px 0 16px;">{% if request.session.lang == 'ru' %}Sara AI Assistant{% else %}Sara AI Yordamchisi{% endif %}</h2>
+            <p>
+                {% if request.session.lang == 'ru' %}
+                Гордость нашей платформы — интеллектуальный помощник Sara AI. Она не просто ищет объявления, она анализирует рынок, дает советы и понимает ваши голосовые команды на узбекском и русском языках.
+                {% else %}
+                Platformamizning faxri — Sara AI aqlli yordamchisi. U nafaqat e'lonlarni qidiradi, balki bozorni tahlil qiladi, maslahatlar beradi va sizning o'zbek hamda rus tillaridagi ovozli buyruqlaringizni tushunadi.
+                {% endif %}
+            </p>
+
+            <div style="margin-top: 40px; padding: 24px; background: rgba(37, 99, 235, 0.05); border-radius: var(--radius-md); border-left: 4px solid var(--primary);">
+                <p style="margin: 0; font-weight: 600; color: var(--primary);">
+                    {% if request.session.lang == 'ru' %}
+                    Присоединяйтесь к нам и найдите свой будущий дом уже сегодня!
+                    {% else %}
+                    Bizga qo'shiling va kelajakdagi uyingizni bugunoq toping!
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
