@@ -37,6 +37,8 @@ urlpatterns = [
     path('panel/categories/<int:pk>/delete/',             panel_views.panel_category_delete,         name='panel_category_delete'),
     path('panel/favorites/',                              panel_views.panel_favorites,               name='panel_favorites'),
     path('panel/stats/',                                  panel_views.panel_stats,                   name='panel_stats'),
+    path('panel/search/',                                 panel_views.panel_search,                  name='panel_search'),
+    path('panel/search/ajax/',                            panel_views.panel_search_ajax,             name='panel_search_ajax'),
     path('panel/export/properties/',                      panel_views.panel_export_properties,       name='panel_export_properties'),
     path('panel/export/users/',                           panel_views.panel_export_users,            name='panel_export_users'),
 ]

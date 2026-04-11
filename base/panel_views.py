@@ -366,3 +366,52 @@ def _sidebar_counts():
         'cnt_favorites':  Favorite.objects.count(),
         'cnt_categories': Category.objects.count(),
     }
+
+
+# ── Global search ─────────────────────────────────────────────────────────────
+
+@staff_only
+def panel_search(request):
+    q = request.GET.get('q', '').strip()
+    results = {'properties': [], 'users': [], 'categories': []}
+    if len(q) >= 2:
+        from django.db.models import Q
+        results['properties'] = list(
+            Property.objects.filter(
+                Q(title__icontains=q) | Q(location__icontains=q)
+            ).select_related('category')[:6]
+        )
+        results['users'] = list(
+            User.objects.filter(
+                Q(username__icontains=q) | Q(email__icontains=q)
+            )[:5]
+        )
+        results['categories'] = list(
+            Category.objects.filter(name__icontains=q)[:4]
+        )
+    ctx = {'page': 'search', 'q': q, 'results': results}
+    return render(request, 'panel/search.html', ctx)
+
+
+@staff_only
+def panel_search_ajax(request):
+    q = request.GET.get('q', '').strip()
+    data = {'properties': [], 'users': []}
+    if len(q) >= 2:
+        from django.db.models import Q
+        props = Property.objects.filter(
+            Q(title__icontains=q) | Q(location__icontains=q)
+        ).select_related('category')[:5]
+        data['properties'] = [
+            {'pk': p.pk, 'title': p.title, 'location': p.location,
+             'price': str(p.price), 'img': p.image.url if p.image else ''}
+            for p in props
+        ]
+        users = User.objects.filter(
+            Q(username__icontains=q) | Q(email__icontains=q)
+        )[:4]
+        data['users'] = [
+            {'pk': u.pk, 'username': u.username, 'email': u.email}
+            for u in users
+        ]
+    return JsonResponse(data)
