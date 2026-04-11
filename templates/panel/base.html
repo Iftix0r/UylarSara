@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Panel{% endblock %} — Sara Uylar</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e2e8f0;display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:220px;min-height:100vh;background:#161b27;border-right:1px solid #1e2535;display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100}
+.sidebar-logo{padding:20px 18px;border-bottom:1px solid #1e2535;display:flex;align-items:center;gap:10px}
+.sidebar-logo span{font-size:1.1rem;font-weight:800;color:#fff}
+.sidebar-logo span em{color:#3b82f6;font-style:normal}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-section{padding:6px 18px 4px;font-size:.68rem;color:#4b5563;text-transform:uppercase;letter-spacing:.08em;margin-top:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;color:#94a3b8;text-decoration:none;font-size:.875rem;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover{background:#1e2535;color:#e2e8f0}
+.nav-item.active{background:#1e3a5f;color:#60a5fa;border-left-color:#3b82f6}
+.nav-item i{width:16px;text-align:center;font-size:.85rem}
+.sidebar-footer{padding:14px 18px;border-top:1px solid #1e2535;font-size:.78rem;color:#4b5563}
+.sidebar-footer a{color:#4b5563;text-decoration:none}
+.sidebar-footer a:hover{color:#94a3b8}
+
+/* Main */
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#161b27;border-bottom:1px solid #1e2535;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:8px;font-size:.9rem;color:#94a3b8}
+.topbar-left strong{color:#e2e8f0}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.topbar-right a{color:#94a3b8;text-decoration:none;font-size:.83rem;display:flex;align-items:center;gap:5px}
+.topbar-right a:hover{color:#e2e8f0}
+.avatar-sm{width:30px;height:30px;border-radius:50%;background:#3b82f6;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff}
+.content{padding:24px;flex:1}
+
+/* Cards */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:#161b27;border:1px solid #1e2535;border-radius:10px;padding:18px 20px;border-top:3px solid}
+.stat-card .val{font-size:1.9rem;font-weight:800;line-height:1}
+.stat-card .lbl{font-size:.75rem;color:#64748b;margin-top:5px}
+.stat-card .sub{font-size:.7rem;color:#374151;margin-top:3px}
+.stat-card.blue{border-top-color:#3b82f6}.stat-card.blue .val{color:#3b82f6}
+.stat-card.green{border-top-color:#22c55e}.stat-card.green .val{color:#22c55e}
+.stat-card.yellow{border-top-color:#f59e0b}.stat-card.yellow .val{color:#f59e0b}
+.stat-card.red{border-top-color:#ef4444}.stat-card.red .val{color:#ef4444}
+.stat-card.purple{border-top-color:#a855f7}.stat-card.purple .val{color:#a855f7}
+.stat-card.teal{border-top-color:#14b8a6}.stat-card.teal .val{color:#14b8a6}
+.stat-card.pink{border-top-color:#ec4899}.stat-card.pink .val{color:#ec4899}
+.stat-card.indigo{border-top-color:#6366f1}.stat-card.indigo .val{color:#6366f1}
+
+/* Table */
+.panel-card{background:#161b27;border:1px solid #1e2535;border-radius:10px;overflow:hidden;margin-bottom:20px}
+.panel-card-header{padding:14px 18px;border-bottom:1px solid #1e2535;display:flex;align-items:center;justify-content:space-between}
+.panel-card-header h3{font-size:.9rem;font-weight:600;color:#e2e8f0}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 14px;text-align:left;font-size:.72rem;color:#4b5563;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #1e2535;background:#0f1117}
+td{padding:10px 14px;font-size:.83rem;color:#cbd5e1;border-bottom:1px solid #1a2030;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#1a2030}
+
+/* Badges */
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:600}
+.badge-green{background:#052e16;color:#4ade80}
+.badge-red{background:#2d0a0a;color:#f87171}
+.badge-yellow{background:#2d1f00;color:#fbbf24}
+.badge-blue{background:#0c1a3d;color:#60a5fa}
+.badge-gray{background:#1e2535;color:#64748b}
+.badge-purple{background:#1e0a3d;color:#c084fc}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-primary{background:#3b82f6;color:#fff}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-success{background:#22c55e;color:#fff}
+.btn-warning{background:#f59e0b;color:#fff}
+.btn-ghost{background:#1e2535;color:#94a3b8}
+.btn-sm{padding:4px 10px;font-size:.75rem}
+
+/* Search/filter bar */
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.filter-bar input,.filter-bar select{background:#161b27;border:1px solid #1e2535;color:#e2e8f0;padding:7px 12px;border-radius:7px;font-size:.83rem;outline:none}
+.filter-bar input:focus,.filter-bar select:focus{border-color:#3b82f6}
+
+/* Messages */
+.messages{margin-bottom:16px}
+.msg{padding:10px 16px;border-radius:8px;font-size:.83rem;margin-bottom:6px}
+.msg-success{background:#052e16;color:#4ade80;border:1px solid #14532d}
+.msg-error{background:#2d0a0a;color:#f87171;border:1px solid #7f1d1d}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#161b27;border:1px solid #1e2535;border-radius:12px;padding:24px;min-width:340px;max-width:480px;width:90%}
+.modal h3{font-size:1rem;font-weight:700;margin-bottom:16px;color:#e2e8f0}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.78rem;color:#94a3b8;margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:#0f1117;border:1px solid #1e2535;color:#e2e8f0;padding:8px 12px;border-radius:7px;font-size:.85rem;outline:none}
+.form-group input:focus,.form-group select:focus{border-color:#3b82f6}
+
+/* Thumb */
+.prop-thumb{width:52px;height:40px;border-radius:5px;object-fit:cover;background:#1e2535}
+.prop-thumb-placeholder{width:52px;height:40px;border-radius:5px;background:#1e2535;display:inline-flex;align-items:center;justify-content:center;color:#374151;font-size:.8rem}
+
+/* Chart */
+canvas{max-height:200px}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .main{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <i class="fas fa-home" style="color:#3b82f6;font-size:1.2rem"></i>
+    <span>Sara<em>Uylar</em></span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Asosiy</div>
+    <a href="{% url 'panel_home' %}" class="nav-item {% if page == 'dashboard' %}active{% endif %}">
+      <i class="fas fa-chart-pie"></i> Dashboard
+    </a>
+    <div class="nav-section">Boshqaruv</div>
+    <a href="{% url 'panel_properties' %}" class="nav-item {% if page == 'properties' %}active{% endif %}">
+      <i class="fas fa-home"></i> E'lonlar
+    </a>
+    <a href="{% url 'panel_users' %}" class="nav-item {% if page == 'users' %}active{% endif %}">
+      <i class="fas fa-users"></i> Foydalanuvchilar
+    </a>
+    <a href="{% url 'panel_categories' %}" class="nav-item {% if page == 'categories' %}active{% endif %}">
+      <i class="fas fa-tags"></i> Kategoriyalar
+    </a>
+    <div class="nav-section">Tizim</div>
+    <a href="/admin/" class="nav-item" target="_blank">
+      <i class="fas fa-cog"></i> Django Admin
+    </a>
+    <a href="/" class="nav-item" target="_blank">
+      <i class="fas fa-external-link-alt"></i> Saytga o'tish
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <i class="fas fa-circle" style="color:#22c55e;font-size:.5rem"></i>
+    {{ request.user.username }} &nbsp;·&nbsp;
+    <a href="/accounts/logout/">Chiqish</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <i class="fas fa-chevron-right" style="font-size:.7rem"></i>
+      <strong>{% block breadcrumb %}Panel{% endblock %}</strong>
+    </div>
+    <div class="topbar-right">
+      <a href="/" target="_blank"><i class="fas fa-globe"></i> Sayt</a>
+      <a href="/accounts/logout/"><i class="fas fa-sign-out-alt"></i> Chiqish</a>
+      <span class="avatar-sm">{{ request.user.username|slice:":2"|upper }}</span>
+    </div>
+  </div>
+
+  <div class="content">
+    {% if messages %}
+    <div class="messages">
+      {% for msg in messages %}
+      <div class="msg {% if msg.tags == 'error' %}msg-error{% else %}msg-success{% endif %}">
+        {{ msg }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<script>
+function confirmDelete(formId) {
+  if (confirm("Haqiqatan ham o'chirmoqchimisiz?")) {
+    document.getElementById(formId).submit();
+  }
+}
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+</script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 from django.urls import path, include
 from . import views
+from . import panel_views
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -18,4 +19,17 @@ urlpatterns = [
     path('set-city/<str:city>/', views.set_city, name='set_city'),
     path('set-language/<str:lang>/', views.set_language, name='set_language'),
     path('accounts/', include('django.contrib.auth.urls')),
+
+    # ── Custom Panel ──────────────────────────────────────────────────────────
+    path('panel/',                                    panel_views.panel_home,                name='panel_home'),
+    path('panel/properties/',                         panel_views.panel_properties,          name='panel_properties'),
+    path('panel/properties/<int:pk>/delete/',         panel_views.panel_property_delete,     name='panel_property_delete'),
+    path('panel/properties/<int:pk>/toggle-premium/', panel_views.panel_property_toggle_premium, name='panel_property_toggle_premium'),
+    path('panel/users/',                              panel_views.panel_users,               name='panel_users'),
+    path('panel/users/<int:pk>/toggle-block/',        panel_views.panel_user_toggle_block,   name='panel_user_toggle_block'),
+    path('panel/users/<int:pk>/toggle-staff/',        panel_views.panel_user_toggle_staff,   name='panel_user_toggle_staff'),
+    path('panel/users/<int:pk>/delete/',              panel_views.panel_user_delete,         name='panel_user_delete'),
+    path('panel/categories/',                         panel_views.panel_categories,          name='panel_categories'),
+    path('panel/categories/save/',                    panel_views.panel_category_save,       name='panel_category_save'),
+    path('panel/categories/<int:pk>/delete/',         panel_views.panel_category_delete,     name='panel_category_delete'),
 ]

@@ -1,0 +1,119 @@
+{% extends "panel/base.html" %}
+{% block title %}Foydalanuvchilar{% endblock %}
+{% block breadcrumb %}Foydalanuvchilar{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+  <h2 style="font-size:1.1rem;font-weight:700">Foydalanuvchilar <span style="color:#4b5563;font-weight:400;font-size:.85rem">({{ users|length }})</span></h2>
+</div>
+
+<form method="get" class="filter-bar">
+  <input name="q" value="{{ q }}" placeholder="🔍 Username yoki email..." style="flex:1;min-width:200px">
+  <select name="status">
+    <option value="">Barcha</option>
+    <option value="active"  {% if status == 'active'  %}selected{% endif %}>✅ Faol</option>
+    <option value="blocked" {% if status == 'blocked' %}selected{% endif %}>🚫 Bloklangan</option>
+    <option value="staff"   {% if status == 'staff'   %}selected{% endif %}>🔑 Staff</option>
+  </select>
+  <button type="submit" class="btn btn-primary">Filter</button>
+  <a href="{% url 'panel_users' %}" class="btn btn-ghost">Tozalash</a>
+</form>
+
+<div class="panel-card">
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Holat</th>
+        <th>Staff</th>
+        <th>E'lonlar</th>
+        <th>Saralanganlar</th>
+        <th>Ro'yxat sanasi</th>
+        <th>Amallar</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>
+          {% if u.profile.avatar %}
+            <img src="{{ u.profile.avatar.url }}" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
+          {% else %}
+            <span class="avatar-sm" style="width:34px;height:34px;font-size:.7rem">{{ u.username|slice:":2"|upper }}</span>
+          {% endif %}
+        </td>
+        <td style="font-weight:600;color:#e2e8f0">
+          {{ u.username }}
+          {% if u.is_superuser %}<span class="badge badge-purple" style="margin-left:4px">Super</span>{% endif %}
+        </td>
+        <td style="color:#64748b">{{ u.email|default:"—" }}</td>
+        <td>
+          <button onclick="toggleBlock({{ u.pk }}, this)"
+            class="badge {% if u.is_active %}badge-green{% else %}badge-red{% endif %}"
+            style="cursor:pointer;border:none;padding:3px 10px"
+            {% if u == request.user %}disabled title="O'zingizni bloklayolmaysiz"{% endif %}>
+            {% if u.is_active %}● Faol{% else %}● Bloklangan{% endif %}
+          </button>
+        </td>
+        <td>
+          <button onclick="toggleStaff({{ u.pk }}, this)"
+            class="badge {% if u.is_staff %}badge-blue{% else %}badge-gray{% endif %}"
+            style="cursor:pointer;border:none;padding:3px 10px"
+            {% if u == request.user %}disabled{% endif %}>
+            {% if u.is_staff %}🔑 Ha{% else %}— Yo'q{% endif %}
+          </button>
+        </td>
+        <td>
+          <a href="{% url 'panel_properties' %}?q={{ u.username }}" style="color:#60a5fa;text-decoration:none">
+            {{ u.properties.count }} ta
+          </a>
+        </td>
+        <td style="color:#94a3b8">{{ u.favorites.count }} ta</td>
+        <td style="color:#4b5563">{{ u.date_joined|date:"d.m.Y" }}</td>
+        <td>
+          {% if u != request.user %}
+          <form id="del-user-{{ u.pk }}" method="post" action="{% url 'panel_user_delete' u.pk %}">
+            {% csrf_token %}
+            <button type="button" onclick="confirmDelete('del-user-{{ u.pk }}')"
+              class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+          </form>
+          {% else %}
+          <span style="color:#374151;font-size:.75rem">Siz</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9" style="text-align:center;color:#4b5563;padding:30px">Foydalanuvchilar topilmadi</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+function toggleBlock(pk, btn) {
+  fetch(`/panel/users/${pk}/toggle-block/`, {method:'POST', headers:{'X-CSRFToken':CSRF}})
+  .then(r => r.json()).then(data => {
+    if (data.is_active) {
+      btn.className = 'badge badge-green'; btn.textContent = '● Faol';
+    } else {
+      btn.className = 'badge badge-red'; btn.textContent = '● Bloklangan';
+    }
+    btn.style.cssText = 'cursor:pointer;border:none;padding:3px 10px';
+  });
+}
+function toggleStaff(pk, btn) {
+  fetch(`/panel/users/${pk}/toggle-staff/`, {method:'POST', headers:{'X-CSRFToken':CSRF}})
+  .then(r => r.json()).then(data => {
+    if (data.is_staff) {
+      btn.className = 'badge badge-blue'; btn.textContent = '🔑 Ha';
+    } else {
+      btn.className = 'badge badge-gray'; btn.textContent = "— Yo'q";
+    }
+    btn.style.cssText = 'cursor:pointer;border:none;padding:3px 10px';
+  });
+}
+</script>
+{% endblock %}

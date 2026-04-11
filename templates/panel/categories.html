@@ -1,0 +1,109 @@
+{% extends "panel/base.html" %}
+{% block title %}Kategoriyalar{% endblock %}
+{% block breadcrumb %}Kategoriyalar{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+  <h2 style="font-size:1.1rem;font-weight:700">Kategoriyalar</h2>
+  <button onclick="openModal('add-modal')" class="btn btn-primary"><i class="fas fa-plus"></i> Yangi kategoriya</button>
+</div>
+
+<div class="panel-card">
+  <table>
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Icon</th>
+        <th>Slug</th>
+        <th>E'lonlar</th>
+        <th>Amallar</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cat in categories %}
+      <tr>
+        <td style="font-weight:600;color:#e2e8f0">{{ cat.name }}</td>
+        <td>
+          {% if cat.icon %}
+            <span class="badge badge-blue">{{ cat.icon }}</span>
+          {% else %}—{% endif %}
+        </td>
+        <td style="color:#4b5563;font-family:monospace">{{ cat.slug }}</td>
+        <td>
+          <a href="{% url 'panel_properties' %}?cat={{ cat.slug }}" style="color:#60a5fa;text-decoration:none">
+            {{ cat.prop_count }} ta
+          </a>
+        </td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button onclick="openEditModal({{ cat.pk }}, '{{ cat.name|escapejs }}', '{{ cat.icon|escapejs }}')"
+              class="btn btn-ghost btn-sm"><i class="fas fa-edit"></i></button>
+            <form id="del-cat-{{ cat.pk }}" method="post" action="{% url 'panel_category_delete' cat.pk %}">
+              {% csrf_token %}
+              <button type="button" onclick="confirmDelete('del-cat-{{ cat.pk }}')"
+                class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;color:#4b5563;padding:30px">Kategoriyalar yo'q</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Add modal -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <h3><i class="fas fa-plus" style="color:#3b82f6;margin-right:8px"></i>Yangi kategoriya</h3>
+    <form method="post" action="{% url 'panel_category_save' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Nom *</label>
+        <input name="name" placeholder="Masalan: Kvartira" required>
+      </div>
+      <div class="form-group">
+        <label>Icon (Lucide icon nomi)</label>
+        <input name="icon" placeholder="Masalan: home, building, map-pin">
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="closeModal('add-modal')" class="btn btn-ghost">Bekor</button>
+        <button type="submit" class="btn btn-primary">Saqlash</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <h3><i class="fas fa-edit" style="color:#f59e0b;margin-right:8px"></i>Kategoriyani tahrirlash</h3>
+    <form method="post" action="{% url 'panel_category_save' %}">
+      {% csrf_token %}
+      <input type="hidden" name="pk" id="edit-pk">
+      <div class="form-group">
+        <label>Nom *</label>
+        <input name="name" id="edit-name" required>
+      </div>
+      <div class="form-group">
+        <label>Icon</label>
+        <input name="icon" id="edit-icon">
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="closeModal('edit-modal')" class="btn btn-ghost">Bekor</button>
+        <button type="submit" class="btn btn-warning">Yangilash</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEditModal(pk, name, icon) {
+  document.getElementById('edit-pk').value = pk;
+  document.getElementById('edit-name').value = name;
+  document.getElementById('edit-icon').value = icon;
+  openModal('edit-modal');
+}
+</script>
+{% endblock %}

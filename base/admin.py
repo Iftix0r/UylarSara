@@ -25,11 +25,14 @@ _orig_index = admin.site.__class__.index
 def _custom_index(self, request, extra_context=None):
     extra_context = extra_context or {}
     week_ago = now() - timedelta(days=7)
-    extra_context['stats'] = {
+    from django.db import connection
+    has_status = 'status' in [col.name for col in connection.introspection.get_table_description(connection.cursor(), 'base_property')]
+
+    stats = {
         'total_properties':   Property.objects.count(),
         'premium_properties': Property.objects.filter(is_premium=True).count(),
-        'active_properties':  Property.objects.filter(status='active').count(),
-        'sold_properties':    Property.objects.filter(status='sold').count(),
+        'active_properties':  Property.objects.filter(status='active').count() if has_status else '—',
+        'sold_properties':    Property.objects.filter(status='sold').count() if has_status else '—',
         'total_users':        User.objects.count(),
         'new_users_week':     User.objects.filter(date_joined__gte=week_ago).count(),
         'total_favorites':    Favorite.objects.count(),
@@ -37,6 +40,7 @@ def _custom_index(self, request, extra_context=None):
         'total_categories':   Category.objects.count(),
         'new_props_week':     Property.objects.filter(created_at__gte=week_ago).count(),
     }
+    extra_context['stats'] = stats
     return _orig_index(self, request, extra_context)
 
 admin.site.__class__.index = _custom_index
@@ -303,10 +307,10 @@ class PropertyImageAdmin(admin.ModelAdmin):
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
     list_display       = ('thumb', 'title_link', 'owner_link', 'category',
-                          'property_type', 'status_badge', 'price_fmt',
+                          'property_type', 'price_fmt',
                           'rooms', 'area', 'premium_badge', 'views_badge', 'created_at')
     list_display_links = ('thumb', 'title_link')
-    list_filter        = ('status', 'category', 'property_type', 'is_premium', 'created_at')
+    list_filter        = ('category', 'property_type', 'is_premium', 'created_at')
     search_fields      = ('title', 'location', 'description', 'owner__username')
     readonly_fields    = ('views_count', 'created_at', 'main_image_preview', 'site_link', 'map_preview')
     ordering           = ('-created_at',)
@@ -315,13 +319,12 @@ class PropertyAdmin(admin.ModelAdmin):
     save_on_top        = True
     show_full_result_count = True
     actions            = [make_premium, remove_premium, reset_views,
-                          mark_active, mark_inactive, mark_sold,
                           email_owners, export_properties_csv]
     inlines            = [PropertyImageInline]
 
     fieldsets = (
         ("Asosiy ma'lumotlar", {
-            'fields': ('owner', 'title', 'description', 'category', 'property_type', 'status', 'site_link')
+            'fields': ('owner', 'title', 'description', 'category', 'property_type', 'site_link')
         }),
         ("Narx va o'lchamlar", {
             'fields': ('price', 'rooms', 'area')
@@ -359,7 +362,10 @@ class PropertyAdmin(admin.ModelAdmin):
     owner_link.short_description = "Egasi"
 
     def status_badge(self, obj):
-        bg, fg = STATUS_COLORS.get(obj.status, ('#f3f4f6', '#374151'))
+        status = getattr(obj, 'status', None)
+        if not status:
+            return "—"
+        bg, fg = STATUS_COLORS.get(status, ('#f3f4f6', '#374151'))
         return format_html(
             '<span style="background:{};color:{};padding:2px 10px;border-radius:20px;'
             'font-size:.75rem;font-weight:700;">{}</span>',
@@ -417,7 +423,7 @@ class PropertyAdmin(admin.ModelAdmin):
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
     list_display    = ('user_link', 'property_link', 'property_status', 'property_price', 'created_at')
-    list_filter     = ('created_at', 'property__status', 'property__category')
+    list_filter     = ('created_at', 'property__category')
     search_fields   = ('user__username', 'property__title')
     ordering        = ('-created_at',)
     readonly_fields = ('created_at',)
@@ -436,7 +442,10 @@ class FavoriteAdmin(admin.ModelAdmin):
     property_link.short_description = "E'lon"
 
     def property_status(self, obj):
-        bg, fg = STATUS_COLORS.get(obj.property.status, ('#f3f4f6', '#374151'))
+        status = getattr(obj.property, 'status', None)
+        if not status:
+            return "—"
+        bg, fg = STATUS_COLORS.get(status, ('#f3f4f6', '#374151'))
         return format_html(
             '<span style="background:{};color:{};padding:2px 8px;border-radius:20px;font-size:.75rem;">{}</span>',
             bg, fg, obj.property.get_status_display()

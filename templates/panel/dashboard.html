@@ -1,0 +1,160 @@
+{% extends "panel/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<div class="stat-grid">
+  <a href="{% url 'panel_properties' %}" style="text-decoration:none">
+    <div class="stat-card blue">
+      <div class="val">{{ total_properties }}</div>
+      <div class="lbl">🏠 Jami e'lonlar</div>
+      <div class="sub">+{{ new_props_week }} bu hafta</div>
+    </div>
+  </a>
+  <a href="{% url 'panel_properties' %}?premium=1" style="text-decoration:none">
+    <div class="stat-card yellow">
+      <div class="val">{{ premium_count }}</div>
+      <div class="lbl">⭐ Premium</div>
+    </div>
+  </a>
+  <a href="{% url 'panel_users' %}" style="text-decoration:none">
+    <div class="stat-card green">
+      <div class="val">{{ total_users }}</div>
+      <div class="lbl">👥 Foydalanuvchilar</div>
+      <div class="sub">+{{ new_users_week }} bu hafta</div>
+    </div>
+  </a>
+  <div class="stat-card pink">
+    <div class="val">{{ total_favorites }}</div>
+    <div class="lbl">❤️ Saralanganlar</div>
+  </div>
+  <div class="stat-card indigo">
+    <div class="val">{{ total_views }}</div>
+    <div class="lbl">👁 Jami ko'rishlar</div>
+  </div>
+  <a href="{% url 'panel_categories' %}" style="text-decoration:none">
+    <div class="stat-card purple">
+      <div class="val">{{ total_categories }}</div>
+      <div class="lbl">🗂 Kategoriyalar</div>
+    </div>
+  </a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+
+  <!-- Chart -->
+  <div class="panel-card">
+    <div class="panel-card-header">
+      <h3><i class="fas fa-chart-bar" style="color:#3b82f6;margin-right:6px"></i>So'nggi 7 kun e'lonlar</h3>
+    </div>
+    <div style="padding:16px">
+      <canvas id="propsChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Top properties -->
+  <div class="panel-card">
+    <div class="panel-card-header">
+      <h3><i class="fas fa-fire" style="color:#f59e0b;margin-right:6px"></i>Eng ko'p ko'rilgan</h3>
+    </div>
+    <table>
+      <thead><tr><th>E'lon</th><th>Ko'rishlar</th></tr></thead>
+      <tbody>
+        {% for p in top_properties %}
+        <tr>
+          <td><a href="/property/{{ p.pk }}/" target="_blank" style="color:#60a5fa;text-decoration:none">{{ p.title|truncatechars:30 }}</a></td>
+          <td><span class="badge badge-blue">👁 {{ p.views_count }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+
+  <!-- Recent properties -->
+  <div class="panel-card">
+    <div class="panel-card-header">
+      <h3><i class="fas fa-clock" style="color:#22c55e;margin-right:6px"></i>Oxirgi e'lonlar</h3>
+      <a href="{% url 'panel_properties' %}" class="btn btn-ghost btn-sm">Barchasi →</a>
+    </div>
+    <table>
+      <thead><tr><th></th><th>Sarlavha</th><th>Egasi</th><th>Narx</th><th>Sana</th></tr></thead>
+      <tbody>
+        {% for p in recent_properties %}
+        <tr>
+          <td>
+            {% if p.image %}
+              <img src="{{ p.image.url }}" class="prop-thumb">
+            {% else %}
+              <div class="prop-thumb-placeholder"><i class="fas fa-home"></i></div>
+            {% endif %}
+          </td>
+          <td>
+            <a href="/property/{{ p.pk }}/" target="_blank" style="color:#e2e8f0;text-decoration:none">{{ p.title|truncatechars:28 }}</a>
+            {% if p.is_premium %}<span class="badge badge-yellow" style="margin-left:4px">⭐</span>{% endif %}
+          </td>
+          <td style="color:#64748b">{{ p.owner.username|default:"—" }}</td>
+          <td style="color:#22c55e;font-weight:600">${{ p.price|floatformat:0 }}</td>
+          <td style="color:#4b5563">{{ p.created_at|date:"d.m.Y" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Recent users -->
+  <div class="panel-card">
+    <div class="panel-card-header">
+      <h3><i class="fas fa-user-plus" style="color:#a855f7;margin-right:6px"></i>Yangi userlar</h3>
+      <a href="{% url 'panel_users' %}" class="btn btn-ghost btn-sm">Barchasi →</a>
+    </div>
+    <table>
+      <thead><tr><th>User</th><th>Sana</th></tr></thead>
+      <tbody>
+        {% for u in recent_users %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="avatar-sm" style="width:28px;height:28px;font-size:.65rem">{{ u.username|slice:":2"|upper }}</span>
+              <span>{{ u.username }}</span>
+              {% if not u.is_active %}<span class="badge badge-red">Bloklangan</span>{% endif %}
+            </div>
+          </td>
+          <td style="color:#4b5563">{{ u.date_joined|date:"d.m" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const ctx = document.getElementById('propsChart').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: {{ chart_labels|safe }},
+    datasets: [{
+      label: "E'lonlar",
+      data: {{ chart_data|safe }},
+      backgroundColor: 'rgba(59,130,246,0.5)',
+      borderColor: '#3b82f6',
+      borderWidth: 2,
+      borderRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#4b5563' }, grid: { color: '#1e2535' } },
+      y: { ticks: { color: '#4b5563', stepSize: 1 }, grid: { color: '#1e2535' } }
+    }
+  }
+});
+</script>
+{% endblock %}
