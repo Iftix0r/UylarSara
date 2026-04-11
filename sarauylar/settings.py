@@ -82,7 +82,7 @@ DATABASES = {
         'NAME': 'host7905_sarauylar',
         'USER': 'host7905_sarauy',
         'PASSWORD': 'Iftixor2006',
-        'HOST': '127.0.0.1',
+        'HOST': '',
         'PORT': '',
     }
 }
