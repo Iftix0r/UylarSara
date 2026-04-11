@@ -2,99 +2,84 @@
 {% load i18n %}
 
 {% block content %}
-<div class="row mb-4">
-  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-    <div class="small-box bg-primary">
-      <div class="inner">
-        <h3>{{ stats.total_properties }}</h3>
-        <p>Jami e'lonlar</p>
-      </div>
-      <div class="icon"><i class="fas fa-home"></i></div>
-      <a href="{% url 'admin:base_property_changelist' %}" class="small-box-footer">
-        Ko'rish <i class="fas fa-arrow-circle-right"></i>
-      </a>
-    </div>
-  </div>
+<style>
+  .sara-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:24px; }
+  .sara-card { background:#fff; border-radius:12px; padding:18px 20px; box-shadow:0 1px 4px rgba(0,0,0,.07); border-top:4px solid #e5e7eb; }
+  .sara-card .val { font-size:2rem; font-weight:800; line-height:1.1; }
+  .sara-card .lbl { font-size:.78rem; color:#6b7280; margin-top:4px; }
+  .sara-card .sub { font-size:.72rem; color:#9ca3af; margin-top:2px; }
+  .sara-card.blue   { border-color:#2563eb; } .sara-card.blue .val   { color:#2563eb; }
+  .sara-card.green  { border-color:#16a34a; } .sara-card.green .val  { color:#16a34a; }
+  .sara-card.yellow { border-color:#f59e0b; } .sara-card.yellow .val { color:#d97706; }
+  .sara-card.red    { border-color:#dc2626; } .sara-card.red .val    { color:#dc2626; }
+  .sara-card.purple { border-color:#7c3aed; } .sara-card.purple .val { color:#7c3aed; }
+  .sara-card.teal   { border-color:#0d9488; } .sara-card.teal .val   { color:#0d9488; }
+  .sara-card.indigo { border-color:#4f46e5; } .sara-card.indigo .val { color:#4f46e5; }
+  .sara-card.pink   { border-color:#db2777; } .sara-card.pink .val   { color:#db2777; }
+  .sara-btns { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+  .sara-btn { padding:7px 16px; border-radius:8px; font-size:.83rem; font-weight:600; text-decoration:none; }
+</style>
 
-  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-    <div class="small-box bg-warning">
-      <div class="inner">
-        <h3>{{ stats.premium_properties }}</h3>
-        <p>Premium e'lonlar</p>
-      </div>
-      <div class="icon"><i class="fas fa-star"></i></div>
-      <a href="{% url 'admin:base_property_changelist' %}?is_premium__exact=1" class="small-box-footer">
-        Ko'rish <i class="fas fa-arrow-circle-right"></i>
-      </a>
+<div class="sara-grid">
+  <a href="{% url 'admin:base_property_changelist' %}" style="text-decoration:none;">
+    <div class="sara-card blue">
+      <div class="val">{{ stats.total_properties }}</div>
+      <div class="lbl">🏠 Jami e'lonlar</div>
+      <div class="sub">+{{ stats.new_props_week }} bu hafta</div>
     </div>
-  </div>
-
-  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-    <div class="small-box bg-success">
-      <div class="inner">
-        <h3>{{ stats.total_users }}</h3>
-        <p>Foydalanuvchilar</p>
-      </div>
-      <div class="icon"><i class="fas fa-users"></i></div>
-      <a href="{% url 'admin:auth_user_changelist' %}" class="small-box-footer">
-        Ko'rish <i class="fas fa-arrow-circle-right"></i>
-      </a>
+  </a>
+  <a href="{% url 'admin:base_property_changelist' %}?status__exact=active" style="text-decoration:none;">
+    <div class="sara-card green">
+      <div class="val">{{ stats.active_properties }}</div>
+      <div class="lbl">✅ Faol e'lonlar</div>
     </div>
-  </div>
-
-  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-    <div class="small-box bg-danger">
-      <div class="inner">
-        <h3>{{ stats.total_favorites }}</h3>
-        <p>Saralanganlar</p>
-      </div>
-      <div class="icon"><i class="fas fa-heart"></i></div>
-      <a href="{% url 'admin:base_favorite_changelist' %}" class="small-box-footer">
-        Ko'rish <i class="fas fa-arrow-circle-right"></i>
-      </a>
+  </a>
+  <a href="{% url 'admin:base_property_changelist' %}?status__exact=sold" style="text-decoration:none;">
+    <div class="sara-card red">
+      <div class="val">{{ stats.sold_properties }}</div>
+      <div class="lbl">🏷 Sotilgan</div>
     </div>
-  </div>
-
-  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-    <div class="small-box bg-info">
-      <div class="inner">
-        <h3>{{ stats.total_views }}</h3>
-        <p>Jami ko'rishlar</p>
-      </div>
-      <div class="icon"><i class="fas fa-eye"></i></div>
-      <a href="{% url 'admin:base_property_changelist' %}" class="small-box-footer">
-        E'lonlar <i class="fas fa-arrow-circle-right"></i>
-      </a>
+  </a>
+  <a href="{% url 'admin:base_property_changelist' %}?is_premium__exact=1" style="text-decoration:none;">
+    <div class="sara-card yellow">
+      <div class="val">{{ stats.premium_properties }}</div>
+      <div class="lbl">⭐ Premium</div>
     </div>
-  </div>
-
-  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-    <div class="small-box" style="background:#7c3aed;color:#fff;">
-      <div class="inner">
-        <h3>{{ stats.total_categories }}</h3>
-        <p>Kategoriyalar</p>
-      </div>
-      <div class="icon"><i class="fas fa-tags"></i></div>
-      <a href="{% url 'admin:base_category_changelist' %}" class="small-box-footer" style="background:rgba(0,0,0,.1);">
-        Ko'rish <i class="fas fa-arrow-circle-right"></i>
-      </a>
+  </a>
+  <a href="{% url 'admin:auth_user_changelist' %}" style="text-decoration:none;">
+    <div class="sara-card teal">
+      <div class="val">{{ stats.total_users }}</div>
+      <div class="lbl">👥 Foydalanuvchilar</div>
+      <div class="sub">+{{ stats.new_users_week }} bu hafta</div>
     </div>
-  </div>
+  </a>
+  <a href="{% url 'admin:base_favorite_changelist' %}" style="text-decoration:none;">
+    <div class="sara-card pink">
+      <div class="val">{{ stats.total_favorites }}</div>
+      <div class="lbl">❤️ Saralanganlar</div>
+    </div>
+  </a>
+  <a href="{% url 'admin:base_property_changelist' %}" style="text-decoration:none;">
+    <div class="sara-card indigo">
+      <div class="val">{{ stats.total_views }}</div>
+      <div class="lbl">👁 Jami ko'rishlar</div>
+    </div>
+  </a>
+  <a href="{% url 'admin:base_category_changelist' %}" style="text-decoration:none;">
+    <div class="sara-card purple">
+      <div class="val">{{ stats.total_categories }}</div>
+      <div class="lbl">🗂 Kategoriyalar</div>
+    </div>
+  </a>
 </div>
 
-<div class="mb-4">
-  <a href="{% url 'admin:base_property_add' %}" class="btn btn-primary btn-sm mr-2">
-    <i class="fas fa-plus"></i> Yangi e'lon
-  </a>
-  <a href="{% url 'admin:base_category_add' %}" class="btn btn-secondary btn-sm mr-2">
-    <i class="fas fa-plus"></i> Kategoriya
-  </a>
-  <a href="{% url 'admin:auth_user_add' %}" class="btn btn-success btn-sm mr-2">
-    <i class="fas fa-user-plus"></i> Foydalanuvchi
-  </a>
-  <a href="/" target="_blank" class="btn btn-info btn-sm">
-    <i class="fas fa-external-link-alt"></i> Saytga o'tish
-  </a>
+<div class="sara-btns">
+  <a class="sara-btn" href="{% url 'admin:base_property_add' %}"    style="background:#2563eb;color:#fff;">➕ Yangi e'lon</a>
+  <a class="sara-btn" href="{% url 'admin:base_category_add' %}"    style="background:#7c3aed;color:#fff;">➕ Kategoriya</a>
+  <a class="sara-btn" href="{% url 'admin:auth_user_add' %}"        style="background:#16a34a;color:#fff;">👤 Foydalanuvchi</a>
+  <a class="sara-btn" href="{% url 'admin:base_property_changelist' %}?status__exact=inactive" style="background:#f59e0b;color:#fff;">🔴 Nofaol e'lonlar</a>
+  <a class="sara-btn" href="{% url 'admin:auth_user_changelist' %}?is_active__exact=0"         style="background:#dc2626;color:#fff;">🚫 Bloklangan userlar</a>
+  <a class="sara-btn" href="/" target="_blank"                      style="background:#0d9488;color:#fff;">🌐 Saytga o'tish</a>
 </div>
 
 {{ block.super }}
