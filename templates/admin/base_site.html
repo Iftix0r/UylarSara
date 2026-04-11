@@ -1,0 +1,46 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }} | Sara Uylar Admin{% endblock %}
+
+{% block extrastyle %}
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #1e40af;
+    }
+    #header {
+        background: var(--primary-color) !important;
+        color: #fff !important;
+    }
+    #branding h1 {
+        color: #fff !important;
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+    #branding h1 span {
+        color: #fff;
+    }
+    .module h2, .module caption, .inline-group h2 {
+        background: #f8fafc !important;
+        color: var(--primary-color) !important;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    div.breadcrumbs {
+        background: #f1f5f9 !important;
+    }
+    .button, input[type=submit], input[type=button], .submit-row input, a.button {
+        background: var(--primary-color) !important;
+    }
+    .button:hover, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, a.button:hover {
+        background: var(--secondary-color) !important;
+    }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Sara<span>Uylar</span> Admin</a></h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

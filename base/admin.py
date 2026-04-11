@@ -1,6 +1,10 @@
 from django.contrib import admin
 from .models import Category, Property, PropertyImage
 
+admin.site.site_header = "Sara Uylar - Boshqaruv Paneli"
+admin.site.site_title = "Sara Uylar Admin"
+admin.site.index_title = "Sara Uylar platformasiga xush kelibsiz"
+
 class PropertyImageInline(admin.TabularInline):
     model = PropertyImage
     extra = 3
