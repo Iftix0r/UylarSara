@@ -27,6 +27,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['sarauylar.uz', 'www.sarauylar.uz', '*']
 
+CSRF_TRUSTED_ORIGINS = ['https://sarauylar.uz', 'https://www.sarauylar.uz']
+
 
 # Application definition
 
