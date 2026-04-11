@@ -1,8 +1,11 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
+from import_export.admin import ImportExportModelAdmin
 from .models import Category, Property, PropertyImage, Favorite, UserProfile
 
-# Admin panel sarlavhalari (Jazzmin buni ishlatsa ham, bu yerda ham turgani yaxshi)
+# Admin panel sarlavhalari
 admin.site.site_header = "Sara Uylar - Boshqaruv Paneli"
 admin.site.site_title = "Sara Uylar Admin"
 admin.site.index_title = "Boshqaruv markaziga xush kelibsiz"
@@ -25,7 +28,7 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
 @admin.register(Property)
-class PropertyAdmin(admin.ModelAdmin):
+class PropertyAdmin(ImportExportModelAdmin):
     list_display = ('display_thumbnail', 'title', 'category', 'price_formatted', 'location', 'is_premium', 'created_at')
     list_display_links = ('display_thumbnail', 'title')
     list_editable = ('is_premium',)
@@ -60,10 +63,25 @@ class PropertyAdmin(admin.ModelAdmin):
         }),
     )
 
-@admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_number', 'telegram_username')
-    search_fields = ('user__username', 'phone_number', 'telegram_username')
+class UserProfileInline(admin.StackedInline):
+    model = UserProfile
+    can_delete = False
+    verbose_name_plural = 'Profil ma\'lumotlari'
+
+class UserAdmin(BaseUserAdmin):
+    inlines = (UserProfileInline,)
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'get_phone')
+    
+    def get_phone(self, instance):
+        try:
+            return instance.profile.phone_number
+        except UserProfile.DoesNotExist:
+            return "-"
+    get_phone.short_description = 'Telefon'
+
+# Standart UserAdmin-ni o'chirib, o'zimiznikini ulaymiz
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
