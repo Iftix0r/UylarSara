@@ -37,6 +37,7 @@ CSRF_TRUSTED_ORIGINS = ['https://sarauylar.uz', 'https://www.sarauylar.uz']
 
 # Application definition
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -140,3 +141,120 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+
+# ── Jazzmin ───────────────────────────────────────────────────────────────────
+JAZZMIN_SETTINGS = {
+    "site_title": "Sara Uylar",
+    "site_header": "Sara Uylar Admin",
+    "site_brand": "🏠 SaraUylar",
+    "site_logo": "img/logo.png",
+    "site_logo_classes": "img-circle",
+    "site_icon": "img/logo.png",
+    "welcome_sign": "Sara Uylar boshqaruv paneliga xush kelibsiz",
+    "copyright": "Sara Uylar © 2025",
+    "search_model": ["base.Property", "auth.User"],
+
+    # Top menu
+    "topmenu_links": [
+        {"name": "🏠 Sayt",  "url": "/",          "new_window": True},
+        {"name": "➕ E'lon", "url": "admin:base_property_add"},
+        {"name": "👥 Users", "url": "admin:auth_user_changelist"},
+    ],
+
+    # User menu (top-right)
+    "usermenu_links": [
+        {"name": "🌐 Saytga o'tish", "url": "/", "new_window": True},
+    ],
+
+    # Sidebar
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+
+    "order_with_respect_to": [
+        "base",
+        "base.Property",
+        "base.Category",
+        "base.PropertyImage",
+        "base.Favorite",
+        "base.UserProfile",
+        "auth",
+    ],
+
+    "icons": {
+        "auth":                  "fas fa-users-cog",
+        "auth.user":             "fas fa-user",
+        "auth.Group":            "fas fa-users",
+        "base.Property":         "fas fa-home",
+        "base.Category":         "fas fa-tags",
+        "base.PropertyImage":    "fas fa-images",
+        "base.Favorite":         "fas fa-heart",
+        "base.UserProfile":      "fas fa-id-card",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+
+    "related_modal_active": True,
+
+    "custom_css": None,
+    "custom_js":  None,
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": False,
+
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {
+        "auth.user":  "collapsible",
+        "auth.group": "vertical_tabs",
+    },
+
+    # Dashboard stats cards (custom)
+    "custom_links": {
+        "base": [
+            {
+                "name": "📊 Statistika",
+                "url":  "admin:index",
+                "icon": "fas fa-chart-bar",
+            },
+            {
+                "name": "🌐 Saytga o'tish",
+                "url":  "/",
+                "new_window": True,
+                "icon": "fas fa-external-link-alt",
+            },
+        ]
+    },
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text":   False,
+    "brand_small_text":  False,
+    "brand_colour":      "navbar-primary",
+    "accent":            "accent-primary",
+    "navbar":            "navbar-dark",
+    "no_navbar_border":  True,
+    "navbar_fixed":      True,
+    "layout_boxed":      False,
+    "footer_fixed":      False,
+    "sidebar_fixed":     True,
+    "sidebar":           "sidebar-dark-primary",
+    "sidebar_nav_small_text":    False,
+    "sidebar_disable_expand":    False,
+    "sidebar_nav_child_indent":  True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style":  False,
+    "sidebar_nav_flat_style":    False,
+    "theme":             "default",
+    "dark_mode_theme":   None,
+    "button_classes": {
+        "primary":   "btn-primary",
+        "secondary": "btn-secondary",
+        "info":      "btn-info",
+        "warning":   "btn-warning",
+        "danger":    "btn-danger",
+        "success":   "btn-success",
+    },
+}

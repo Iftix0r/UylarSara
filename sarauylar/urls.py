@@ -18,10 +18,6 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from base.admin_views import SaraUylarAdminSite
-from base import admin as _  # noqa: ensure admin registrations run
-
-admin.site.__class__ = SaraUylarAdminSite
 
 urlpatterns = [
     path('admin/', admin.site.urls),

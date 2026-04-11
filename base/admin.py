@@ -1,5 +1,6 @@
 import csv
 from django.contrib import admin
+from django.contrib.admin import AdminSite
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.utils.html import format_html
@@ -10,10 +11,28 @@ from django.http import HttpResponse
 from django.utils import timezone
 from .models import Category, Property, PropertyImage, Favorite, UserProfile
 
-# ── Site branding ─────────────────────────────────────────────────────────────
-admin.site.site_header  = mark_safe('<span style="font-size:1.3rem;font-weight:700;">🏠 Sara Uylar Admin</span>')
+# ── Site branding (jazzmin handles visuals, keep index_title only) ────────────
+admin.site.site_header  = "Sara Uylar Admin"
 admin.site.site_title   = "Sara Uylar"
 admin.site.index_title  = "Boshqaruv paneli"
+
+
+# ── Patch index to inject stats ───────────────────────────────────────────────
+_original_index = admin.site.__class__.index
+
+def _custom_index(self, request, extra_context=None):
+    extra_context = extra_context or {}
+    extra_context['stats'] = {
+        'total_properties':   Property.objects.count(),
+        'premium_properties': Property.objects.filter(is_premium=True).count(),
+        'total_users':        User.objects.count(),
+        'total_favorites':    Favorite.objects.count(),
+        'total_views':        Property.objects.aggregate(t=Sum('views_count'))['t'] or 0,
+        'total_categories':   Category.objects.count(),
+    }
+    return _original_index(self, request, extra_context)
+
+admin.site.__class__.index = _custom_index
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

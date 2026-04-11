@@ -2,102 +2,99 @@
 {% load i18n %}
 
 {% block content %}
+<div class="row mb-4">
+  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+    <div class="small-box bg-primary">
+      <div class="inner">
+        <h3>{{ stats.total_properties }}</h3>
+        <p>Jami e'lonlar</p>
+      </div>
+      <div class="icon"><i class="fas fa-home"></i></div>
+      <a href="{% url 'admin:base_property_changelist' %}" class="small-box-footer">
+        Ko'rish <i class="fas fa-arrow-circle-right"></i>
+      </a>
+    </div>
+  </div>
 
-<style>
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 28px;
-}
-.stat-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 20px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.05);
-}
-.stat-card .icon { font-size: 1.8rem; }
-.stat-card .value {
-    font-size: 1.9rem;
-    font-weight: 800;
-    color: #111827;
-    line-height: 1;
-}
-.stat-card .label {
-    font-size: .82rem;
-    color: #6b7280;
-    font-weight: 500;
-}
-.stat-card.blue   { border-top: 4px solid #2563eb; }
-.stat-card.green  { border-top: 4px solid #16a34a; }
-.stat-card.yellow { border-top: 4px solid #f59e0b; }
-.stat-card.purple { border-top: 4px solid #7c3aed; }
-.stat-card.red    { border-top: 4px solid #dc2626; }
-.stat-card.teal   { border-top: 4px solid #0d9488; }
+  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+    <div class="small-box bg-warning">
+      <div class="inner">
+        <h3>{{ stats.premium_properties }}</h3>
+        <p>Premium e'lonlar</p>
+      </div>
+      <div class="icon"><i class="fas fa-star"></i></div>
+      <a href="{% url 'admin:base_property_changelist' %}?is_premium__exact=1" class="small-box-footer">
+        Ko'rish <i class="fas fa-arrow-circle-right"></i>
+      </a>
+    </div>
+  </div>
 
-.quick-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 28px;
-}
-.quick-link {
-    background: #f0f4ff;
-    color: #2563eb;
-    padding: 8px 18px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: .88rem;
-    font-weight: 600;
-    transition: background .15s;
-}
-.quick-link:hover { background: #dbeafe; color: #1d4ed8; }
-</style>
+  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+    <div class="small-box bg-success">
+      <div class="inner">
+        <h3>{{ stats.total_users }}</h3>
+        <p>Foydalanuvchilar</p>
+      </div>
+      <div class="icon"><i class="fas fa-users"></i></div>
+      <a href="{% url 'admin:auth_user_changelist' %}" class="small-box-footer">
+        Ko'rish <i class="fas fa-arrow-circle-right"></i>
+      </a>
+    </div>
+  </div>
 
-<div class="stats-grid">
-    <div class="stat-card blue">
-        <span class="icon">🏠</span>
-        <span class="value">{{ stats.total_properties }}</span>
-        <span class="label">Jami e'lonlar</span>
+  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+    <div class="small-box bg-danger">
+      <div class="inner">
+        <h3>{{ stats.total_favorites }}</h3>
+        <p>Saralanganlar</p>
+      </div>
+      <div class="icon"><i class="fas fa-heart"></i></div>
+      <a href="{% url 'admin:base_favorite_changelist' %}" class="small-box-footer">
+        Ko'rish <i class="fas fa-arrow-circle-right"></i>
+      </a>
     </div>
-    <div class="stat-card yellow">
-        <span class="icon">⭐</span>
-        <span class="value">{{ stats.premium_properties }}</span>
-        <span class="label">Premium e'lonlar</span>
+  </div>
+
+  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+    <div class="small-box bg-info">
+      <div class="inner">
+        <h3>{{ stats.total_views }}</h3>
+        <p>Jami ko'rishlar</p>
+      </div>
+      <div class="icon"><i class="fas fa-eye"></i></div>
+      <a href="{% url 'admin:base_property_changelist' %}" class="small-box-footer">
+        E'lonlar <i class="fas fa-arrow-circle-right"></i>
+      </a>
     </div>
-    <div class="stat-card green">
-        <span class="icon">👥</span>
-        <span class="value">{{ stats.total_users }}</span>
-        <span class="label">Foydalanuvchilar</span>
+  </div>
+
+  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+    <div class="small-box" style="background:#7c3aed;color:#fff;">
+      <div class="inner">
+        <h3>{{ stats.total_categories }}</h3>
+        <p>Kategoriyalar</p>
+      </div>
+      <div class="icon"><i class="fas fa-tags"></i></div>
+      <a href="{% url 'admin:base_category_changelist' %}" class="small-box-footer" style="background:rgba(0,0,0,.1);">
+        Ko'rish <i class="fas fa-arrow-circle-right"></i>
+      </a>
     </div>
-    <div class="stat-card purple">
-        <span class="icon">❤️</span>
-        <span class="value">{{ stats.total_favorites }}</span>
-        <span class="label">Saralanganlar</span>
-    </div>
-    <div class="stat-card teal">
-        <span class="icon">👁</span>
-        <span class="value">{{ stats.total_views }}</span>
-        <span class="label">Jami ko'rishlar</span>
-    </div>
-    <div class="stat-card red">
-        <span class="icon">🗂</span>
-        <span class="value">{{ stats.total_categories }}</span>
-        <span class="label">Kategoriyalar</span>
-    </div>
+  </div>
 </div>
 
-<div class="quick-links">
-    <a class="quick-link" href="{% url 'admin:base_property_add' %}">➕ Yangi e'lon</a>
-    <a class="quick-link" href="{% url 'admin:base_category_add' %}">➕ Kategoriya</a>
-    <a class="quick-link" href="{% url 'admin:auth_user_add' %}">➕ Foydalanuvchi</a>
-    <a class="quick-link" href="{% url 'admin:base_property_changelist' %}?is_premium__exact=1">⭐ Premium e'lonlar</a>
-    <a class="quick-link" href="{% url 'admin:base_property_changelist' %}">📋 Barcha e'lonlar</a>
-    <a class="quick-link" href="/" target="_blank">🌐 Saytga o'tish</a>
+<div class="mb-4">
+  <a href="{% url 'admin:base_property_add' %}" class="btn btn-primary btn-sm mr-2">
+    <i class="fas fa-plus"></i> Yangi e'lon
+  </a>
+  <a href="{% url 'admin:base_category_add' %}" class="btn btn-secondary btn-sm mr-2">
+    <i class="fas fa-plus"></i> Kategoriya
+  </a>
+  <a href="{% url 'admin:auth_user_add' %}" class="btn btn-success btn-sm mr-2">
+    <i class="fas fa-user-plus"></i> Foydalanuvchi
+  </a>
+  <a href="/" target="_blank" class="btn btn-info btn-sm">
+    <i class="fas fa-external-link-alt"></i> Saytga o'tish
+  </a>
 </div>
 
 {{ block.super }}
