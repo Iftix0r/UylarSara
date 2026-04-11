@@ -38,14 +38,16 @@
       {% for u in users %}
       <tr>
         <td>
-          {% if u.profile.avatar %}
-            <img src="{{ u.profile.avatar.url }}" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
-          {% else %}
-            <span class="avatar-sm" style="width:34px;height:34px;font-size:.7rem">{{ u.username|slice:":2"|upper }}</span>
-          {% endif %}
+          <a href="{% url 'panel_user_detail' u.pk %}" style="color:#60a5fa;text-decoration:none;display:flex;align-items:center;gap:8px">
+            {% if u.profile.avatar %}
+              <img src="{{ u.profile.avatar.url }}" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
+            {% else %}
+              <span class="avatar-sm" style="width:34px;height:34px;font-size:.7rem">{{ u.username|slice:":2"|upper }}</span>
+            {% endif %}
+          </a>
         </td>
         <td style="font-weight:600;color:#e2e8f0">
-          {{ u.username }}
+          <a href="{% url 'panel_user_detail' u.pk %}" style="color:#e2e8f0;text-decoration:none">{{ u.username }}</a>
           {% if u.is_superuser %}<span class="badge badge-purple" style="margin-left:4px">Super</span>{% endif %}
         </td>
         <td style="color:#64748b">{{ u.email|default:"—" }}</td>

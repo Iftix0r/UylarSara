@@ -194,3 +194,175 @@ def panel_category_delete(request, pk):
         cat.delete()
         messages.success(request, f"'{cat.name}' o'chirildi.")
     return redirect('panel_categories')
+
+
+# ── Property Edit ─────────────────────────────────────────────────────────────
+
+@staff_only
+def panel_property_edit(request, pk):
+    prop = get_object_or_404(Property, pk=pk)
+    if request.method == 'POST':
+        prop.title       = request.POST.get('title', prop.title).strip()
+        prop.description = request.POST.get('description', prop.description).strip()
+        prop.price       = request.POST.get('price', prop.price)
+        prop.location    = request.POST.get('location', prop.location).strip()
+        prop.rooms       = request.POST.get('rooms', prop.rooms)
+        prop.area        = request.POST.get('area', prop.area)
+        prop.is_premium  = request.POST.get('is_premium') == 'on'
+        prop.latitude    = request.POST.get('latitude') or None
+        prop.longitude   = request.POST.get('longitude') or None
+        cat_id = request.POST.get('category')
+        if cat_id:
+            prop.category_id = cat_id
+        ptype = request.POST.get('property_type')
+        if ptype:
+            prop.property_type = ptype
+        if request.FILES.get('image'):
+            prop.image = request.FILES['image']
+        prop.save()
+        messages.success(request, "E'lon yangilandi.")
+        return redirect('panel_property_edit', pk=pk)
+
+    ctx = {
+        'page': 'properties',
+        'prop': prop,
+        'categories': Category.objects.all(),
+        'property_types': Property.PROPERTY_TYPES,
+        'images': prop.images.all(),
+    }
+    return render(request, 'panel/property_edit.html', ctx)
+
+
+@staff_only
+def panel_property_image_delete(request, pk):
+    img = get_object_or_404(PropertyImage, pk=pk)
+    prop_pk = img.property.pk
+    img.delete()
+    return JsonResponse({'ok': True})
+
+
+# ── User Detail ───────────────────────────────────────────────────────────────
+
+@staff_only
+def panel_user_detail(request, pk):
+    u = get_object_or_404(User, pk=pk)
+    props = Property.objects.filter(owner=u).order_by('-created_at')
+    favs  = Favorite.objects.filter(user=u).select_related('property').order_by('-created_at')
+    ctx = {
+        'page': 'users',
+        'u': u,
+        'props': props,
+        'favs': favs,
+        'total_views': props.aggregate(t=Sum('views_count'))['t'] or 0,
+    }
+    return render(request, 'panel/user_detail.html', ctx)
+
+
+# ── Favorites ─────────────────────────────────────────────────────────────────
+
+@staff_only
+def panel_favorites(request):
+    qs = Favorite.objects.select_related('user', 'property', 'property__category').order_by('-created_at')
+    q = request.GET.get('q', '')
+    if q:
+        qs = qs.filter(user__username__icontains=q) | qs.filter(property__title__icontains=q)
+    ctx = {
+        'page': 'favorites',
+        'favorites': qs,
+        'q': q,
+        'total': qs.count(),
+    }
+    return render(request, 'panel/favorites.html', ctx)
+
+
+# ── Statistics ────────────────────────────────────────────────────────────────
+
+@staff_only
+def panel_stats(request):
+    # 30 kunlik e'lonlar grafigi
+    labels_30, data_30 = [], []
+    for i in range(29, -1, -1):
+        day = now() - timedelta(days=i)
+        labels_30.append(day.strftime('%d %b'))
+        data_30.append(Property.objects.filter(created_at__date=day.date()).count())
+
+    # 30 kunlik userlar
+    user_labels, user_data = [], []
+    for i in range(29, -1, -1):
+        day = now() - timedelta(days=i)
+        user_labels.append(day.strftime('%d %b'))
+        user_data.append(User.objects.filter(date_joined__date=day.date()).count())
+
+    # Kategoriya bo'yicha taqsimot
+    cat_stats = Category.objects.annotate(cnt=Count('properties')).order_by('-cnt')
+    cat_labels = json.dumps([c.name for c in cat_stats])
+    cat_data   = json.dumps([c.cnt for c in cat_stats])
+
+    # Tur bo'yicha
+    type_stats = Property.objects.values('property_type').annotate(cnt=Count('id')).order_by('-cnt')
+    type_labels = json.dumps([t['property_type'] for t in type_stats])
+    type_data   = json.dumps([t['cnt'] for t in type_stats])
+
+    ctx = {
+        'page': 'stats',
+        'labels_30':   json.dumps(labels_30),
+        'data_30':     json.dumps(data_30),
+        'user_labels': json.dumps(user_labels),
+        'user_data':   json.dumps(user_data),
+        'cat_labels':  cat_labels,
+        'cat_data':    cat_data,
+        'type_labels': type_labels,
+        'type_data':   type_data,
+        'top10':       Property.objects.order_by('-views_count')[:10],
+        'total_views': Property.objects.aggregate(t=Sum('views_count'))['t'] or 0,
+        'avg_price':   Property.objects.aggregate(a=Sum('price'))['a'] or 0,
+        'premium_pct': round(Property.objects.filter(is_premium=True).count() / max(Property.objects.count(), 1) * 100),
+    }
+    return render(request, 'panel/stats.html', ctx)
+
+
+# ── CSV exports ───────────────────────────────────────────────────────────────
+
+import csv
+from django.http import HttpResponse
+from django.utils import timezone as tz
+
+@staff_only
+def panel_export_properties(request):
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="properties_{tz.now().strftime("%Y%m%d")}.csv"'
+    response.write('\ufeff')
+    w = csv.writer(response)
+    w.writerow(['ID','Sarlavha','Egasi','Kategoriya','Tur','Narx','Xona','Maydon','Joylashuv','Premium',"Ko'rishlar",'Sana'])
+    for p in Property.objects.select_related('owner','category').order_by('-created_at'):
+        w.writerow([p.pk, p.title, p.owner.username if p.owner else '',
+                    p.category.name, p.get_property_type_display(),
+                    p.price, p.rooms, p.area, p.location,
+                    'Ha' if p.is_premium else "Yo'q", p.views_count,
+                    p.created_at.strftime('%Y-%m-%d')])
+    return response
+
+
+@staff_only
+def panel_export_users(request):
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="users_{tz.now().strftime("%Y%m%d")}.csv"'
+    response.write('\ufeff')
+    w = csv.writer(response)
+    w.writerow(['ID','Username','Email','Ism','Familiya','Staff','Faol',"E'lonlar",'Sana'])
+    for u in User.objects.prefetch_related('properties').order_by('-date_joined'):
+        w.writerow([u.pk, u.username, u.email, u.first_name, u.last_name,
+                    u.is_staff, u.is_active, u.properties.count(),
+                    u.date_joined.strftime('%Y-%m-%d')])
+    return response
+
+
+# ── Sidebar counts (context processor alternative — inject via each view) ─────
+
+def _sidebar_counts():
+    return {
+        'cnt_properties': Property.objects.count(),
+        'cnt_users':      User.objects.count(),
+        'cnt_favorites':  Favorite.objects.count(),
+        'cnt_categories': Category.objects.count(),
+    }

@@ -1,0 +1,51 @@
+{% extends "panel/base.html" %}
+{% block title %}Saralanganlar{% endblock %}
+{% block breadcrumb %}Saralanganlar{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+  <h2 style="font-size:1.1rem;font-weight:700">Saralanganlar <span style="color:#4b5563;font-weight:400;font-size:.85rem">({{ total }})</span></h2>
+</div>
+
+<form method="get" class="filter-bar">
+  <input name="q" value="{{ q }}" placeholder="🔍 Username yoki e'lon nomi..." style="flex:1;min-width:220px">
+  <button type="submit" class="btn btn-primary">Filter</button>
+  <a href="{% url 'panel_favorites' %}" class="btn btn-ghost">Tozalash</a>
+</form>
+
+<div class="panel-card">
+  <table>
+    <thead>
+      <tr>
+        <th>Foydalanuvchi</th>
+        <th>E'lon</th>
+        <th>Kategoriya</th>
+        <th>Narx</th>
+        <th>Sana</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in favorites %}
+      <tr>
+        <td>
+          <a href="{% url 'panel_user_detail' f.user.pk %}" style="color:#60a5fa;text-decoration:none;display:flex;align-items:center;gap:8px">
+            <span class="avatar-sm" style="width:28px;height:28px;font-size:.65rem">{{ f.user.username|slice:":2"|upper }}</span>
+            {{ f.user.username }}
+          </a>
+        </td>
+        <td>
+          <a href="{% url 'panel_property_edit' f.property.pk %}" style="color:#e2e8f0;text-decoration:none">
+            {{ f.property.title|truncatechars:35 }}
+          </a>
+        </td>
+        <td><span class="badge badge-blue">{{ f.property.category.name }}</span></td>
+        <td style="color:#22c55e;font-weight:600">${{ f.property.price|floatformat:0 }}</td>
+        <td style="color:#4b5563">{{ f.created_at|date:"d.m.Y H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;color:#4b5563;padding:30px">Saralanganlar topilmadi</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

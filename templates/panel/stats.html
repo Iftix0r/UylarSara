@@ -1,0 +1,90 @@
+{% extends "panel/base.html" %}
+{% block title %}Statistika{% endblock %}
+{% block breadcrumb %}Statistika{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<div class="stat-grid" style="margin-bottom:20px">
+  <div class="stat-card blue">
+    <div class="val">{{ total_views }}</div>
+    <div class="lbl">👁 Jami ko'rishlar</div>
+  </div>
+  <div class="stat-card green">
+    <div class="val">{{ avg_price|floatformat:0 }}</div>
+    <div class="lbl">💰 Jami narx ($)</div>
+  </div>
+  <div class="stat-card yellow">
+    <div class="val">{{ premium_pct }}%</div>
+    <div class="lbl">⭐ Premium ulushi</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+  <div class="panel-card">
+    <div class="panel-card-header"><h3><i class="fas fa-home" style="color:#3b82f6;margin-right:6px"></i>So'nggi 30 kun — E'lonlar</h3></div>
+    <div style="padding:16px"><canvas id="c1"></canvas></div>
+  </div>
+  <div class="panel-card">
+    <div class="panel-card-header"><h3><i class="fas fa-users" style="color:#22c55e;margin-right:6px"></i>So'nggi 30 kun — Foydalanuvchilar</h3></div>
+    <div style="padding:16px"><canvas id="c2"></canvas></div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+  <div class="panel-card">
+    <div class="panel-card-header"><h3><i class="fas fa-tags" style="color:#a855f7;margin-right:6px"></i>Kategoriyalar bo'yicha</h3></div>
+    <div style="padding:16px;max-height:260px;display:flex;justify-content:center"><canvas id="c3"></canvas></div>
+  </div>
+  <div class="panel-card">
+    <div class="panel-card-header"><h3><i class="fas fa-building" style="color:#f59e0b;margin-right:6px"></i>Tur bo'yicha</h3></div>
+    <div style="padding:16px;max-height:260px;display:flex;justify-content:center"><canvas id="c4"></canvas></div>
+  </div>
+</div>
+
+<div class="panel-card">
+  <div class="panel-card-header">
+    <h3><i class="fas fa-fire" style="color:#ef4444;margin-right:6px"></i>Top 10 — Eng ko'p ko'rilgan e'lonlar</h3>
+  </div>
+  <table>
+    <thead><tr><th>#</th><th>E'lon</th><th>Egasi</th><th>Narx</th><th>Ko'rishlar</th><th>Premium</th></tr></thead>
+    <tbody>
+      {% for p in top10 %}
+      <tr>
+        <td style="color:#4b5563;font-weight:700">{{ forloop.counter }}</td>
+        <td><a href="{% url 'panel_property_edit' p.pk %}" style="color:#e2e8f0;text-decoration:none">{{ p.title|truncatechars:35 }}</a></td>
+        <td style="color:#64748b">{{ p.owner.username|default:"—" }}</td>
+        <td style="color:#22c55e;font-weight:600">${{ p.price|floatformat:0 }}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="background:#1e2535;border-radius:4px;height:6px;width:100px;overflow:hidden">
+              <div style="background:#3b82f6;height:100%;width:{{ p.views_count|default:0 }}px;max-width:100px"></div>
+            </div>
+            <span class="badge badge-blue">{{ p.views_count }}</span>
+          </div>
+        </td>
+        <td>{% if p.is_premium %}<span class="badge badge-yellow">⭐</span>{% else %}—{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+const opts = {
+  responsive:true,
+  plugins:{legend:{display:false}},
+  scales:{
+    x:{ticks:{color:'#4b5563',maxTicksLimit:8},grid:{color:'#1e2535'}},
+    y:{ticks:{color:'#4b5563',stepSize:1},grid:{color:'#1e2535'}}
+  }
+};
+new Chart(document.getElementById('c1').getContext('2d'),{type:'line',data:{labels:{{ labels_30|safe }},datasets:[{label:"E'lonlar",data:{{ data_30|safe }},borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.15)',fill:true,tension:.4,pointRadius:3}]},options:opts});
+new Chart(document.getElementById('c2').getContext('2d'),{type:'line',data:{labels:{{ user_labels|safe }},datasets:[{label:'Userlar',data:{{ user_data|safe }},borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.15)',fill:true,tension:.4,pointRadius:3}]},options:opts});
+
+const donutOpts={responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:11}}}}};
+const COLORS=['#3b82f6','#22c55e','#f59e0b','#ef4444','#a855f7','#14b8a6','#ec4899','#6366f1'];
+new Chart(document.getElementById('c3').getContext('2d'),{type:'doughnut',data:{labels:{{ cat_labels|safe }},datasets:[{data:{{ cat_data|safe }},backgroundColor:COLORS,borderWidth:0}]},options:donutOpts});
+new Chart(document.getElementById('c4').getContext('2d'),{type:'doughnut',data:{labels:{{ type_labels|safe }},datasets:[{data:{{ type_data|safe }},backgroundColor:COLORS,borderWidth:0}]},options:donutOpts});
+</script>
+{% endblock %}

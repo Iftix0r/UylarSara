@@ -87,6 +87,9 @@
         <td style="color:#4b5563">{{ p.created_at|date:"d.m.Y" }}</td>
         <td>
           <div style="display:flex;gap:6px">
+            <a href="{% url 'panel_property_edit' p.pk %}" class="btn btn-ghost btn-sm" title="Tahrirlash">
+              <i class="fas fa-edit"></i>
+            </a>
             <a href="/property/{{ p.pk }}/" target="_blank" class="btn btn-ghost btn-sm" title="Ko'rish">
               <i class="fas fa-eye"></i>
             </a>

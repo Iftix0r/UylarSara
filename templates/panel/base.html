@@ -126,15 +126,32 @@ canvas{max-height:200px}
     <a href="{% url 'panel_home' %}" class="nav-item {% if page == 'dashboard' %}active{% endif %}">
       <i class="fas fa-chart-pie"></i> Dashboard
     </a>
+    <a href="{% url 'panel_stats' %}" class="nav-item {% if page == 'stats' %}active{% endif %}">
+      <i class="fas fa-chart-bar"></i> Statistika
+    </a>
     <div class="nav-section">Boshqaruv</div>
     <a href="{% url 'panel_properties' %}" class="nav-item {% if page == 'properties' %}active{% endif %}">
       <i class="fas fa-home"></i> E'lonlar
+      {% if cnt_properties %}<span style="margin-left:auto;background:#1e3a5f;color:#60a5fa;padding:1px 7px;border-radius:20px;font-size:.68rem">{{ cnt_properties }}</span>{% endif %}
     </a>
     <a href="{% url 'panel_users' %}" class="nav-item {% if page == 'users' %}active{% endif %}">
       <i class="fas fa-users"></i> Foydalanuvchilar
+      {% if cnt_users %}<span style="margin-left:auto;background:#1e3a5f;color:#60a5fa;padding:1px 7px;border-radius:20px;font-size:.68rem">{{ cnt_users }}</span>{% endif %}
+    </a>
+    <a href="{% url 'panel_favorites' %}" class="nav-item {% if page == 'favorites' %}active{% endif %}">
+      <i class="fas fa-heart"></i> Saralanganlar
+      {% if cnt_favorites %}<span style="margin-left:auto;background:#1e3a5f;color:#60a5fa;padding:1px 7px;border-radius:20px;font-size:.68rem">{{ cnt_favorites }}</span>{% endif %}
     </a>
     <a href="{% url 'panel_categories' %}" class="nav-item {% if page == 'categories' %}active{% endif %}">
       <i class="fas fa-tags"></i> Kategoriyalar
+      {% if cnt_categories %}<span style="margin-left:auto;background:#1e3a5f;color:#60a5fa;padding:1px 7px;border-radius:20px;font-size:.68rem">{{ cnt_categories }}</span>{% endif %}
+    </a>
+    <div class="nav-section">Export</div>
+    <a href="{% url 'panel_export_properties' %}" class="nav-item">
+      <i class="fas fa-file-csv"></i> E'lonlar CSV
+    </a>
+    <a href="{% url 'panel_export_users' %}" class="nav-item">
+      <i class="fas fa-file-csv"></i> Userlar CSV
     </a>
     <div class="nav-section">Tizim</div>
     <a href="/admin/" class="nav-item" target="_blank">
