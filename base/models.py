@@ -15,7 +15,8 @@ class Category(models.Model):
         return self.name
 
     class Meta:
-        verbose_name_plural = "Categories"
+        verbose_name = "Kategoriya"
+        verbose_name_plural = "Kategoriyalar"
 
 class Property(models.Model):
     PROPERTY_TYPES = (
@@ -46,7 +47,8 @@ class Property(models.Model):
         return self.title
 
     class Meta:
-        verbose_name_plural = "Properties"
+        verbose_name = "E'lon"
+        verbose_name_plural = "E'lonlar"
 
 class PropertyImage(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='images')
@@ -63,7 +65,8 @@ class Favorite(models.Model):
 
     class Meta:
         unique_together = ('user', 'property')
-        verbose_name_plural = "Favorites"
+        verbose_name = "Saralangan"
+        verbose_name_plural = "Saralanganlar"
 
     def __str__(self):
         return f"{self.user.username} - {self.property.title}"
