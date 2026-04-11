@@ -936,6 +936,19 @@
             }
             ctxMenu.style.display = 'none';
         });
+    <script>
+        // Brauzer bildirishnomalariga ruxsat so'rash
+        document.addEventListener('DOMContentLoaded', function() {
+            if ("Notification" in window) {
+                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                    Notification.requestPermission().then(function (permission) {
+                        if (permission === "granted") {
+                            console.log("Bildirishnomalarga ruxsat berildi");
+                        }
+                    });
+                }
+            }
+        });
     </script>
 
     {% block extra_js %}{% endblock %}
