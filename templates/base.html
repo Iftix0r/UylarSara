@@ -268,14 +268,9 @@
         let isDark = false;
 
         if (isTWA) {
-            // Telegram colorScheme: 'dark' yoki 'light' — bir marta aniqlanadi
-            isDark = (window.Telegram.WebApp.colorScheme === 'dark');
-            // Telegram tema o'zgarganda yangilaymiz
-            window.Telegram.WebApp.onEvent('themeChanged', () => {
-                const newDark = (window.Telegram.WebApp.colorScheme === 'dark');
-                body.classList.toggle('dark-mode', newDark);
-                updateThemeIcon(newDark);
-            });
+            // TWA da har doim kunduzgi rejim
+            isDark = false;
+            // Telegram tema o'zgarganda ham kunduzgi saqlaymiz
         } else {
             const saved = localStorage.getItem('theme');
             isDark = saved === 'dark';

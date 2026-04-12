@@ -31,18 +31,18 @@ body.dark-mode {
   background:var(--bg); color:var(--text);
 }
 
-/* ── TWA — Telegram dark navy theme ── */
+/* ── TWA — always light theme ── */
 body.twa {
-  --bg:#17212b; --bg-card:#232e3c; --bg-glass:rgba(23,33,43,.95);
-  --text:#ffffff; --text-muted:#8a9ab0;
-  --border:rgba(255,255,255,.08); --border-light:rgba(255,255,255,.05);
-  --primary:#5288c1; --primary-dark:#4a7ab5; --primary-light:rgba(82,136,193,.15);
-  --shadow-md:0 4px 20px rgba(0,0,0,.35);
-  --shadow-lg:0 8px 32px rgba(0,0,0,.45);
+  --bg:#f0f4ff; --bg-card:#ffffff; --bg-glass:rgba(255,255,255,.9);
+  --text:#0f172a; --text-muted:#64748b;
+  --border:#dde3f0; --border-light:#eef1f8;
+  --primary:#2563eb; --primary-dark:#1d4ed8; --primary-light:rgba(37,99,235,.1);
+  --shadow-md:0 4px 16px rgba(0,0,0,.09);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
   background:var(--bg); color:var(--text);
 }
 body.twa[data-tg-color-scheme="light"] {
-  --bg:#f4f6fb; --bg-card:#ffffff; --bg-glass:rgba(255,255,255,.9);
+  --bg:#f0f4ff; --bg-card:#ffffff; --bg-glass:rgba(255,255,255,.9);
   --text:#0f172a; --text-muted:#64748b;
   --border:#dde3f0; --border-light:#eef1f8;
   --primary:#2563eb; --primary-light:rgba(37,99,235,.1);
