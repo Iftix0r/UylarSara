@@ -5,7 +5,7 @@
 {% block content %}
 
 <!-- ══ TWA TOP BAR ══ -->
-<div id="twa-topbar" style="display:none;align-items:center;justify-content:space-between;padding:12px 16px 8px;background:#fff;position:sticky;top:0;z-index:200;transition:transform .3s ease;border-bottom:1px solid #f0f4ff">
+<div id="twa-topbar" style="display:none;align-items:center;justify-content:space-between;padding:12px 16px 8px;background:#fff;transition:transform .25s ease,margin .25s ease;border-bottom:1px solid #f0f4ff">
     <span style="font-size:1.25rem;font-weight:800;color:#0f172a;letter-spacing:-.02em">SaraUylar</span>
     <div style="display:flex;gap:4px;background:#f0f4ff;padding:3px;border-radius:10px">
         <a href="{% url 'set_language' 'uz' %}" style="padding:4px 10px;border-radius:7px;font-size:.72rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'uz' or not request.session.lang %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">UZ</a>
@@ -85,14 +85,16 @@ if (window.Telegram?.WebApp?.initData) {
     const topbar = document.getElementById("twa-topbar");
     topbar.style.display = "flex";
 
-    // Scroll hide/show — Telegram kabi
+    // Faqat topbar yashirinadi, hikoyalar qoladi
     let lastY = 0;
     window.addEventListener('scroll', () => {
         const y = window.scrollY;
-        if (y > lastY && y > 40) {
+        if (y > lastY && y > 60) {
             topbar.style.transform = 'translateY(-100%)';
+            topbar.style.marginBottom = '-' + topbar.offsetHeight + 'px';
         } else {
             topbar.style.transform = 'translateY(0)';
+            topbar.style.marginBottom = '0';
         }
         lastY = y;
     }, { passive: true });
