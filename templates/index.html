@@ -69,6 +69,30 @@
 </div>
 
 <script>
+// Kategoriya sluglari
+const CAT_SLUGS = ['', {% for cat in categories %}'{{ cat.slug }}',{% endfor %}];
+const currentCat = '{{ request.GET.category|default:"" }}';
+const currentIdx = CAT_SLUGS.indexOf(currentCat);
+
+// Swipe bilan kategoriya o'zgartirish
+let swipeStartX = 0;
+document.addEventListener('touchstart', e => {
+    swipeStartX = e.touches[0].clientX;
+}, { passive: true });
+document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    if (Math.abs(dx) < 60) return; // kichik swipe — e'tiborsiz
+    if (dx < 0 && currentIdx < CAT_SLUGS.length - 1) {
+        // Chapga — keyingi kategoriya
+        const next = CAT_SLUGS[currentIdx + 1];
+        window.location.href = next ? '/?category=' + next : '/';
+    } else if (dx > 0 && currentIdx > 0) {
+        // O'ngga — oldingi kategoriya
+        const prev = CAT_SLUGS[currentIdx - 1];
+        window.location.href = prev ? '/?category=' + prev : '/';
+    }
+}, { passive: true });
+
 if (window.Telegram?.WebApp?.initData) {
     const topbar = document.getElementById("twa-topbar");
     topbar.style.display = "flex";
