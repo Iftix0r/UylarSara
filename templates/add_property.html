@@ -26,22 +26,22 @@
                     
                     <div class="input-wrapper" style="position: relative;">
                         {% if field.name == 'description' %}
-                            <textarea name="{{ field.name }}" class="form-input" placeholder="{{ field.label }}ni kiriting..." rows="4" style="width: 100%; border-radius: var(--radius-md); border: 2px solid var(--border-light); padding: 12px 16px; font-family: inherit; font-size: 1rem; transition: all 0.2s; background: var(--bg-main);">{{ field.value|default:'' }}</textarea>
+                            <textarea name="{{ field.name }}" class="form-input" placeholder="{{ field.label }}ni kiriting..." rows="4">{{ field.value|default:'' }}</textarea>
                         {% elif field.name == 'category' or field.name == 'property_type' %}
-                            <select name="{{ field.name }}" class="form-input" style="width: 100%; border-radius: var(--radius-md); border: 2px solid var(--border-light); padding: 12px 16px; font-size: 1rem; appearance: none; background: var(--bg-main);">
+                            <select name="{{ field.name }}" class="form-input">
                                 {% for choice in field.field.choices %}
                                     <option value="{{ choice.0 }}" {% if field.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
                                 {% endfor %}
                             </select>
                             <i data-lucide="chevron-down" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; pointer-events: none; color: var(--text-muted);"></i>
                         {% elif field.name == 'image' %}
-                            <div class="file-input-wrapper" style="width: 100%; border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 24px; text-align: center; background: var(--bg-main); cursor: pointer; transition: all 0.2s;">
+                            <div class="file-input-wrapper">
                                 <i data-lucide="upload-cloud" style="width: 32px; height: 32px; color: var(--primary); margin-bottom: 8px;"></i>
                                 <p style="font-size: 0.9rem; color: var(--text-muted);">Rasmni tanlang yoki shu yerga tashlang</p>
                                 <input type="file" name="{{ field.name }}" id="id_{{ field.name }}" style="position: absolute; inset: 0; opacity: 0; cursor: pointer;">
                             </div>
                         {% else %}
-                            <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.name }}" value="{{ field.value|default:'' }}" class="form-input" placeholder="{{ field.label }}ni kiriting..." style="width: 100%; border-radius: var(--radius-md); border: 2px solid var(--border-light); padding: 12px 16px; font-size: 1rem; transition: all 0.2s; background: var(--bg-main);">
+                            <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.name }}" value="{{ field.value|default:'' }}" class="form-input" placeholder="{{ field.label }}ni kiriting...">
                         {% endif %}
                     </div>
                     
@@ -67,16 +67,8 @@
 </div>
 
 <style>
-    .form-input:focus {
-        outline: none;
-        border-color: var(--primary) !important;
-        background: var(--bg-card) !important;
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-    }
-    .file-input-wrapper:hover {
-        border-color: var(--primary);
-        background: var(--primary-light);
-    }
+.form-card{padding:28px}
+@media(max-width:600px){.form-card{padding:20px}}
 </style>
 
 <script>
