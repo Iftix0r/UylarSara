@@ -111,7 +111,9 @@
                         <i data-lucide="user"></i>
                     </a>
                 {% else %}
-                    <a href="{% url 'login' %}" class="btn btn-primary btn-sm">{% if request.session.lang == 'ru' %}Вход{% else %}Kirish{% endif %}</a>
+                    <div id="tg-login-wrap">
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-sm" id="login-btn">{% if request.session.lang == 'ru' %}Вход{% else %}Kirish{% endif %}</a>
+                    </div>
                 {% endif %}
                 
                 <div class="theme-toggle" id="theme-toggle" title="Mavzuni o'zgartirish">
@@ -201,33 +203,30 @@
     <script>
         // Initialize TWA
         const tg = window.Telegram?.WebApp;
-        if (tg && tg.initData) {
+        if (tg) {
             document.body.classList.add('twa');
             tg.expand();
             tg.ready();
-            
-            // Set header color
-            tg.setHeaderColor(tg.themeParams?.secondary_bg_color || '#ffffff');
+            tg.setHeaderColor && tg.setHeaderColor(tg.themeParams?.secondary_bg_color || '#ffffff');
 
-            // Auto-login if not already authenticated
             {% if not user.is_authenticated %}
-            (async () => {
-                try {
-                    console.log('[TG] initData:', tg.initData ? tg.initData.substring(0, 50) + '...' : 'EMPTY');
-                    const res = await fetch('/telegram-auth/', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ initData: tg.initData })
-                    });
-                    const data = await res.json();
-                    console.log('[TG] auth response:', data);
-                    if (data.ok) {
-                        window.location.reload();
+            if (tg.initData && tg.initData.length > 0) {
+                (async () => {
+                    try {
+                        const res = await fetch('/telegram-auth/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ initData: tg.initData })
+                        });
+                        const data = await res.json();
+                        if (data.ok) {
+                            window.location.reload();
+                        }
+                    } catch (e) {
+                        console.error('[TG] auth error:', e);
                     }
-                } catch (e) {
-                    console.error('[TG] auth error:', e);
-                }
-            })();
+                })();
+            }
             {% endif %}
         }
 

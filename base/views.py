@@ -43,38 +43,55 @@ def verify_telegram_init_data(init_data: str) -> dict | None:
 
 @csrf_exempt
 def telegram_auth(request):
-    """Telegram WebApp initData orqali foydalanuvchi yaratadi yoki login qiladi."""
+    """Telegram WebApp initData yoki Login Widget orqali login/register."""
+    import time
+
+    # ── Telegram Login Widget (GET) ──────────────────────────────────────────
+    if request.method == "GET":
+        params = request.GET.dict()
+        received_hash = params.pop("hash", None)
+        if not received_hash or not params.get("id"):
+            return redirect("/")
+        token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        token_hash = hashlib.sha256(token.encode()).digest()
+        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(params.items()))
+        expected_hash = hmac.new(token_hash, data_check_string.encode(), hashlib.sha256).hexdigest()
+        auth_date = int(params.get("auth_date", 0))
+        if not hmac.compare_digest(expected_hash, received_hash) or (time.time() - auth_date) > 86400:
+            return redirect("/")
+        _create_or_login_tg_user(
+            request, int(params["id"]),
+            params.get("first_name", ""), params.get("last_name", ""), params.get("username", "")
+        )
+        return redirect("/")
+
+    # ── Telegram Web App (POST) ──────────────────────────────────────────────
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
-
     try:
         body = json.loads(request.body)
         init_data = body.get("initData", "")
     except Exception:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-    print(f"[TG AUTH] initData len={len(init_data)}")
-
     user_data = verify_telegram_init_data(init_data)
-
     if not user_data or not user_data.get("id"):
-        print(f"[TG AUTH] verify failed. initData[:80]={init_data[:80]}")
         return JsonResponse({"error": "Invalid initData"}, status=403)
 
-    telegram_id   = int(user_data["id"])
-    first_name    = user_data.get("first_name", "")
-    last_name     = user_data.get("last_name", "")
-    tg_username   = user_data.get("username", "")
-    print(f"[TG AUTH] tg_id={telegram_id} username={tg_username}")
+    _create_or_login_tg_user(
+        request, int(user_data["id"]),
+        user_data.get("first_name", ""), user_data.get("last_name", ""), user_data.get("username", "")
+    )
+    return JsonResponse({"ok": True})
 
+
+def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_username):
     from django.contrib.auth.models import User
     from .models import UserProfile
 
     profile = UserProfile.objects.filter(telegram_id=telegram_id).select_related("user").first()
-
     if profile:
         user = profile.user
-        # Ismni yangilaymiz
         changed = False
         if first_name and user.first_name != first_name:
             user.first_name = first_name; changed = True
@@ -83,26 +100,19 @@ def telegram_auth(request):
         if changed:
             user.save(update_fields=["first_name", "last_name"])
     else:
-        # Username tanlash: @username yoki tg_<id>
         if tg_username:
             candidate = tg_username.lower()
             username = candidate if not User.objects.filter(username=candidate).exists() else f"tg_{telegram_id}"
         else:
             username = f"tg_{telegram_id}"
-
-        user = User.objects.create_user(
-            username=username,
-            first_name=first_name,
-            last_name=last_name,
-        )
+        user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name)
         profile, _ = UserProfile.objects.get_or_create(user=user)
         profile.telegram_id = telegram_id
         profile.telegram_username = tg_username
         profile.save()
-        print(f"[TG AUTH] New user created: {username}")
+        print(f"[TG AUTH] New user: {username}")
 
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-    return JsonResponse({"ok": True, "username": user.username, "first_name": user.first_name})
 
 
 def set_language(request, lang):
