@@ -9,10 +9,15 @@
 
   <!-- Sarlavha qatori -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 2px">
-    <span style="font-size:1rem;font-weight:800;color:#0f172a">SaraUylar</span>
-    <div style="display:flex;gap:2px;background:#f0f4ff;padding:2px;border-radius:7px">
-      <a href="/set-language/uz/" style="padding:2px 7px;border-radius:5px;font-size:.68rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'uz' or not request.session.lang %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">UZ</a>
-      <a href="/set-language/ru/" style="padding:2px 7px;border-radius:5px;font-size:.68rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'ru' %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">RU</a>
+    <span style="font-size:1rem;font-weight:800;color:#0f172a" id="twa-title">SaraUylar</span>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button id="twa-theme-btn" onclick="toggleTwaTheme()" style="width:30px;height:30px;border-radius:50%;background:#f0f4ff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg id="twa-theme-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <div style="display:flex;gap:2px;background:#f0f4ff;padding:2px;border-radius:7px">
+        <a href="/set-language/uz/" style="padding:2px 7px;border-radius:5px;font-size:.68rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'uz' or not request.session.lang %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">UZ</a>
+        <a href="/set-language/ru/" style="padding:2px 7px;border-radius:5px;font-size:.68rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'ru' %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">RU</a>
+      </div>
     </div>
   </div>
 
