@@ -71,13 +71,36 @@
 </style>
 
 <script>
-    // TWA Integration for Login Page
-    const tgLogin = window.Telegram?.WebApp;
-    if (tgLogin && tgLogin.initData) {
-        tgLogin.BackButton.show();
-        tgLogin.BackButton.onClick(() => {
-            window.location.href = "/";
-        });
-    }
+    (function() {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (!tg || !tg.initData) return;
+
+        // TWA ichida — back button
+        tg.BackButton.show();
+        tg.BackButton.onClick(function() { window.location.href = "/"; });
+
+        // Allaqachon login bo'lgan bo'lsa — bosh sahifaga
+        if (document.body.getAttribute('data-is-authenticated') === 'true') {
+            window.location.href = '/';
+            return;
+        }
+
+        // initData bor — avtomatik login
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        const csrf = match ? match[1] : '';
+        fetch('/telegram-auth/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrf
+            },
+            body: JSON.stringify({ initData: tg.initData })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.ok) window.location.href = '/';
+        })
+        .catch(function(e) { console.error('[TG AUTO LOGIN]', e); });
+    })();
 </script>
 {% endblock %}

@@ -84,10 +84,30 @@
     <script>
     (function(){
         var tg = window.Telegram && window.Telegram.WebApp;
-        if (tg && tg.initData && tg.initData.length > 0) {
-            document.getElementById('twa-hide-style').textContent =
-                '#main-header, #site-topbar { display: none !important; }';
-        }
+        if (!tg || !tg.initData || tg.initData.length === 0) return;
+
+        document.getElementById('twa-hide-style').textContent =
+            '#main-header, #site-topbar { display: none !important; }';
+
+        // Foydalanuvchi login qilmagan bo'lsa — avtomatik Telegram login
+        // data-is-authenticated body tagida, shuning uchun DOMContentLoaded kutamiz
+        document.addEventListener('DOMContentLoaded', function() {
+            var isAuth = document.body.getAttribute('data-is-authenticated') === 'true';
+            if (isAuth) return;
+            var match = document.cookie.match(/csrftoken=([^;]+)/);
+            var csrf = match ? match[1] : '';
+            fetch('/telegram-auth/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrf
+                },
+                body: JSON.stringify({ initData: tg.initData })
+            })
+            .then(function(r){ return r.json(); })
+            .then(function(d){ if(d.ok) window.location.reload(); })
+            .catch(function(e){ console.error('[TG AUTO LOGIN]', e); });
+        });
     })();
     </script>
     
