@@ -18,10 +18,9 @@
     <!-- TWA SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style id="twa-hide-style">
-    /* Default: ko'rinadi. TWA da JS orqali o'zgartiriladi */
+    /* telegram-web-app.js sinxron yuklanadi, shuning uchun initData shu yerda tayyor */
     </style>
     <script>
-    /* telegram-web-app.js yuklanishi bilan initData tayyor bo'ladi */
     (function(){
         var tg = window.Telegram && window.Telegram.WebApp;
         if (tg && tg.initData && tg.initData.length > 0) {

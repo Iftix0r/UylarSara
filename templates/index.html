@@ -4,31 +4,6 @@
 
 {% block content %}
 
-<!-- ══ TWA MINI HEADER (faqat web appda) ══ -->
-<div id="twa-header" style="display:none;align-items:center;gap:10px;padding:10px 16px 6px;background:#fff;position:sticky;top:0;z-index:100;border-bottom:1px solid #eef1f8">
-    <img src="{% static 'img/logo.png' %}" alt="logo" style="width:36px;height:36px;border-radius:10px;object-fit:contain;flex-shrink:0">
-    <form action="/" method="GET" style="flex:1;margin:0">
-        <div style="display:flex;align-items:center;gap:8px;background:#f0f4ff;border-radius:12px;padding:8px 12px">
-            <i data-lucide="search" style="width:15px;height:15px;color:#94a3b8;flex-shrink:0"></i>
-            <input type="text" name="q" value="{{ request.GET.q }}" autocomplete="off"
-                placeholder="Uy-joy qidirish..."
-                style="flex:1;border:none;background:transparent;outline:none;font-size:.88rem;color:#0f172a">
-            <button type="button" id="voice-search-btn" style="background:none;border:none;cursor:pointer;padding:0;display:flex">
-                <i data-lucide="mic" style="width:16px;height:16px;color:#2563eb"></i>
-            </button>
-        </div>
-    </form>
-    <div style="display:flex;gap:4px;background:#f0f4ff;padding:3px;border-radius:10px;flex-shrink:0">
-        <a href="{% url 'set_language' 'uz' %}" style="padding:4px 8px;border-radius:7px;font-size:.72rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'uz' or not request.session.lang %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">UZ</a>
-        <a href="{% url 'set_language' 'ru' %}" style="padding:4px 8px;border-radius:7px;font-size:.72rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'ru' %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">RU</a>
-    </div>
-</div>
-<script>
-if (window.Telegram?.WebApp?.initData) {
-    document.getElementById('twa-header').style.display = 'flex';
-}
-</script>
-
 <!-- ══ TWA TOP BAR ══ -->
 <div id="twa-topbar" style="display:none;align-items:center;justify-content:space-between;padding:12px 16px 6px;background:#fff">
     <span style="font-size:1.3rem;font-weight:800;color:#0f172a">SaraUylar</span>
@@ -38,7 +13,6 @@ if (window.Telegram?.WebApp?.initData) {
     </div>
 </div>
 
-<!-- ══ STORIES ══ -->
 <!-- ══ STORIES ══ -->
 <div class="tg-stories">
     <!-- "Mening hikoyam" -->
