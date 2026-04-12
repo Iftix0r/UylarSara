@@ -44,7 +44,7 @@
   </div>
 
   <!-- Qidiruv -->
-  <div style="padding:2px 14px 5px">
+  <div id="topbar-search" style="padding:2px 14px 5px">
     <form action="/" method="GET" id="search-form-sticky">
       <div style="display:flex;align-items:center;gap:7px;background:#f0f4ff;border-radius:10px;padding:6px 10px">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -57,7 +57,7 @@
   </div>
 
   <!-- Kategoriya chips -->
-  <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 14px 6px">
+  <div id="topbar-chips" style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 14px 6px">
     <a href="/" style="padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;white-space:nowrap;text-decoration:none;flex-shrink:0;{% if not request.GET.category and not request.GET.q %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">{% if request.session.lang == 'ru' %}Все{% else %}Barchasi{% endif %}</a>
     {% for cat in categories %}
     <a href="?category={{ cat.slug }}" style="padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;white-space:nowrap;text-decoration:none;flex-shrink:0;{% if request.GET.category == cat.slug %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">{{ cat.name }}</a>
@@ -72,16 +72,28 @@
 if (window.Telegram?.WebApp?.initData) {
     const topbar = document.getElementById("twa-topbar");
     topbar.style.display = "flex";
-    // Topbar balandligini o'lchab content ga padding beramiz
-    requestAnimationFrame(() => {
+
+    const searchRow = document.getElementById("topbar-search");
+    const chipsRow = document.getElementById("topbar-chips");
+
+    function setMainPadding() {
         const h = topbar.offsetHeight;
-        document.querySelector('main') && (document.querySelector('main').style.paddingTop = h + 'px');
-        // Resize bo'lsa yangilaymiz
-        new ResizeObserver(() => {
-            const newH = topbar.offsetHeight;
-            document.querySelector('main') && (document.querySelector('main').style.paddingTop = newH + 'px');
-        }).observe(topbar);
-    });
+        const main = document.querySelector('main');
+        if (main) main.style.paddingTop = h + 'px';
+    }
+    requestAnimationFrame(setMainPadding);
+    new ResizeObserver(setMainPadding).observe(topbar);
+
+    let lastY = 0;
+    window.addEventListener('scroll', () => {
+        const y = window.scrollY;
+        const goingDown = y > lastY && y > 40;
+        if (searchRow) searchRow.style.display = goingDown ? 'none' : 'block';
+        if (chipsRow) chipsRow.style.display = goingDown ? 'none' : 'flex';
+        // padding yangilaymiz
+        requestAnimationFrame(setMainPadding);
+        lastY = y;
+    }, { passive: true });
 }
 </script>
 
