@@ -28,6 +28,7 @@
         if (d) { d.style.transform='translateY(0)'; d.style.pointerEvents='auto'; }
         if (o) o.style.display='block';
         document.body.style.overflow='hidden';
+        setTimeout(function(){ if(window.lucide) lucide.createIcons(); }, 50);
     }
     function closeDrw() {
         var d = document.getElementById('drw');
@@ -42,6 +43,7 @@
         if (d) { d.style.transform='translateY(0)'; d.style.pointerEvents='auto'; }
         if (o) o.style.display='block';
         document.body.style.overflow='hidden';
+        setTimeout(function(){ if(window.lucide) lucide.createIcons(); }, 50);
     }
     function closeCatalog() {
         var d = document.getElementById('cat-modal');
@@ -254,7 +256,9 @@
             </a>
             {% for cat in categories %}
             <a href="/?category={{ cat.slug }}" onclick="closeCatalog()" style="display:flex;align-items:center;gap:12px;padding:11px 20px;color:#0f172a;font-weight:600;font-size:.9rem;text-decoration:none;border-bottom:1px solid #f8fafc">
-                <div style="width:32px;height:32px;border-radius:10px;background:#e0f2fe;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i data-lucide="{{ cat.icon|default:'home' }}" style="width:16px;height:16px;color:#0ea5e9"></i></div>
+                <div style="width:32px;height:32px;border-radius:10px;background:#e0f2fe;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
                 {{ cat.name }}
             </a>
             {% endfor %}
@@ -281,12 +285,18 @@
             {% endif %}
         </div>
         <div>
-            <a href="{% url 'home' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc"><i data-lucide="home" style="width:20px;height:20px;color:#64748b"></i>Asosiy</a>
-            <a href="{% url 'add_property' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc"><i data-lucide="plus-square" style="width:20px;height:20px;color:#64748b"></i>E'lon berish</a>
-            <a href="{% url 'favorites' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc"><i data-lucide="heart" style="width:20px;height:20px;color:#64748b"></i>Saralangan</a>
-            {% if user.is_authenticated %}<a href="{% url 'profile' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc"><i data-lucide="user" style="width:20px;height:20px;color:#64748b"></i>Profil</a>{% endif %}
-            <a href="{% url 'about' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc"><i data-lucide="info" style="width:20px;height:20px;color:#64748b"></i>Biz haqimizda</a>
-            <a href="{% url 'help' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none"><i data-lucide="help-circle" style="width:20px;height:20px;color:#64748b"></i>Yordam</a>
+            <a href="{% url 'home' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Asosiy</a>
+            <a href="{% url 'add_property' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>E'lon berish</a>
+            <a href="{% url 'favorites' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Saralangan</a>
+            {% if user.is_authenticated %}<a href="{% url 'profile' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profil</a>{% endif %}
+            <a href="{% url 'about' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Biz haqimizda</a>
+            <a href="{% url 'help' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Yordam</a>
         </div>
         <div style="padding:14px 20px 20px;border-top:1px solid #f1f5f9">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -298,7 +308,8 @@
             </div>
             {% if user.is_authenticated %}
             <form action="{% url 'logout' %}" method="POST">{% csrf_token %}
-                <button type="submit" style="width:100%;padding:13px;border-radius:14px;background:rgba(239,68,68,.08);color:#ef4444;border:1px solid rgba(239,68,68,.2);font-weight:700;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><i data-lucide="log-out" style="width:18px;height:18px"></i>Chiqish</button>
+                <button type="submit" style="width:100%;padding:13px;border-radius:14px;background:rgba(239,68,68,.08);color:#ef4444;border:1px solid rgba(239,68,68,.2);font-weight:700;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Chiqish</button>
             </form>
             {% endif %}
         </div>
