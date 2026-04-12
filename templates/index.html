@@ -65,17 +65,15 @@
 </div>
 
 <!-- Chips — har doim tepada qotib turadi -->
-<div id="sticky-chips" style="position:fixed;left:0;right:44px;background:#fff;z-index:998;border-bottom:1px solid #eef1f8;padding:5px 14px 6px;overflow-x:auto;scrollbar-width:none;white-space:nowrap;top:0">
-  <a href="/" style="display:inline-block;padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;text-decoration:none;margin-right:6px;{% if not request.GET.category and not request.GET.q %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">{% if request.session.lang == 'ru' %}Все{% else %}Barchasi{% endif %}</a>
+<div id="sticky-chips" style="position:fixed;left:0;right:0;background:#fff;z-index:998;border-bottom:1px solid #eef1f8;padding:5px 14px 6px;overflow-x:auto;scrollbar-width:none;white-space:nowrap;top:0;display:flex;align-items:center;gap:6px">
+  <a href="/" style="display:inline-block;padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;text-decoration:none;flex-shrink:0;{% if not request.GET.category and not request.GET.q %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">{% if request.session.lang == 'ru' %}Все{% else %}Barchasi{% endif %}</a>
   {% for cat in categories %}
-  <a href="?category={{ cat.slug }}" style="display:inline-block;padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;text-decoration:none;margin-right:6px;{% if request.GET.category == cat.slug %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">{{ cat.name }}</a>
+  <a href="?category={{ cat.slug }}" style="display:inline-block;padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;text-decoration:none;flex-shrink:0;{% if request.GET.category == cat.slug %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">{{ cat.name }}</a>
   {% endfor %}
+  <button onclick="openFilter()" style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#f0f4ff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#2563eb">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+  </button>
 </div>
-
-<!-- Filter tugmasi — o'ng tomonda alohida -->
-<button id="filter-fab" onclick="openFilter()" style="position:fixed;right:0;z-index:999;top:0;width:44px;background:#fff;border:none;border-left:1px solid #eef1f8;border-bottom:1px solid #eef1f8;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#2563eb">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-</button>
 
 <script>
 // Kategoriya sluglari
@@ -121,15 +119,10 @@ if (window.Telegram?.WebApp?.initData) {
 
     function setMainPadding() {
         const sc = document.getElementById('sticky-chips');
-        const fab = document.getElementById('filter-fab');
         const h = topbar.offsetHeight + (sc ? sc.offsetHeight : 0);
         const main = document.querySelector('main');
         if (main) main.style.paddingTop = h + 'px';
         if (sc) sc.style.top = topbar.offsetHeight + 'px';
-        if (fab) {
-            fab.style.top = topbar.offsetHeight + 'px';
-            fab.style.height = (sc ? sc.offsetHeight : 32) + 'px';
-        }
     }
     requestAnimationFrame(setMainPadding);
     new ResizeObserver(setMainPadding).observe(topbar);
