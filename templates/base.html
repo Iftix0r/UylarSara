@@ -37,8 +37,8 @@
     <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
     <link rel="apple-touch-icon" href="{% static 'img/logo.png' %}">
     
-    <!-- Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Icons — pinned version, faster CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.1/dist/umd/lucide.min.js"></script>
     <style>
     /* TWA: header va top-bar ni to'liq yashiramiz */
     body.twa .top-bar { display: none !important; }
@@ -187,21 +187,27 @@
     <!-- Bottom Navigation -->
     <nav id="bnav" style="position:fixed;bottom:16px;left:16px;right:16px;height:64px;background:#fff;border:1px solid #e2e8f0;border-radius:28px;display:flex;justify-content:space-around;align-items:center;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,.12)">
         <a href="{% url 'home' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;padding:6px 10px;border-radius:14px;min-width:46px;{% if request.resolver_match.url_name == 'home' %}color:#2563eb;background:rgba(37,99,235,.1){% else %}color:#94a3b8{% endif %}">
-            <i data-lucide="home" style="width:20px;height:20px"></i><span>Asosiy</span></a>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Asosiy</span></a>
         <a href="{% url 'favorites' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;padding:6px 10px;border-radius:14px;min-width:46px;{% if request.resolver_match.url_name == 'favorites' %}color:#2563eb;background:rgba(37,99,235,.1){% else %}color:#94a3b8{% endif %}">
-            <i data-lucide="heart" style="width:20px;height:20px"></i><span>Saralangan</span></a>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span>Saralangan</span></a>
         <a href="{% url 'add_property' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;color:#94a3b8;min-width:46px">
-            <div style="width:44px;height:44px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(37,99,235,.4)"><i data-lucide="plus" style="width:22px;height:22px;color:#fff"></i></div></a>
+            <div style="width:44px;height:44px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(37,99,235,.4)">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div></a>
         {% if user.is_authenticated %}
         <button onclick="openDrw()" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;font-size:.68rem;font-weight:600;padding:6px 10px;border-radius:14px;min-width:46px;color:#94a3b8">
             <div style="width:26px;height:26px;border-radius:50%;background:rgba(37,99,235,.1);border:2px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#2563eb;overflow:hidden">{% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" style="width:100%;height:100%;object-fit:cover" alt="">{% elif user.profile.telegram_photo_url %}<img src="{{ user.profile.telegram_photo_url }}" style="width:100%;height:100%;object-fit:cover" alt="">{% else %}{{ user.first_name|first|upper|default:user.username|first|upper }}{% endif %}</div>
             <span>Profil</span></button>
         {% else %}
         <a href="{% url 'login' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;color:#94a3b8;min-width:46px">
-            <i data-lucide="user" style="width:20px;height:20px"></i><span>Kirish</span></a>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Kirish</span></a>
         {% endif %}
         <button onclick="openCatalog()" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;font-size:.68rem;font-weight:600;color:#94a3b8;padding:6px 10px;min-width:46px">
-            <i data-lucide="layout-grid" style="width:20px;height:20px"></i><span>Katalog</span></button>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            <span>Katalog</span></button>
     </nav>
 
     <!-- Catalog Modal -->
@@ -351,8 +357,15 @@
             {% endif %}
         }
 
-        // Initialize Icons
-        lucide.createIcons();
+        // Initialize Icons — retry agar yuklanmagan bo'lsa
+        function initIcons() {
+            if (window.lucide) {
+                lucide.createIcons();
+            } else {
+                setTimeout(initIcons, 100);
+            }
+        }
+        initIcons();
         
         // Theme Toggle Logic
         const themeToggle = document.getElementById('theme-toggle');
