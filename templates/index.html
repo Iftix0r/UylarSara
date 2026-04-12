@@ -73,6 +73,17 @@
   </div>
 </div>
 
+<!-- Chips — har doim tepada qotib turadi -->
+<div id="sticky-chips" style="display:none;position:fixed;left:0;right:0;background:#fff;z-index:998;border-bottom:1px solid #eef1f8;padding:5px 14px 6px;overflow-x:auto;scrollbar-width:none;white-space:nowrap">
+  <a href="/" style="display:inline-block;padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;text-decoration:none;margin-right:6px;{% if not request.GET.category and not request.GET.q %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">{% if request.session.lang == 'ru' %}Все{% else %}Barchasi{% endif %}</a>
+  {% for cat in categories %}
+  <a href="?category={{ cat.slug }}" style="display:inline-block;padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;text-decoration:none;margin-right:6px;{% if request.GET.category == cat.slug %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">{{ cat.name }}</a>
+  {% endfor %}
+  <span onclick="openFilter()" style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;cursor:pointer;background:#f0f4ff;color:#64748b">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>Filter
+  </span>
+</div>
+
 <script>
 // Kategoriya sluglari
 const CAT_SLUGS = ['', {% for cat in categories %}'{{ cat.slug }}',{% endfor %}];
@@ -118,6 +129,7 @@ if (window.Telegram?.WebApp?.initData) {
     new ResizeObserver(setMainPadding).observe(topbar);
 
     let collapsed = false;
+    const stickyChips = document.getElementById('sticky-chips');
 
     window.addEventListener('scroll', () => {
         const y = window.scrollY;
@@ -125,11 +137,17 @@ if (window.Telegram?.WebApp?.initData) {
             collapsed = true;
             if (storiesRow) { storiesRow.style.maxHeight='0'; storiesRow.style.opacity='0'; storiesRow.style.padding='0 14px'; }
             if (searchRow)  { searchRow.style.maxHeight='0';  searchRow.style.opacity='0';  searchRow.style.padding='0 14px'; }
+            // Chips ni topbar ostiga qo'yamiz
+            if (stickyChips) {
+                stickyChips.style.display = 'block';
+                stickyChips.style.top = topbar.offsetHeight + 'px';
+            }
             setTimeout(setMainPadding, 220);
         } else if (y <= 10 && collapsed) {
             collapsed = false;
             if (storiesRow) { storiesRow.style.maxHeight='70px'; storiesRow.style.opacity='1'; storiesRow.style.padding='4px 14px 4px'; }
             if (searchRow)  { searchRow.style.maxHeight='60px';  searchRow.style.opacity='1';  searchRow.style.padding='2px 14px 5px'; }
+            if (stickyChips) stickyChips.style.display = 'none';
             setTimeout(setMainPadding, 220);
         }
     }, { passive: true });
