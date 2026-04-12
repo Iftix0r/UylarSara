@@ -293,14 +293,19 @@
             });
         }
         // Header Scroll Effect
+        // Header hide/show on scroll
+        let lastScrollY = 0;
+        const mainHeader = document.getElementById('main-header');
         window.addEventListener('scroll', () => {
-            const header = document.getElementById('main-header');
-            if (window.scrollY > 20) {
-                header.classList.add('scrolled');
+            const currentY = window.scrollY;
+            if (currentY > lastScrollY && currentY > 60) {
+                mainHeader.classList.add('header-hidden');
             } else {
-                header.classList.remove('scrolled');
+                mainHeader.classList.remove('header-hidden');
             }
-        });
+            mainHeader.classList.toggle('scrolled', currentY > 20);
+            lastScrollY = currentY;
+        }, { passive: true });
 
         // Active Nav Logic
         const currentPath = window.location.pathname;

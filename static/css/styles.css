@@ -405,3 +405,8 @@ body.dark-mode .cat-active .cat-icon-wrap{
   background:rgba(37,99,235,.15);
   border-color:var(--primary);
 }
+
+/* ── Header hide on scroll down, show on scroll up ── */
+header { transition: transform .3s ease, box-shadow .3s ease; }
+header.header-hidden { transform: translateY(-100%); }
+header.scrolled { box-shadow: var(--shadow-md); }
