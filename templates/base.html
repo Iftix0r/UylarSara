@@ -210,7 +210,7 @@
 
     <!-- Catalog Modal -->
     <div id="cat-ov" onclick="closeCatalog()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1100"></div>
-    <div id="cat-modal" style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;z-index:1200;max-height:80vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease">
+    <div id="cat-modal" style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;z-index:1200;max-height:80vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease;pointer-events:none">
         <div style="width:40px;height:4px;border-radius:2px;background:#e2e8f0;margin:12px auto 8px"></div>
         <div style="padding:4px 20px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between">
             <span style="font-weight:800;font-size:1.1rem;color:#0f172a">Kategoriyalar</span>
@@ -234,7 +234,7 @@
     <div id="drw-ov" onclick="closeDrw()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1100"></div>
 
     <!-- Drawer -->
-    <div id="drw" style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;z-index:1200;max-height:88vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease">
+    <div id="drw" style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;z-index:1200;max-height:88vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease;pointer-events:none">
         <div style="width:40px;height:4px;border-radius:2px;background:#e2e8f0;margin:12px auto 4px"></div>
         <div style="padding:16px 20px 12px;border-bottom:1px solid #f1f5f9">
             {% if user.is_authenticated %}
@@ -428,24 +428,28 @@
         // Drawer
         function openDrw() {
             document.getElementById('drw').style.transform = 'translateY(0)';
+            document.getElementById('drw').style.pointerEvents = 'auto';
             document.getElementById('drw-ov').style.display = 'block';
             document.body.style.overflow = 'hidden';
             if (window.lucide) lucide.createIcons();
         }
         function closeDrw() {
             document.getElementById('drw').style.transform = 'translateY(100%)';
+            document.getElementById('drw').style.pointerEvents = 'none';
             document.getElementById('drw-ov').style.display = 'none';
             document.body.style.overflow = '';
             document.body.style.position = '';
         }
         function openCatalog() {
             document.getElementById('cat-modal').style.transform = 'translateY(0)';
+            document.getElementById('cat-modal').style.pointerEvents = 'auto';
             document.getElementById('cat-ov').style.display = 'block';
             document.body.style.overflow = 'hidden';
             if (window.lucide) lucide.createIcons();
         }
         function closeCatalog() {
             document.getElementById('cat-modal').style.transform = 'translateY(100%)';
+            document.getElementById('cat-modal').style.pointerEvents = 'none';
             document.getElementById('cat-ov').style.display = 'none';
             document.body.style.overflow = '';
             document.body.style.position = '';
