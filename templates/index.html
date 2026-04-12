@@ -5,7 +5,7 @@
 {% block content %}
 
 <!-- ══ TWA TOP BAR ══ -->
-<div id="twa-topbar" style="display:none;flex-direction:column;background:#fff;position:sticky;top:0;z-index:200;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+<div id="twa-topbar" style="display:none;flex-direction:column;background:rgba(255,255,255,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:sticky;top:0;z-index:200;border-bottom:1px solid rgba(0,0,0,.06)">
     <!-- Sarlavha -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px 4px">
         <span style="font-size:1.1rem;font-weight:800;color:#0f172a;letter-spacing:-.02em">SaraUylar</span>
@@ -35,8 +35,18 @@
         </div>
         {% for cat in categories %}
         <a href="?category={{ cat.slug }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;text-decoration:none">
-            <div style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;{% if request.GET.category == cat.slug %}border:2.5px solid #2563eb;background:#e0f2fe{% else %}border:2px solid #e2e8f0;background:#f8fafc{% endif %}">
-                <i data-lucide="{{ cat.icon|default:'home' }}" style="width:20px;height:20px;color:{% if request.GET.category == cat.slug %}#2563eb{% else %}#64748b{% endif %}"></i>
+            <div style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;{% if request.GET.category == cat.slug %}border:2.5px solid #2563eb;background:#dbeafe{% else %}border:2px solid #e2e8f0;background:#f8fafc{% endif %}">
+                {% if cat.icon == 'building-2' or cat.slug == 'kvartira' or cat.slug == 'kvartiralar' %}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{% if request.GET.category == cat.slug %}#2563eb{% else %}#64748b{% endif %}" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+                {% elif cat.icon == 'home' or cat.slug == 'uy' or cat.slug == 'uylar' %}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{% if request.GET.category == cat.slug %}#2563eb{% else %}#64748b{% endif %}" stroke-width="2" stroke-linecap="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                {% elif cat.icon == 'briefcase' or cat.slug == 'tijorat' or cat.slug == 'ofis' %}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{% if request.GET.category == cat.slug %}#2563eb{% else %}#64748b{% endif %}" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                {% elif cat.icon == 'key' or cat.slug == 'ijara' %}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{% if request.GET.category == cat.slug %}#2563eb{% else %}#64748b{% endif %}" stroke-width="2" stroke-linecap="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg>
+                {% else %}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{% if request.GET.category == cat.slug %}#2563eb{% else %}#64748b{% endif %}" stroke-width="2" stroke-linecap="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                {% endif %}
             </div>
             <span style="font-size:.6rem;font-weight:600;color:{% if request.GET.category == cat.slug %}#2563eb{% else %}#64748b{% endif %};max-width:46px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cat.name|truncatechars:6 }}</span>
         </a>
