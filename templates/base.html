@@ -254,33 +254,44 @@
         const body = document.body;
         
         const updateThemeIcon = (isDark) => {
-            const icon = themeToggle.querySelector('i');
+            const icon = themeToggle?.querySelector('i');
             if (icon) {
                 icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
                 if (window.lucide) lucide.createIcons();
             }
         };
 
-        const savedTheme = localStorage.getItem('theme');
-        let currentTheme = savedTheme;
+        // ── Tema aniqlash ──
+        // TWA da: Telegram colorScheme ni ishlatamiz, localStorage ni e'tiborsiz qoldiramiz
+        // Oddiy brauzerda: localStorage ni ishlatamiz
+        const isTWA = !!window.Telegram?.WebApp?.initData;
+        let isDark = false;
 
-        // TWA Theme Sync (only if no manual theme saved)
-        if (!savedTheme && window.Telegram?.WebApp?.colorScheme) {
-            currentTheme = window.Telegram.WebApp.colorScheme;
-        } else if (!savedTheme) {
-            currentTheme = 'light';
+        if (isTWA) {
+            // Telegram colorScheme: 'dark' yoki 'light' — bir marta aniqlanadi
+            isDark = (window.Telegram.WebApp.colorScheme === 'dark');
+            // Telegram tema o'zgarganda yangilaymiz
+            window.Telegram.WebApp.onEvent('themeChanged', () => {
+                const newDark = (window.Telegram.WebApp.colorScheme === 'dark');
+                body.classList.toggle('dark-mode', newDark);
+                updateThemeIcon(newDark);
+            });
+        } else {
+            const saved = localStorage.getItem('theme');
+            isDark = saved === 'dark';
         }
 
-        if (currentTheme === 'dark') {
-            body.classList.add('dark-mode');
-            updateThemeIcon(true);
-        }
+        body.classList.toggle('dark-mode', isDark);
+        updateThemeIcon(isDark);
 
-        themeToggle.addEventListener('click', () => {
-            const isDarkNow = body.classList.toggle('dark-mode');
-            localStorage.setItem('theme', isDarkNow ? 'dark' : 'light');
-            updateThemeIcon(isDarkNow);
-        });
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                if (isTWA) return; // TWA da manual toggle yo'q
+                const nowDark = body.classList.toggle('dark-mode');
+                localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+                updateThemeIcon(nowDark);
+            });
+        }
         // Header Scroll Effect
         window.addEventListener('scroll', () => {
             const header = document.getElementById('main-header');

@@ -47,6 +47,48 @@
         </div>
     </div>
 
+    <!-- Settings (TWA uchun) -->
+    <div class="profile-settings-card">
+        <!-- Til -->
+        <div class="settings-row">
+            <div class="settings-label">
+                <i data-lucide="languages" style="width:20px;height:20px;color:var(--primary)"></i>
+                <span>{% if request.session.lang == 'ru' %}Язык{% else %}Til{% endif %}</span>
+            </div>
+            <div class="settings-control lang-toggle">
+                <a href="{% url 'set_language' 'uz' %}" class="lang-opt {% if request.session.lang == 'uz' or not request.session.lang %}lang-opt-active{% endif %}">UZ</a>
+                <a href="{% url 'set_language' 'ru' %}" class="lang-opt {% if request.session.lang == 'ru' %}lang-opt-active{% endif %}">RU</a>
+            </div>
+        </div>
+
+        <!-- Tungi rejim (faqat brauzerda, TWA da Telegram o'zi boshqaradi) -->
+        <div class="settings-row" id="theme-settings-row">
+            <div class="settings-label">
+                <i data-lucide="moon" id="profile-theme-icon" style="width:20px;height:20px;color:var(--primary)"></i>
+                <span id="profile-theme-label">{% if request.session.lang == 'ru' %}Тёмная тема{% else %}Tungi rejim{% endif %}</span>
+            </div>
+            <div class="settings-control">
+                <button class="theme-switch" id="profile-theme-btn" onclick="toggleProfileTheme()" aria-label="Toggle theme">
+                    <span class="theme-switch-thumb"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chiqish -->
+        <div class="settings-row">
+            <div class="settings-label">
+                <i data-lucide="log-out" style="width:20px;height:20px;color:#ef4444"></i>
+                <span style="color:#ef4444">{% if request.session.lang == 'ru' %}Выйти{% else %}Chiqish{% endif %}</span>
+            </div>
+            <form action="{% url 'logout' %}" method="POST" style="margin:0">
+                {% csrf_token %}
+                <button type="submit" class="settings-action-btn" style="color:#ef4444">
+                    <i data-lucide="chevron-right" style="width:18px;height:18px"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- My Listings Section -->
     <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 24px;">Mening e'lonlarim</h2>
     
@@ -89,4 +131,47 @@
         </div>
     {% endif %}
 </div>
+
+<style>
+.profile-settings-card{background:var(--bg-card);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:28px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-light)}
+.settings-row:last-child{border-bottom:none}
+.settings-label{display:flex;align-items:center;gap:12px;font-weight:600;font-size:.95rem;color:var(--text)}
+.settings-control{display:flex;align-items:center}
+.lang-toggle{display:flex;gap:4px;background:var(--border-light);padding:3px;border-radius:10px}
+.lang-opt{padding:5px 14px;border-radius:8px;font-size:.82rem;font-weight:700;color:var(--text-muted);transition:all .2s}
+.lang-opt-active{background:var(--primary);color:#fff}
+.theme-switch{width:48px;height:26px;border-radius:13px;background:var(--border);border:none;cursor:pointer;position:relative;transition:background .25s;padding:0}
+.theme-switch.on{background:var(--primary)}
+.theme-switch-thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.theme-switch.on .theme-switch-thumb{transform:translateX(22px)}
+.settings-action-btn{background:none;border:none;cursor:pointer;color:var(--text-muted);display:flex;align-items:center;padding:4px}
+</style>
+
+<script>
+// Profile theme toggle
+const profileBtn = document.getElementById('profile-theme-btn');
+const isTWA = !!window.Telegram?.WebApp?.initData;
+
+function syncProfileThemeBtn() {
+    const dark = document.body.classList.contains('dark-mode');
+    if (profileBtn) profileBtn.classList.toggle('on', dark);
+    const icon = document.getElementById('profile-theme-icon');
+    if (icon) { icon.setAttribute('data-lucide', dark ? 'sun' : 'moon'); lucide.createIcons(); }
+}
+syncProfileThemeBtn();
+
+function toggleProfileTheme() {
+    if (isTWA) return;
+    const nowDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+    syncProfileThemeBtn();
+}
+
+// TWA da tema tugmasini yashiramiz
+if (isTWA) {
+    const row = document.getElementById('theme-settings-row');
+    if (row) row.style.display = 'none';
+}
+</script>
 {% endblock %}
