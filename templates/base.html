@@ -426,6 +426,40 @@
             }
         }
         initIcons();
+
+        // ── Tugma bosilganda click tovushi ──
+        (function(){
+            var ctx;
+            function getCtx() {
+                if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+                return ctx;
+            }
+            function playClick(freq, dur, type) {
+                try {
+                    var c = getCtx();
+                    var o = c.createOscillator();
+                    var g = c.createGain();
+                    o.connect(g); g.connect(c.destination);
+                    o.type = type || 'sine';
+                    o.frequency.setValueAtTime(freq || 800, c.currentTime);
+                    o.frequency.exponentialRampToValueAtTime(freq * 0.5 || 400, c.currentTime + (dur || 0.06));
+                    g.gain.setValueAtTime(0.15, c.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + (dur || 0.06));
+                    o.start(c.currentTime);
+                    o.stop(c.currentTime + (dur || 0.06));
+                } catch(e){}
+            }
+            document.addEventListener('click', function(e) {
+                var t = e.target.closest('a,button,[onclick]');
+                if (!t) return;
+                // Fav tugmasi — yumshoq pop
+                if (t.classList.contains('tg-fav')) { playClick(600, 0.08, 'sine'); return; }
+                // Nav tugmalari — tik click
+                if (t.closest('#bnav')) { playClick(900, 0.04, 'square'); return; }
+                // Oddiy tugmalar — standart
+                playClick(750, 0.05, 'sine');
+            }, { passive: true });
+        })();
         
         // Theme Toggle Logic
         const themeToggle = document.getElementById('theme-toggle');
