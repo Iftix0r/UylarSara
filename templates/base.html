@@ -17,17 +17,19 @@
     
     <!-- TWA SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-    // Header ni darhol yashiramiz — flicker bo'lmasin
-    if (window.Telegram?.WebApp?.initData || window.location.search.includes('tgWebAppData')) {
-        document.documentElement.style.setProperty('--hide-header','none');
-    }
-    </script>
-    <style>
-    #main-header, .top-bar { display: var(--hide-header, flex); }
-    #main-header { display: var(--hide-header, flex); }
-    .top-bar { display: var(--hide-header, block); }
+    <style id="twa-hide-style">
+    /* Default: ko'rinadi. TWA da JS orqali o'zgartiriladi */
     </style>
+    <script>
+    /* telegram-web-app.js yuklanishi bilan initData tayyor bo'ladi */
+    (function(){
+        var tg = window.Telegram && window.Telegram.WebApp;
+        if (tg && tg.initData && tg.initData.length > 0) {
+            document.getElementById('twa-hide-style').textContent =
+                '#main-header, #site-topbar { display: none !important; }';
+        }
+    })();
+    </script>
     
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
@@ -96,7 +98,7 @@
     </div>
     <!-- Header -->
     <!-- Top Bar -->
-    <div class="top-bar">
+    <div class="top-bar" id="site-topbar">
         <div class="container" style="display: flex; justify-content: space-between; align-items: center; height: 100%;">
             <div class="city-selector" onclick="openCityModal()">
                 <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
