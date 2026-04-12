@@ -505,3 +505,34 @@ button.nav-item { background: none; border: none; cursor: pointer; }
 }
 .drawer-logout:hover { background: rgba(239,68,68,.15); }
 .drawer-logout svg { width: 18px; height: 18px; }
+
+/* ── Dark mode — karta va kontent ── */
+body.dark-mode {
+  --bg:#0d1117; --bg-card:#161b22; --text:#e6edf3; --text-muted:#8b949e;
+  --border:#30363d; --border-light:#21262d;
+  background:var(--bg); color:var(--text);
+}
+body.dark-mode .tg-card { background:#161b22; border-color:#30363d; }
+body.dark-mode .tg-card-title { color:#e6edf3; }
+body.dark-mode .tg-card-loc { color:#8b949e; }
+body.dark-mode .tg-card-meta { color:#8b949e; }
+body.dark-mode .tg-section-head { color:#e6edf3; }
+body.dark-mode .tg-search-box { background:#21262d; }
+body.dark-mode .tg-search-box input { color:#e6edf3; }
+body.dark-mode .chip { background:#21262d; color:#8b949e; }
+body.dark-mode .chip-active { background:#2563eb; color:#fff; }
+body.dark-mode #bnav { background:#161b22; border-color:#30363d; }
+body.dark-mode #drw, body.dark-mode #cat-modal { background:#161b22; }
+body.dark-mode #drw a, body.dark-mode #cat-modal a { color:#e6edf3; border-color:#21262d; }
+body.dark-mode #drw div[style*="border-bottom"] { border-color:#21262d !important; }
+body.dark-mode #twa-topbar { background:#0d1117 !important; border-color:#30363d !important; }
+body.dark-mode #twa-title { color:#e6edf3 !important; }
+body.dark-mode #twa-theme-btn { background:#21262d !important; border-color:#30363d !important; }
+body.dark-mode #topbar-stories > div > div,
+body.dark-mode #topbar-stories > a > div { border-color:#30363d !important; background:#21262d !important; }
+body.dark-mode #topbar-search > form > div { background:#21262d !important; }
+body.dark-mode #topbar-search input { color:#e6edf3 !important; }
+body.dark-mode #topbar-chips a { background:#21262d; color:#8b949e; }
+body.dark-mode #topbar-chips a.chip-active,
+body.dark-mode #topbar-chips a[style*="background:#2563eb"] { background:#2563eb !important; color:#fff !important; }
+body.dark-mode .tg-section-head span { color:#e6edf3; }
