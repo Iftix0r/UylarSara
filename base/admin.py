@@ -175,7 +175,8 @@ class UserProfileInline(admin.StackedInline):
     model        = UserProfile
     can_delete   = False
     verbose_name = "Profil"
-    fields       = ('phone_number', 'telegram_username', 'bio', 'avatar')
+    fields       = ('phone_number', 'telegram_username', 'telegram_id', 'bio', 'avatar')
+    readonly_fields = ('telegram_id',)
     extra        = 0
 
 
@@ -464,15 +465,15 @@ class FavoriteAdmin(admin.ModelAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display       = ('avatar_thumb', 'user_link', 'phone_number', 'telegram_link', 'ads_count', 'joined')
+    list_display       = ('avatar_thumb', 'user_link', 'phone_number', 'telegram_link', 'telegram_id_col', 'ads_count', 'joined')
     list_display_links = ('avatar_thumb', 'user_link')
-    search_fields      = ('user__username', 'user__email', 'phone_number', 'telegram_username')
+    search_fields      = ('user__username', 'user__email', 'phone_number', 'telegram_username', 'telegram_id')
     readonly_fields    = ('avatar_preview', 'ads_count', 'joined')
     list_per_page      = 25
 
     fieldsets = (
         ("Foydalanuvchi", {'fields': ('user',)}),
-        ("Kontakt",       {'fields': ('phone_number', 'telegram_username')}),
+        ("Kontakt",       {'fields': ('phone_number', 'telegram_username', 'telegram_id')}),
         ("Profil",        {'fields': ('avatar', 'avatar_preview', 'bio')}),
         ("Statistika",    {'fields': ('ads_count', 'joined'), 'classes': ('collapse',)}),
     )
@@ -502,6 +503,12 @@ class UserProfileAdmin(admin.ModelAdmin):
             return format_html('<a href="https://t.me/{}" target="_blank" style="color:#0088cc;">@{}</a>', handle, handle)
         return "—"
     telegram_link.short_description = "Telegram"
+
+    def telegram_id_col(self, obj):
+        if obj.telegram_id:
+            return format_html('<span style="font-family:monospace;color:#6b7280;">{}</span>', obj.telegram_id)
+        return "—"
+    telegram_id_col.short_description = "Telegram ID"
 
     def ads_count(self, obj):
         count = obj.user.properties.count()

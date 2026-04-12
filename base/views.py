@@ -19,103 +19,91 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 def verify_telegram_init_data(init_data: str) -> dict | None:
-    """Telegram WebApp initData ni tekshiradi va user ma'lumotlarini qaytaradi."""
+    """Telegram WebApp initData ni HMAC-SHA256 bilan tekshiradi."""
     token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    if not token or not init_data:
+        return None
     try:
-        parsed = dict(parse_qsl(init_data, strict_parsing=True))
+        parsed = dict(parse_qsl(init_data, strict_parsing=False))
         received_hash = parsed.pop("hash", None)
         if not received_hash:
             return None
-
-        data_check_string = "\n".join(
-            f"{k}={v}" for k, v in sorted(parsed.items())
-        )
-        # Telegram docs: HMAC-SHA256(token, "WebAppData") as secret key
+        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
         secret_key = hmac.new(b"WebAppData", token.encode(), hashlib.sha256).digest()
         expected_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
-
         if not hmac.compare_digest(expected_hash, received_hash):
+            print(f"[TG] Hash mismatch. expected={expected_hash[:16]} got={received_hash[:16]}")
             return None
-
-        user_data = json.loads(unquote(parsed.get("user", "{}")))
-        return user_data
+        user_str = parsed.get("user", "")
+        return json.loads(user_str) if user_str else None
     except Exception as e:
-        print(f"Telegram verify error: {e}")
+        print(f"[TG] verify error: {e}")
         return None
 
 
 @csrf_exempt
 def telegram_auth(request):
-    """Telegram WebApp dan kelgan initData orqali foydalanuvchi yaratadi yoki login qiladi."""
+    """Telegram WebApp initData orqali foydalanuvchi yaratadi yoki login qiladi."""
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
     try:
-        data = json.loads(request.body)
-        init_data = data.get("initData", "")
+        body = json.loads(request.body)
+        init_data = body.get("initData", "")
     except Exception:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-    print(f"[TG AUTH] initData length: {len(init_data)}")
+    print(f"[TG AUTH] initData len={len(init_data)}")
 
     user_data = verify_telegram_init_data(init_data)
 
-    # Development fallback: agar initData verify bo'lmasa, raw parse qilib ko'ramiz
-    if not user_data and init_data:
-        try:
-            parsed = dict(parse_qsl(init_data))
-            user_data = json.loads(unquote(parsed.get("user", "{}")))
-            print(f"[TG AUTH] Fallback parse: {user_data}")
-        except Exception as e:
-            print(f"[TG AUTH] Fallback error: {e}")
-
     if not user_data or not user_data.get("id"):
-        print(f"[TG AUTH] No user_data, initData: {init_data[:100]}")
+        print(f"[TG AUTH] verify failed. initData[:80]={init_data[:80]}")
         return JsonResponse({"error": "Invalid initData"}, status=403)
 
-    telegram_id = user_data.get("id")
-    first_name = user_data.get("first_name", "")
-    last_name = user_data.get("last_name", "")
-    tg_username = user_data.get("username", "")
-
-    print(f"[TG AUTH] Login: tg_id={telegram_id}, username={tg_username}")
+    telegram_id   = int(user_data["id"])
+    first_name    = user_data.get("first_name", "")
+    last_name     = user_data.get("last_name", "")
+    tg_username   = user_data.get("username", "")
+    print(f"[TG AUTH] tg_id={telegram_id} username={tg_username}")
 
     from django.contrib.auth.models import User
     from .models import UserProfile
 
-    # Mavjud profilni topamiz
     profile = UserProfile.objects.filter(telegram_id=telegram_id).select_related("user").first()
 
     if profile:
         user = profile.user
+        # Ismni yangilaymiz
+        changed = False
+        if first_name and user.first_name != first_name:
+            user.first_name = first_name; changed = True
+        if last_name and user.last_name != last_name:
+            user.last_name = last_name; changed = True
+        if changed:
+            user.save(update_fields=["first_name", "last_name"])
     else:
-        # Yangi foydalanuvchi yaratamiz
-        username = f"tg_{telegram_id}"
+        # Username tanlash: @username yoki tg_<id>
         if tg_username:
-            base = tg_username.lower()
-            username = base if not User.objects.filter(username=base).exists() else f"tg_{telegram_id}"
+            candidate = tg_username.lower()
+            username = candidate if not User.objects.filter(username=candidate).exists() else f"tg_{telegram_id}"
+        else:
+            username = f"tg_{telegram_id}"
 
-        user, created = User.objects.get_or_create(
+        user = User.objects.create_user(
             username=username,
-            defaults={
-                "first_name": first_name,
-                "last_name": last_name,
-            }
+            first_name=first_name,
+            last_name=last_name,
         )
-        # Profilni yangilaymiz
         profile, _ = UserProfile.objects.get_or_create(user=user)
         profile.telegram_id = telegram_id
         profile.telegram_username = tg_username
         profile.save()
+        print(f"[TG AUTH] New user created: {username}")
 
-    # Django session orqali login
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+    return JsonResponse({"ok": True, "username": user.username, "first_name": user.first_name})
 
-    return JsonResponse({
-        "ok": True,
-        "username": user.username,
-        "first_name": user.first_name,
-    })
 
 def set_language(request, lang):
     if lang in ['uz', 'ru']:
