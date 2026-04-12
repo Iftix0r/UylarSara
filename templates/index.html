@@ -61,20 +61,11 @@
     </form>
   </div>
 
-  <!-- Kategoriya chips -->
-  <div id="topbar-chips" style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 14px 6px;max-height:40px;opacity:1;transition:max-height .25s ease,opacity .25s ease">
-    <a href="/" style="padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;white-space:nowrap;text-decoration:none;flex-shrink:0;{% if not request.GET.category and not request.GET.q %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">{% if request.session.lang == 'ru' %}Все{% else %}Barchasi{% endif %}</a>
-    {% for cat in categories %}
-    <a href="?category={{ cat.slug }}" style="padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;white-space:nowrap;text-decoration:none;flex-shrink:0;{% if request.GET.category == cat.slug %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">{{ cat.name }}</a>
-    {% endfor %}
-    <div onclick="openFilter()" style="padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;white-space:nowrap;cursor:pointer;flex-shrink:0;background:#f0f4ff;color:#64748b;display:flex;align-items:center;gap:4px">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>Filter
-    </div>
-  </div>
+  <!-- Kategoriya chips topbar ichida yo'q — sticky-chips ishlatiladi -->
 </div>
 
 <!-- Chips — har doim tepada qotib turadi -->
-<div id="sticky-chips" style="display:none;position:fixed;left:0;right:0;background:#fff;z-index:998;border-bottom:1px solid #eef1f8;padding:5px 14px 6px;overflow-x:auto;scrollbar-width:none;white-space:nowrap">
+<div id="sticky-chips" style="position:fixed;left:0;right:0;background:#fff;z-index:998;border-bottom:1px solid #eef1f8;padding:5px 14px 6px;overflow-x:auto;scrollbar-width:none;white-space:nowrap;top:0">
   <a href="/" style="display:inline-block;padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;text-decoration:none;margin-right:6px;{% if not request.GET.category and not request.GET.q %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">{% if request.session.lang == 'ru' %}Все{% else %}Barchasi{% endif %}</a>
   {% for cat in categories %}
   <a href="?category={{ cat.slug }}" style="display:inline-block;padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;text-decoration:none;margin-right:6px;{% if request.GET.category == cat.slug %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">{{ cat.name }}</a>
@@ -121,9 +112,11 @@ if (window.Telegram?.WebApp?.initData) {
     const searchRow  = document.getElementById("topbar-search");
 
     function setMainPadding() {
-        const h = topbar.offsetHeight;
+        const sc = document.getElementById('sticky-chips');
+        const h = topbar.offsetHeight + (sc ? sc.offsetHeight : 0);
         const main = document.querySelector('main');
         if (main) main.style.paddingTop = h + 'px';
+        if (sc) sc.style.top = topbar.offsetHeight + 'px';
     }
     requestAnimationFrame(setMainPadding);
     new ResizeObserver(setMainPadding).observe(topbar);
@@ -147,7 +140,7 @@ if (window.Telegram?.WebApp?.initData) {
             collapsed = false;
             if (storiesRow) { storiesRow.style.maxHeight='70px'; storiesRow.style.opacity='1'; storiesRow.style.padding='4px 14px 4px'; }
             if (searchRow)  { searchRow.style.maxHeight='60px';  searchRow.style.opacity='1';  searchRow.style.padding='2px 14px 5px'; }
-            if (stickyChips) stickyChips.style.display = 'none';
+            if (stickyChips) stickyChips.style.opacity = '1';
             setTimeout(setMainPadding, 220);
         }
     }, { passive: true });
