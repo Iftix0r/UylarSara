@@ -23,7 +23,7 @@
 
   <!-- Hikoyalar -->
   <div id="topbar-stories" style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:4px 14px 4px;overflow:hidden;transition:max-height .2s ease,opacity .2s ease,padding .2s ease;max-height:70px;opacity:1">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
+    <div onclick="openStory(0)" style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;cursor:pointer">
       <div style="width:40px;height:40px;border-radius:50%;background:#f0f4ff;border:2px dashed #2563eb;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;font-size:.85rem;font-weight:800;color:#2563eb">
         {% if user.is_authenticated %}
           {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" style="width:100%;height:100%;object-fit:cover" alt="">
@@ -39,12 +39,12 @@
       <span style="font-size:.58rem;font-weight:600;color:#64748b;max-width:42px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{% if user.is_authenticated %}{{ user.first_name|default:user.username|truncatechars:6 }}{% else %}Siz{% endif %}</span>
     </div>
     {% for cat in categories %}
-    <a href="?category={{ cat.slug }}" style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;text-decoration:none">
+    <div onclick="openStory({{ forloop.counter }})" style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;cursor:pointer">
       <div style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;{% if request.GET.category == cat.slug %}border:2.5px solid #2563eb;background:#dbeafe{% else %}border:2px solid #e2e8f0;background:#f8fafc{% endif %}">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{% if request.GET.category == cat.slug %}#2563eb{% else %}#94a3b8{% endif %}" stroke-width="2" stroke-linecap="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       </div>
       <span style="font-size:.58rem;font-weight:600;color:{% if request.GET.category == cat.slug %}#2563eb{% else %}#64748b{% endif %};max-width:42px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cat.name|truncatechars:6 }}</span>
-    </a>
+    </div>
     {% endfor %}
   </div>
 
@@ -303,6 +303,29 @@ if (window.Telegram?.WebApp?.initData) {
 .tg-fav-on{color:#ef4444 !important}
 .tg-fav-on i{fill:#ef4444}
 .tg-fav:active{transform:scale(.85)}
+
+/* ── Story Viewer ── */
+#story-viewer{position:fixed;inset:0;z-index:9999;background:#000;display:none;flex-direction:column}
+#story-viewer.open{display:flex}
+.story-progress{display:flex;gap:3px;padding:10px 12px 6px;position:absolute;top:0;left:0;right:0;z-index:10}
+.story-prog-bar{flex:1;height:2px;background:rgba(255,255,255,.35);border-radius:2px;overflow:hidden}
+.story-prog-fill{height:100%;background:#fff;width:0%;transition:width linear}
+.story-header{position:absolute;top:20px;left:0;right:0;z-index:10;display:flex;align-items:center;gap:10px;padding:0 14px}
+.story-avatar-sm{width:36px;height:36px;border-radius:50%;border:2px solid #fff;overflow:hidden;background:#2563eb;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem;flex-shrink:0}
+.story-avatar-sm img{width:100%;height:100%;object-fit:cover}
+.story-name{color:#fff;font-weight:700;font-size:.9rem}
+.story-time{color:rgba(255,255,255,.7);font-size:.75rem}
+.story-close{margin-left:auto;color:#fff;background:none;border:none;cursor:pointer;padding:4px}
+.story-content{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+.story-bg{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.story-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.3) 0%,transparent 30%,transparent 60%,rgba(0,0,0,.5) 100%)}
+.story-text{position:absolute;bottom:80px;left:0;right:0;padding:0 20px;text-align:center;color:#fff}
+.story-text h3{font-size:1.4rem;font-weight:800;margin-bottom:8px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.story-text p{font-size:.9rem;opacity:.9;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+.story-action{position:absolute;bottom:24px;left:50%;transform:translateX(-50%)}
+.story-action a{display:inline-block;padding:12px 32px;background:#2563eb;color:#fff;border-radius:24px;font-weight:700;text-decoration:none;font-size:.95rem;box-shadow:0 4px 16px rgba(37,99,235,.5)}
+.story-tap-left{position:absolute;left:0;top:0;width:40%;height:100%;z-index:5}
+.story-tap-right{position:absolute;right:0;top:0;width:40%;height:100%;z-index:5}
 </style>
 
 <script>
@@ -333,5 +356,111 @@ function getNearby(){
         window.location.href=`/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`
     },()=>alert('Joylashuv aniqlanmadi'))
 }
+</script>
+
+<!-- ══ STORY VIEWER ══ -->
+<div id="story-viewer">
+  <div class="story-progress" id="story-progress"></div>
+  <div class="story-header">
+    <div class="story-avatar-sm" id="sv-avatar"></div>
+    <div>
+      <div class="story-name" id="sv-name"></div>
+      <div class="story-time" id="sv-time">Hozir</div>
+    </div>
+    <button class="story-close" onclick="closeStory()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="story-content">
+    <div id="sv-bg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"></div>
+    <div class="story-overlay"></div>
+    <div class="story-text">
+      <h3 id="sv-title"></h3>
+      <p id="sv-desc"></p>
+    </div>
+    <div class="story-action"><a id="sv-link" href="#">Ko'rish →</a></div>
+    <div class="story-tap-left" onclick="storyPrev()"></div>
+    <div class="story-tap-right" onclick="storyNext()"></div>
+  </div>
+</div>
+
+<script>
+// Story ma'lumotlari
+const STORIES = [
+  {
+    name: "{% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% else %}SaraUylar{% endif %}",
+    avatar: "{% if user.profile.avatar %}{{ user.profile.avatar.url }}{% elif user.profile.telegram_photo_url %}{{ user.profile.telegram_photo_url }}{% endif %}",
+    initials: "{% if user.is_authenticated %}{{ user.first_name|first|upper|default:user.username|first|upper }}{% else %}S{% endif %}",
+    title: "SaraUylar",
+    desc: "O'zbekistondagi eng sara uy-joy platformasi",
+    color: "linear-gradient(135deg,#2563eb,#7c3aed)",
+    link: "/"
+  },
+  {% for cat in categories %}
+  {
+    name: "{{ cat.name }}",
+    avatar: "",
+    initials: "{{ cat.name|first|upper }}",
+    title: "{{ cat.name }} bo'limi",
+    desc: "{{ cat.name }} kategoriyasidagi eng yangi e'lonlar",
+    color: "{% cycle 'linear-gradient(135deg,#0ea5e9,#2563eb)' 'linear-gradient(135deg,#10b981,#059669)' 'linear-gradient(135deg,#f59e0b,#ef4444)' 'linear-gradient(135deg,#8b5cf6,#ec4899)' 'linear-gradient(135deg,#06b6d4,#3b82f6)' %}",
+    link: "/?category={{ cat.slug }}"
+  },
+  {% endfor %}
+];
+
+let svIdx = 0, svTimer = null, svProgress = null;
+const SV_DURATION = 4000;
+
+function openStory(idx) {
+  svIdx = idx;
+  document.getElementById('story-viewer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderStory();
+}
+function closeStory() {
+  document.getElementById('story-viewer').classList.remove('open');
+  document.body.style.overflow = '';
+  clearTimeout(svTimer);
+  if (svProgress) { svProgress.style.transition='none'; svProgress.style.width='0%'; }
+}
+function storyNext() {
+  if (svIdx < STORIES.length - 1) { svIdx++; renderStory(); }
+  else closeStory();
+}
+function storyPrev() {
+  if (svIdx > 0) { svIdx--; renderStory(); }
+}
+function renderStory() {
+  clearTimeout(svTimer);
+  const s = STORIES[svIdx];
+  // Avatar
+  const av = document.getElementById('sv-avatar');
+  if (s.avatar) { av.innerHTML = '<img src="'+s.avatar+'" style="width:100%;height:100%;object-fit:cover">'; }
+  else { av.textContent = s.initials; av.style.background = '#2563eb'; }
+  document.getElementById('sv-name').textContent = s.name;
+  document.getElementById('sv-title').textContent = s.title;
+  document.getElementById('sv-desc').textContent = s.desc;
+  document.getElementById('sv-link').href = s.link;
+  document.getElementById('sv-bg').style.background = s.color;
+  // Progress bars
+  const prog = document.getElementById('story-progress');
+  prog.innerHTML = STORIES.map((_, i) =>
+    '<div class="story-prog-bar"><div class="story-prog-fill" id="spf-'+i+'" style="width:'+(i<svIdx?'100%':i===svIdx?'0%':'0%')+'"></div></div>'
+  ).join('');
+  // Animate current
+  svProgress = document.getElementById('spf-'+svIdx);
+  requestAnimationFrame(() => {
+    svProgress.style.transition = 'width '+SV_DURATION+'ms linear';
+    svProgress.style.width = '100%';
+  });
+  svTimer = setTimeout(storyNext, SV_DURATION);
+}
+// Swipe to close
+let svTouchX = 0;
+document.getElementById('story-viewer').addEventListener('touchstart', e => { svTouchX = e.touches[0].clientY; }, {passive:true});
+document.getElementById('story-viewer').addEventListener('touchend', e => {
+  if (e.changedTouches[0].clientY - svTouchX > 80) closeStory();
+}, {passive:true});
 </script>
 {% endblock %}
