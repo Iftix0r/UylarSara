@@ -1,500 +1,243 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}{% if request.session.lang == 'ru' %}Главная{% else %}Asosiy sahifa{% endif %} - SaraUylar{% endblock %}
+{% block title %}SaraUylar{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Hero Section -->
-    <section class="hero animate-fade-in">
-        <h1>
-            {% if hero_title %}
-                {{ hero_title|safe }}
-            {% else %}
-                {% if request.session.lang == 'ru' %}Найдите свой идеальный <span>Дом</span>{% else %}O'zingizga mos <span>Uyni</span> toping{% endif %}
-            {% endif %}
-        </h1>
-        <p>
-            {% if hero_subtitle %}
-                {{ hero_subtitle|safe }}
-            {% else %}
-                {% if request.session.lang == 'ru' %}Платформа самых отборных и современных домов в Узбекистане. Напрямую от застройщика по самым доступным ценам.{% else %}O'zbekistondagi eng sara va ishonchli yangi qurilgan uylar platformasi. To'g'ridan-to'g'ri quruvchidan va eng hamyonbop narxlarda.{% endif %}
-            {% endif %}
-        </p>
-    </section>
 
-    <!-- Categories — Avito style -->
-    <section class="cat-section animate-fade-in" style="animation-delay:200ms;">
-        <div class="cat-scroll">
-
-            <!-- Barchasi -->
-            <a href="/" class="cat-card {% if not request.GET.category %}cat-active{% endif %}">
-                <div class="cat-icon-wrap" style="background:linear-gradient(135deg,#e0e7ff,#c7d2fe)">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="6" y="6" width="15" height="15" rx="3" fill="#6366f1"/>
-                        <rect x="27" y="6" width="15" height="15" rx="3" fill="#818cf8"/>
-                        <rect x="6" y="27" width="15" height="15" rx="3" fill="#818cf8"/>
-                        <rect x="27" y="27" width="15" height="15" rx="3" fill="#6366f1"/>
-                    </svg>
-                </div>
-                <span>{% if request.session.lang == 'ru' %}Все{% else %}Barchasi{% endif %}</span>
-            </a>
-
-            {% for cat in categories %}
-            <a href="?category={{ cat.slug }}" class="cat-card {% if request.GET.category == cat.slug %}cat-active{% endif %}">
-                <div class="cat-icon-wrap">
-                    {% if cat.slug == 'kvartira' or cat.slug == 'kvartiralar' or cat.icon == 'building-2' %}
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="8" y="10" width="32" height="32" rx="3" fill="#dbeafe"/>
-                        <rect x="8" y="10" width="32" height="8" rx="3" fill="#3b82f6"/>
-                        <rect x="14" y="22" width="6" height="6" rx="1" fill="#3b82f6"/>
-                        <rect x="26" y="22" width="6" height="6" rx="1" fill="#3b82f6"/>
-                        <rect x="14" y="32" width="6" height="6" rx="1" fill="#3b82f6"/>
-                        <rect x="26" y="32" width="6" height="6" rx="1" fill="#3b82f6"/>
-                    </svg>
-                    {% elif cat.slug == 'uy' or cat.slug == 'uylar' or cat.icon == 'home' %}
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 22L24 8L40 22V40H30V30H18V40H8V22Z" fill="#bbf7d0"/>
-                        <path d="M8 22L24 8L40 22" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <rect x="18" y="30" width="12" height="10" rx="1" fill="#16a34a"/>
-                        <rect x="21" y="33" width="6" height="7" rx="1" fill="#bbf7d0"/>
-                    </svg>
-                    {% elif cat.slug == 'villa' or cat.slug == 'villalar' or cat.icon == 'castle' %}
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="6" y="20" width="36" height="22" rx="2" fill="#fde68a"/>
-                        <path d="M6 20L24 6L42 20" fill="#fbbf24"/>
-                        <rect x="10" y="26" width="8" height="8" rx="1" fill="#f59e0b"/>
-                        <rect x="30" y="26" width="8" height="8" rx="1" fill="#f59e0b"/>
-                        <rect x="20" y="28" width="8" height="14" rx="1" fill="#f59e0b"/>
-                        <circle cx="36" cy="14" r="3" fill="#fbbf24"/>
-                        <circle cx="12" cy="14" r="3" fill="#fbbf24"/>
-                    </svg>
-                    {% elif cat.slug == 'tijorat' or cat.slug == 'ofis' or cat.icon == 'briefcase' %}
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="6" y="16" width="36" height="26" rx="3" fill="#e0e7ff"/>
-                        <rect x="6" y="16" width="36" height="8" rx="3" fill="#6366f1"/>
-                        <rect x="16" y="8" width="16" height="10" rx="2" fill="#818cf8"/>
-                        <rect x="20" y="8" width="8" height="4" rx="1" fill="#e0e7ff"/>
-                        <rect x="12" y="28" width="8" height="8" rx="1" fill="#6366f1"/>
-                        <rect x="28" y="28" width="8" height="8" rx="1" fill="#6366f1"/>
-                    </svg>
-                    {% elif cat.slug == 'yangi-qurilish' or cat.slug == 'yangi_qurilish' or cat.icon == 'hard-hat' %}
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="8" y="28" width="32" height="14" rx="2" fill="#fed7aa"/>
-                        <rect x="8" y="28" width="32" height="5" rx="2" fill="#f97316"/>
-                        <rect x="14" y="16" width="6" height="14" fill="#fb923c"/>
-                        <rect x="28" y="16" width="6" height="14" fill="#fb923c"/>
-                        <rect x="10" y="14" width="28" height="4" rx="2" fill="#f97316"/>
-                        <path d="M20 10L24 6L28 10" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-                    </svg>
-                    {% elif cat.slug == 'ijara' or cat.icon == 'key' %}
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="18" cy="20" r="10" fill="#d1fae5"/>
-                        <circle cx="18" cy="20" r="6" fill="#10b981"/>
-                        <circle cx="18" cy="20" r="2.5" fill="#d1fae5"/>
-                        <rect x="26" y="22" width="16" height="4" rx="2" fill="#10b981"/>
-                        <rect x="36" y="26" width="4" height="5" rx="1" fill="#10b981"/>
-                        <rect x="30" y="26" width="4" height="4" rx="1" fill="#10b981"/>
-                    </svg>
-                    {% else %}
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="8" y="14" width="32" height="26" rx="3" fill="#e0f2fe"/>
-                        <path d="M8 22L24 10L40 22" fill="#0ea5e9"/>
-                        <rect x="18" y="28" width="12" height="12" rx="1" fill="#0ea5e9"/>
-                        <rect x="21" y="31" width="6" height="9" rx="1" fill="#e0f2fe"/>
-                    </svg>
-                    {% endif %}
-                </div>
-                <span>{{ cat.name }}</span>
-            </a>
-            {% endfor %}
-
-        </div>
-    </section>
-
-    <!-- Title Section -->
-    <div class="section-header animate-fade-in" style="animation-delay: 400ms; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; margin-top: 12px;">
-        <div>
-            <h2 style="font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em;">{% if request.session.lang == 'ru' %}Новые объявления{% else %}Yangi e'lonlar{% endif %}</h2>
-            <p style="color: var(--text-muted); font-size: 0.95rem;">
-                {% if is_demo %}
-                    <span style="background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:20px;font-size:0.8rem;font-weight:700;">Demo e'lonlar</span>
+<!-- ══ STORIES ══ -->
+<div class="tg-stories">
+    <!-- "Mening hikoyam" -->
+    <div class="story-item">
+        <div class="story-ring story-add">
+            {% if user.is_authenticated %}
+                {% if user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="">
+                {% elif user.profile.telegram_photo_url %}
+                    <img src="{{ user.profile.telegram_photo_url }}" alt="">
                 {% else %}
-                    {% if request.session.lang == 'ru' %}Лучшие предложения, выбранные для вас{% else %}Siz uchun tanlangan eng yaxshi takliflar{% endif %}
+                    <span>{{ user.first_name|first|upper|default:user.username|first|upper }}</span>
                 {% endif %}
-            </p>
+                <div class="story-plus"><i data-lucide="plus" style="width:10px;height:10px;color:#fff"></i></div>
+            {% else %}
+                <i data-lucide="user" style="width:22px;height:22px;color:#94a3b8"></i>
+            {% endif %}
         </div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <div class="view-toggles" style="display: none; gap: 4px; background: var(--bg-card); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border-light); margin-right: 4px;">
-                <button type="button" class="view-btn active" data-view="grid" onclick="setViewMode('grid')" title="{% if request.session.lang == 'ru' %}Плитка{% else %}To'r ko'rinishi{% endif %}" style="border: none; background: transparent; padding: 6px; cursor: pointer; border-radius: var(--radius-sm); color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
-                    <i data-lucide="layout-grid" style="width: 18px; height: 18px;"></i>
-                </button>
-                <button type="button" class="view-btn" data-view="list" onclick="setViewMode('list')" title="{% if request.session.lang == 'ru' %}Список{% else %}Ro'yxat ko'rinishi{% endif %}" style="border: none; background: transparent; padding: 6px; cursor: pointer; border-radius: var(--radius-sm); color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
-                    <i data-lucide="list" style="width: 18px; height: 18px;"></i>
-                </button>
-            </div>
-            <div onclick="getNearby()" class="filter-btn {% if nearby_active %}active{% endif %}">
-                <i data-lucide="map-pin" style="width: 18px; height: 18px;"></i>
-                {% if request.session.lang == 'ru' %}Рядом{% else %}Yaqinimda{% endif %}
-            </div>
-            <div class="filter-btn">
-                <i data-lucide="sliders-horizontal" style="width: 18px; height: 18px;"></i>
-                {% if request.session.lang == 'ru' %}Фильтр{% else %}Filter{% endif %}
-            </div>
-        </div>
+        <span>{% if user.is_authenticated %}{{ user.first_name|default:user.username|truncatechars:8 }}{% else %}Siz{% endif %}</span>
     </div>
+    <!-- Demo stories -->
+    {% for cat in categories %}
+    <a href="?category={{ cat.slug }}" class="story-item" style="text-decoration:none">
+        <div class="story-ring {% if request.GET.category == cat.slug %}story-active{% endif %}">
+            <i data-lucide="{{ cat.icon|default:'home' }}" style="width:22px;height:22px;color:#2563eb"></i>
+        </div>
+        <span>{{ cat.name|truncatechars:8 }}</span>
+    </a>
+    {% endfor %}
+</div>
 
-    <!-- Listings Grid -->
-    <div class="property-list">
-        {% for property in properties %}
-        <div class="property-item animate-fade-in" data-index="{{ forloop.counter }}" style="position: relative;">
-            {% if is_demo %}
-            <div class="property-card" style="opacity:0.85;">
-            {% else %}
-            <a href="{% url 'property_detail' property.pk %}" style="text-decoration: none; color: inherit;">
-            <div class="property-card">
-            {% endif %}
-                <div class="card-image-wrapper" 
-                     data-gallery='["{% if property.image %}{{ property.image.url }}{% endif %}"{% for img in property.images.all %}, "{{ img.image.url }}"{% endfor %}]'
-                     onmousemove="handleHoverSlider(event, this)" 
-                     onmouseleave="resetHoverSlider(this)">
-                    
-                    {% if property.image %}
-                        <img src="{{ property.image.url }}" alt="{{ property.title }}" class="card-img main-img">
-                    {% else %}
-                        <div class="card-img no-img" style="display: flex; align-items: center; justify-content: center; background: #f1f5f9;">
-                            <i data-lucide="image" style="width: 48px; height: 48px; color: #cbd5e0;"></i>
-                        </div>
-                    {% endif %}
-                    
-                    <!-- Preload other images (hidden) -->
-                    {% for img in property.images.all %}
-                        <link rel="prefetch" href="{{ img.image.url }}">
-                    {% endfor %}
-
-                    <div class="slider-dots"></div>
-                    
-                    <div class="card-overlay"></div>
-                    <div class="card-badge">{{ property.get_property_type_display }}</div>
-                    {% if property.is_premium %}
-                        <div class="premium-tag">
-                            <i data-lucide="star" style="width: 12px; height: 12px; fill: currentColor; margin-right: 4px;"></i>
-                            Premium
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="card-content">
-                    <div class="card-price">${{ property.price|floatformat:0 }}</div>
-                    <h3 class="card-title">{{ property.title }}</h3>
-                    <div class="card-loc">
-                        <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i>
-                        {{ property.location }}
-                    </div>
-                </div>
-            </div>
-            {% if not is_demo %}</a>{% endif %}
-            {% if not is_demo %}
-            <button type="button" class="fav-btn {% if property.pk in favorited_ids %}is-favorited{% endif %}" data-id="{{ property.pk }}" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: rgba(255,255,255,0.9); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #cbd5e0; box-shadow: var(--shadow-sm);">
-                <i data-lucide="heart" style="width: 20px; height: 20px;"></i>
+<!-- ══ SEARCH ══ -->
+<div class="tg-search-wrap">
+    <form action="/" method="GET" id="search-form">
+        <div class="tg-search-box">
+            <i data-lucide="search" style="width:16px;height:16px;color:#94a3b8;flex-shrink:0"></i>
+            <input type="text" name="q" id="search-input" autocomplete="off"
+                placeholder="{% if request.session.lang == 'ru' %}Поиск недвижимости...{% else %}Uy-joy qidirish...{% endif %}"
+                value="{{ request.GET.q }}" onfocus="showSearchHistory()">
+            <button type="button" class="voice-search-btn" id="voice-search-btn" style="position:static;transform:none;width:28px;height:28px">
+                <i data-lucide="mic" style="width:16px;height:16px"></i>
             </button>
-            <div class="compare-checkbox" data-id="{{ property.pk }}" data-title="{{ property.title }}" data-price="{{ property.price }}" data-rooms="{{ property.rooms }}" data-area="{{ property.area }}" data-image="{% if property.image %}{{ property.image.url }}{% endif %}" title="{% if request.session.lang == 'ru' %}Сравнить{% else %}Solishtirish{% endif %}">
-                <i data-lucide="layers" style="width: 14px; height: 14px;"></i>
-            </div>
-            {% else %}
-            <div style="position:absolute;top:15px;right:15px;z-index:10;background:rgba(251,191,36,0.9);color:#78350f;font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:20px;">Demo</div>
-            {% endif %}
         </div>
-        {% empty %}
-        <div style="grid-column: 1/-1; text-align: center; padding: 100px 0;">
-            <div style="background: var(--bg-card); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: var(--shadow-md);">
-                <i data-lucide="search-x" style="width: 40px; height: 40px; color: #cbd5e0;"></i>
-            </div>
-            <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;">{% if request.session.lang == 'ru' %}Объявлений не найдено{% else %}Hech qanday e'lon topilmadi{% endif %}</h3>
-            <p style="color: var(--text-muted);">{% if request.session.lang == 'ru' %}Попробуйте другое слово для поиска или сбросьте фильтры.{% else %}Boshqa qidiruv so'zini sinab ko'ring yoki filterlarni tozalang.{% endif %}</p>
-            <a href="/" class="btn btn-primary" style="margin-top: 24px;">{% if request.session.lang == 'ru' %}Показать все{% else %}Barchasini ko'rish{% endif %}</a>
-        </div>
-        {% endfor %}
+        <div id="search-history-dropdown" class="search-history-dropdown"></div>
+    </form>
+</div>
+
+<!-- ══ FILTER CHIPS ══ -->
+<div class="tg-chips">
+    <a href="/" class="chip {% if not request.GET.category and not request.GET.q %}chip-active{% endif %}">
+        {% if request.session.lang == 'ru' %}Все{% else %}Barchasi{% endif %}
+    </a>
+    {% for cat in categories %}
+    <a href="?category={{ cat.slug }}" class="chip {% if request.GET.category == cat.slug %}chip-active{% endif %}">
+        {{ cat.name }}
+    </a>
+    {% endfor %}
+    <div class="chip" onclick="openFilter()" style="cursor:pointer">
+        <i data-lucide="sliders-horizontal" style="width:13px;height:13px"></i>
+        Filter
     </div>
 </div>
 
-<!-- Filter Modal -->
-<div id="filter-modal" class="modal" style="display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); align-items: flex-end; justify-content: center;">
-    <div class="modal-content animate-slide-up" style="background: var(--bg-card); width: 100%; max-width: 500px; padding: 32px; border-radius: var(--radius-xl) var(--radius-xl) 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.1);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h3 style="font-size: 1.5rem; font-weight: 800;">{% if request.session.lang == 'ru' %}Фильтры{% else %}Filterlar{% endif %}</h3>
-            <div onclick="closeFilter()" style="cursor: pointer; padding: 8px; border-radius: 50%; background: var(--border-light); color: var(--text-muted);"><i data-lucide="x"></i></div>
+<!-- ══ SECTION HEADER ══ -->
+<div class="tg-section-head">
+    <span>{% if is_demo %}Demo e'lonlar{% elif request.session.lang == 'ru' %}Новые объявления{% else %}Yangi e'lonlar{% endif %}</span>
+    <div style="display:flex;gap:6px">
+        <button onclick="getNearby()" class="tg-icon-btn {% if nearby_active %}tg-icon-btn-active{% endif %}" title="Yaqinimda">
+            <i data-lucide="map-pin" style="width:16px;height:16px"></i>
+        </button>
+    </div>
+</div>
+
+<!-- ══ LISTINGS ══ -->
+<div class="tg-list">
+    {% for property in properties %}
+    <div class="tg-card animate-fade-in" style="--delay:{{ forloop.counter }}">
+        {% if is_demo %}
+        <div class="tg-card-img">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#e0f2fe,#dbeafe);display:flex;align-items:center;justify-content:center">
+                <i data-lucide="home" style="width:40px;height:40px;color:#93c5fd"></i>
+            </div>
+            <span class="tg-badge">{{ property.get_property_type_display }}</span>
+            <span class="tg-demo-tag">Demo</span>
         </div>
-        
-        <form action="/" method="GET" id="filter-form">
-            <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
-                <div class="form-group">
-                    <label style="display: block; font-weight: 700; margin-bottom: 12px;">{% if request.session.lang == 'ru' %}Количество комнат{% else %}Xonalar soni{% endif %}</label>
-                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
-                        {% for i in "1234"|make_list %}<button type="button" class="room-btn" onclick="setRooms(this, '{{ i }}')" style="padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-card); font-weight: 700; cursor: pointer;">{{ i }}</button>{% endfor %}
-                        <button type="button" class="room-btn" onclick="setRooms(this, '5+')" style="padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-card); font-weight: 700; cursor: pointer;">5+</button>
-                    </div>
-                    <input type="hidden" name="rooms" id="rooms-input">
+        {% else %}
+        <a href="{% url 'property_detail' property.pk %}" class="tg-card-img">
+            {% if property.image %}
+                <img src="{{ property.image.url }}" alt="{{ property.title }}" loading="lazy">
+            {% else %}
+                <div style="width:100%;height:100%;background:linear-gradient(135deg,#e0f2fe,#dbeafe);display:flex;align-items:center;justify-content:center">
+                    <i data-lucide="home" style="width:40px;height:40px;color:#93c5fd"></i>
                 </div>
-                
-                <div class="form-group">
-                    <label style="display: block; font-weight: 700; margin-bottom: 12px;">{% if request.session.lang == 'ru' %}Ценовой диапазон (USD){% else %}Narx oralig'i (USD){% endif %}</label>
-                    <div style="display: flex; gap: 12px;">
-                        <input type="number" name="min_price" placeholder="Min" style="flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-main);">
-                        <input type="number" name="max_price" placeholder="Max" style="flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-main);">
-                    </div>
+            {% endif %}
+            <span class="tg-badge">{{ property.get_property_type_display }}</span>
+            {% if property.is_premium %}<span class="tg-premium">⭐ Premium</span>{% endif %}
+        </a>
+        {% endif %}
+
+        <div class="tg-card-body">
+            <div class="tg-card-price">${{ property.price|floatformat:0 }}</div>
+            <div class="tg-card-title">{{ property.title }}</div>
+            <div class="tg-card-loc"><i data-lucide="map-pin" style="width:12px;height:12px"></i>{{ property.location }}</div>
+            <div class="tg-card-meta">
+                <span><i data-lucide="door-open" style="width:12px;height:12px"></i>{{ property.rooms }} xona</span>
+                <span><i data-lucide="maximize-2" style="width:12px;height:12px"></i>{{ property.area }} m²</span>
+                <span><i data-lucide="eye" style="width:12px;height:12px"></i>{{ property.views_count }}</span>
+            </div>
+        </div>
+
+        {% if not is_demo %}
+        <button class="tg-fav {% if property.pk in favorited_ids %}tg-fav-on{% endif %}" data-id="{{ property.pk }}">
+            <i data-lucide="heart" style="width:16px;height:16px"></i>
+        </button>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div style="text-align:center;padding:60px 20px;color:#94a3b8">
+        <i data-lucide="search-x" style="width:48px;height:48px;margin-bottom:12px"></i>
+        <div style="font-weight:600">E'lonlar topilmadi</div>
+        <a href="/" style="display:inline-block;margin-top:16px;padding:10px 24px;background:#2563eb;color:#fff;border-radius:12px;font-weight:700;text-decoration:none">Barchasini ko'rish</a>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Filter Modal -->
+<div id="filter-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(15,23,42,.4);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center">
+    <div style="background:#fff;width:100%;max-width:500px;padding:28px;border-radius:24px 24px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.1)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <span style="font-size:1.2rem;font-weight:800">Filterlar</span>
+            <div onclick="closeFilter()" style="cursor:pointer;padding:6px;border-radius:50%;background:#f1f5f9"><i data-lucide="x"></i></div>
+        </div>
+        <form action="/" method="GET" id="filter-form">
+            <div style="margin-bottom:20px">
+                <label style="display:block;font-weight:700;margin-bottom:10px">Xonalar soni</label>
+                <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+                    {% for i in "1234"|make_list %}<button type="button" class="room-btn" onclick="setRooms(this,'{{ i }}')" style="padding:10px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;font-weight:700;cursor:pointer">{{ i }}</button>{% endfor %}
+                    <button type="button" class="room-btn" onclick="setRooms(this,'5+')" style="padding:10px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;font-weight:700;cursor:pointer">5+</button>
+                </div>
+                <input type="hidden" name="rooms" id="rooms-input">
+            </div>
+            <div style="margin-bottom:24px">
+                <label style="display:block;font-weight:700;margin-bottom:10px">Narx oralig'i (USD)</label>
+                <div style="display:flex;gap:10px">
+                    <input type="number" name="min_price" placeholder="Min" style="flex:1;padding:11px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc">
+                    <input type="number" name="max_price" placeholder="Max" style="flex:1;padding:11px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc">
                 </div>
             </div>
-            
-            <div style="margin-top: 32px; display: grid; grid-template-columns: 1fr 2fr; gap: 12px;">
-                <button type="reset" class="btn" onclick="resetForm()" style="background: var(--border-light); font-weight: 700;">{% if request.session.lang == 'ru' %}Сбросить{% else %}Tozalash{% endif %}</button>
-                <button type="submit" class="btn btn-primary">{% if request.session.lang == 'ru' %}Показать результаты{% else %}Natijalarni ko'rish{% endif %}</button>
+            <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
+                <button type="reset" onclick="resetForm()" style="padding:13px;background:#f1f5f9;border:none;border-radius:12px;font-weight:700;cursor:pointer">Tozalash</button>
+                <button type="submit" style="padding:13px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer">Ko'rish</button>
             </div>
         </form>
     </div>
 </div>
 
 <style>
-    .modal {
-        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .modal-content {
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .animate-slide-up {
-        animation: slideUpModal 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    @keyframes slideUpModal {
-        from { transform: translateY(100%); }
-        to { transform: translateY(0); }
-    }
-    .room-btn.active {
-        background: var(--primary) !important;
-        color: white !important;
-        border-color: var(--primary) !important;
-    }
+/* ── Stories ── */
+.tg-stories{display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;padding:14px 16px 8px;margin:0 -16px}
+.tg-stories::-webkit-scrollbar{display:none}
+.story-item{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;cursor:pointer}
+.story-ring{width:54px;height:54px;border-radius:50%;background:#f0f4ff;border:2.5px solid #e2e8f0;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;font-size:1.1rem;font-weight:800;color:#2563eb}
+.story-ring img{width:100%;height:100%;object-fit:cover}
+.story-active{border-color:#2563eb;border-width:2.5px}
+.story-add{border-style:dashed;border-color:#2563eb}
+.story-plus{position:absolute;bottom:0;right:0;width:18px;height:18px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.story-item span{font-size:.65rem;font-weight:600;color:#64748b;max-width:56px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── Search ── */
+.tg-search-wrap{padding:4px 16px 8px;margin:0 -16px}
+.tg-search-box{display:flex;align-items:center;gap:8px;background:#f0f4ff;border-radius:14px;padding:9px 12px;border:1.5px solid transparent;transition:border-color .2s}
+.tg-search-box:focus-within{border-color:#2563eb;background:#fff}
+.tg-search-box input{flex:1;border:none;background:transparent;outline:none;font-size:.9rem;color:#0f172a}
+.tg-search-box input::placeholder{color:#94a3b8}
+
+/* ── Chips ── */
+.tg-chips{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:0 16px 10px;margin:0 -16px}
+.tg-chips::-webkit-scrollbar{display:none}
+.chip{display:flex;align-items:center;gap:5px;padding:6px 14px;background:#f0f4ff;border-radius:20px;font-size:.8rem;font-weight:600;color:#64748b;white-space:nowrap;text-decoration:none;flex-shrink:0;transition:all .2s;border:1.5px solid transparent}
+.chip-active{background:#2563eb;color:#fff;border-color:#2563eb}
+
+/* ── Section head ── */
+.tg-section-head{display:flex;align-items:center;justify-content:space-between;padding:4px 0 10px;font-weight:700;font-size:.95rem;color:#0f172a}
+.tg-icon-btn{background:#f0f4ff;border:none;border-radius:10px;padding:7px;cursor:pointer;color:#64748b;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.tg-icon-btn-active{background:#2563eb;color:#fff}
+
+/* ── Cards ── */
+.tg-list{display:flex;flex-direction:column;gap:10px;padding-bottom:32px}
+.tg-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);border:1px solid #eef1f8;position:relative;transition:transform .15s}
+.tg-card:active{transform:scale(.99)}
+.tg-card-img{display:block;height:190px;overflow:hidden;position:relative;background:#f0f4ff}
+.tg-card-img img{width:100%;height:100%;object-fit:cover}
+.tg-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.6);color:#fff;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:6px;backdrop-filter:blur(6px)}
+.tg-premium{position:absolute;top:10px;right:10px;background:#f59e0b;color:#fff;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:6px}
+.tg-demo-tag{position:absolute;top:10px;right:10px;background:rgba(251,191,36,.9);color:#78350f;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:6px}
+.tg-card-body{padding:12px 14px 14px}
+.tg-card-price{font-size:1.2rem;font-weight:800;color:#2563eb;margin-bottom:3px;letter-spacing:-.02em}
+.tg-card-title{font-size:.9rem;font-weight:700;color:#0f172a;margin-bottom:4px;line-height:1.3}
+.tg-card-loc{display:flex;align-items:center;gap:4px;color:#64748b;font-size:.78rem;margin-bottom:8px}
+.tg-card-meta{display:flex;gap:12px;color:#94a3b8;font-size:.75rem;font-weight:600}
+.tg-card-meta span{display:flex;align-items:center;gap:3px}
+.tg-fav{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#cbd5e0;box-shadow:0 2px 8px rgba(0,0,0,.1);transition:all .2s}
+.tg-fav-on{color:#ef4444 !important}
+.tg-fav-on i{fill:#ef4444}
+.tg-fav:active{transform:scale(.85)}
 </style>
 
 <script>
-    function openFilter() {
-        document.getElementById('filter-modal').style.display = 'flex';
-        lucide.createIcons();
-    }
-    function closeFilter() {
-        document.getElementById('filter-modal').style.display = 'none';
-    }
-    function setRooms(btn, val) {
-        document.querySelectorAll('.room-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('rooms-input').value = val;
-    }
-    function resetForm() {
-        document.querySelectorAll('.room-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('rooms-input').value = '';
-    }
-
-    // Connect trigger
-    const filterBtn = document.querySelector('.filter-btn');
-    if (filterBtn) {
-        filterBtn.addEventListener('click', openFilter);
-    }
-
-    function toggleFavorite(btn, pk) {
+// Fav buttons
+document.querySelectorAll('.tg-fav').forEach(btn => {
+    btn.addEventListener('click', e => {
+        e.preventDefault();
         const isAuth = document.body.dataset.isAuthenticated === 'true';
-        if (!isAuth) {
-            window.location.href = "{% url 'login' %}?next=" + window.location.pathname;
-            return;
-        }
-
-        fetch(`/favorite/toggle/${pk}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.is_favorite) {
-                btn.classList.add('is-favorited');
-            } else {
-                btn.classList.remove('is-favorited');
-            }
-        })
-        .catch(err => console.error('Error:', err));
-    }
-
-    // Connect favorite buttons
-    document.querySelectorAll('.fav-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleFavorite(btn, btn.dataset.id);
+        if (!isAuth) { window.location.href = "{% url 'login' %}"; return; }
+        fetch(`/favorite/toggle/${btn.dataset.id}/`, {
+            method:'POST',
+            headers:{'X-CSRFToken':'{{ csrf_token }}','Content-Type':'application/json'}
+        }).then(r=>r.json()).then(d=>{
+            btn.classList.toggle('tg-fav-on', d.is_favorite);
         });
     });
+});
 
-    // Set animation delay for each item
-    document.querySelectorAll('.property-item').forEach(item => {
-        const index = item.getAttribute('data-index');
-        item.style.setProperty('--delay', parseInt(index) + 5);
-    });
+function openFilter(){document.getElementById('filter-modal').style.display='flex';lucide.createIcons()}
+function closeFilter(){document.getElementById('filter-modal').style.display='none'}
+function setRooms(btn,val){document.querySelectorAll('.room-btn').forEach(b=>b.style.background='#fff');btn.style.background='#2563eb';btn.style.color='#fff';document.getElementById('rooms-input').value=val}
+function resetForm(){document.querySelectorAll('.room-btn').forEach(b=>{b.style.background='#fff';b.style.color=''});document.getElementById('rooms-input').value=''}
+document.getElementById('filter-modal')?.addEventListener('click',e=>{if(e.target===document.getElementById('filter-modal'))closeFilter()})
 
-    // Reset TWA state on main page
-    const tgReset = window.Telegram?.WebApp;
-    if (tgReset && tgReset.initData) {
-        tgReset.MainButton.hide();
-        tgReset.BackButton.hide();
-    }
-
-    function getNearby() {
-        if (window.Telegram?.WebApp && window.Telegram.WebApp.LocationManager) {
-            // TWA Native Location
-            const lm = window.Telegram.WebApp.LocationManager;
-            if (!lm.isInited) {
-                lm.init(() => {
-                    lm.getLocation((data) => {
-                        if (data) {
-                            window.location.href = `/?lat=${data.latitude}&lng=${data.longitude}`;
-                        }
-                    });
-                });
-            } else {
-                lm.getLocation((data) => {
-                    if (data) {
-                        window.location.href = `/?lat=${data.latitude}&lng=${data.longitude}`;
-                    }
-                });
-            }
-        } else if (navigator.geolocation) {
-            // Browser Location
-            navigator.geolocation.getCurrentPosition((pos) => {
-                window.location.href = `/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`;
-            }, (err) => {
-                alert("Joylashuvni aniqlash imkoni bo'lmadi.");
-            });
-        } else {
-            alert("Sizning qurilmangiz joylashuvni aniqlashni qo'llab-quvvatlamaydi.");
-        }
-    }
-
-    // Comparison Logic
-    let comparedItems = [];
-    const compareBar = document.getElementById('compare-bar');
-    const compareCount = document.getElementById('compare-count');
-
-    function updateCompareBar() {
-        if (comparedItems.length > 0) {
-            compareBar.style.display = 'flex';
-            compareCount.innerText = comparedItems.length;
-        } else {
-            compareBar.style.display = 'none';
-        }
-    }
-
-    document.querySelectorAll('.compare-checkbox').forEach(box => {
-        box.addEventListener('click', (e) => {
-            const id = box.dataset.id;
-            const index = comparedItems.findIndex(i => i.id === id);
-            
-            if (index > -1) {
-                comparedItems.splice(index, 1);
-                box.classList.remove('active');
-            } else {
-                if (comparedItems.length >= 4) {
-                    alert("{% if request.session.lang == 'ru' %}Максимум 4 объявления{% else %}Maksimal 4 ta e'lon{% endif %}");
-                    return;
-                }
-                comparedItems.push({
-                    id: box.dataset.id,
-                    title: box.dataset.title,
-                    price: box.dataset.price,
-                    rooms: box.dataset.rooms,
-                    area: box.dataset.area,
-                    image: box.dataset.image
-                });
-                box.classList.add('active');
-            }
-            updateCompareBar();
-        });
-    });
-
-    function clearComparison() {
-        comparedItems = [];
-        document.querySelectorAll('.compare-checkbox').forEach(box => box.classList.remove('active'));
-        updateCompareBar();
-    }
-
-    function showComparison() {
-        if (comparedItems.length < 2) {
-            alert("{% if request.session.lang == 'ru' %}Выберите минимум 2 объявления{% else %}Kamida 2 ta e'lon tanlang{% endif %}");
-            return;
-        }
-        
-        const container = document.getElementById('compare-table-container');
-        let html = '<div style="overflow-x: auto;"><table class="compare-table">';
-        
-        // Rows
-        const rows = [
-            { label: '{% if request.session.lang == "ru" %}Фото{% else %}Rasm{% endif %}', key: 'image', isImage: true },
-            { label: '{% if request.session.lang == "ru" %}Название{% else %}Nomi{% endif %}', key: 'title' },
-            { label: '{% if request.session.lang == "ru" %}Цена{% else %}Narxi{% endif %}', key: 'price', prefix: '$' },
-            { label: '{% if request.session.lang == "ru" %}Комнаты{% else %}Xonalar{% endif %}', key: 'rooms' },
-            { label: '{% if request.session.lang == "ru" %}Площадь{% else %}Maydon{% endif %}', key: 'area', suffix: ' m²' }
-        ];
-
-        rows.forEach(row => {
-            html += `<tr><th>${row.label}</th>`;
-            comparedItems.forEach(item => {
-                let val = item[row.key];
-                if (row.isImage) {
-                    val = val ? `<img src="${val}" style="width: 100px; height: 70px; object-fit: cover; border-radius: 8px;">` : '-';
-                } else {
-                    val = (row.prefix || '') + val + (row.suffix || '');
-                }
-                html += `<td style="font-weight: 700; color: var(--text-main);">${val}</td>`;
-            });
-            html += '</tr>';
-        });
-
-        html += '</table></div>';
-        container.innerHTML = html;
-        document.getElementById('compare-modal').style.display = 'flex';
-        lucide.createIcons();
-    }
-    
-    // View Toggle Logic
-    function setViewMode(mode) {
-        const propList = document.querySelector('.property-list');
-        const btns = document.querySelectorAll('.view-btn');
-        if (!propList) return;
-        
-        if (mode === 'list') {
-            propList.classList.add('list-view');
-        } else {
-            propList.classList.remove('list-view');
-        }
-        
-        btns.forEach(btn => {
-            if (btn.dataset.view === mode) {
-                btn.style.background = 'var(--bg-main)';
-                btn.style.color = 'var(--primary)';
-            } else {
-                btn.style.background = 'transparent';
-                btn.style.color = 'var(--text-muted)';
-            }
-        });
-        
-        localStorage.setItem('sara_view_mode', mode);
-    }
-
-    // Initialize View Mode
-    document.addEventListener('DOMContentLoaded', () => {
-        const toggles = document.querySelector('.view-toggles');
-        const propList = document.querySelector('.property-list');
-        if (toggles && propList && propList.querySelectorAll('.property-item').length > 0) {
-            toggles.style.display = 'flex';
-            const savedMode = localStorage.getItem('sara_view_mode') || 'grid';
-            setViewMode(savedMode);
-        }
-    });
+function getNearby(){
+    if(!navigator.geolocation){alert('Geolokatsiya qo\'llab-quvvatlanmaydi');return}
+    navigator.geolocation.getCurrentPosition(pos=>{
+        window.location.href=`/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`
+    },()=>alert('Joylashuv aniqlanmadi'))
+}
 </script>
 {% endblock %}
