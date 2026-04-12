@@ -21,6 +21,37 @@
     /* telegram-web-app.js sinxron yuklanadi, shuning uchun initData shu yerda tayyor */
     </style>
     <script>
+    // Drawer va Catalog funksiyalarini DARHOL global scope ga qo'yamiz
+    function openDrw() {
+        var d = document.getElementById('drw');
+        var o = document.getElementById('drw-ov');
+        if (d) { d.style.transform='translateY(0)'; d.style.pointerEvents='auto'; }
+        if (o) o.style.display='block';
+        document.body.style.overflow='hidden';
+    }
+    function closeDrw() {
+        var d = document.getElementById('drw');
+        var o = document.getElementById('drw-ov');
+        if (d) { d.style.transform='translateY(100%)'; d.style.pointerEvents='none'; }
+        if (o) o.style.display='none';
+        document.body.style.overflow='';
+    }
+    function openCatalog() {
+        var d = document.getElementById('cat-modal');
+        var o = document.getElementById('cat-ov');
+        if (d) { d.style.transform='translateY(0)'; d.style.pointerEvents='auto'; }
+        if (o) o.style.display='block';
+        document.body.style.overflow='hidden';
+    }
+    function closeCatalog() {
+        var d = document.getElementById('cat-modal');
+        var o = document.getElementById('cat-ov');
+        if (d) { d.style.transform='translateY(100%)'; d.style.pointerEvents='none'; }
+        if (o) o.style.display='none';
+        document.body.style.overflow='';
+    }
+    </script>
+    <script>
     (function(){
         var tg = window.Telegram && window.Telegram.WebApp;
         if (tg && tg.initData && tg.initData.length > 0) {
