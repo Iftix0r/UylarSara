@@ -201,6 +201,8 @@ class CustomUserAdmin(BaseUserAdmin):
         try:
             if obj.profile.avatar:
                 return _img(obj.profile.avatar.url, h=36, w=36, radius="50%")
+            if obj.profile.telegram_photo_url:
+                return format_html('<img src="{}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">', obj.profile.telegram_photo_url)
         except Exception:
             pass
         initials = (obj.first_name[:1] + obj.last_name[:1]).upper() or obj.username[:2].upper()
@@ -481,6 +483,8 @@ class UserProfileAdmin(admin.ModelAdmin):
     def avatar_thumb(self, obj):
         if obj.avatar:
             return _img(obj.avatar.url, h=38, w=38, radius="50%")
+        if obj.telegram_photo_url:
+            return format_html('<img src="{}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">', obj.telegram_photo_url)
         initials = (obj.user.first_name[:1] + obj.user.last_name[:1]).upper() or obj.user.username[:2].upper()
         return format_html(
             '<span style="display:inline-flex;align-items:center;justify-content:center;'

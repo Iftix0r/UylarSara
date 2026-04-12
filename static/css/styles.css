@@ -1322,3 +1322,289 @@ body.dark-mode .ai-bubble {
     background: var(--border-light);
     margin: 6px 0;
 }
+
+
+/* ═══════════════════════════════════════════════════════════
+   TELEGRAM WEB APP — UI/UX IMPROVEMENTS
+   ═══════════════════════════════════════════════════════════ */
+
+/* TWA: top-bar va header ni yashiramiz, joy tejash uchun */
+body.twa .top-bar {
+    display: none;
+}
+
+body.twa header {
+    top: 0;
+    height: 60px;
+    border-radius: 0 0 20px 20px;
+    border-bottom: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+body.twa .nav-wrapper {
+    padding: 0 16px;
+}
+
+/* TWA: logo kichikroq */
+body.twa .logo img {
+    height: 36px;
+}
+
+/* TWA: theme-toggle va lang-switcher ni yashiramiz (Telegram o'zi boshqaradi) */
+body.twa .theme-toggle,
+body.twa .lang-switcher {
+    display: none !important;
+}
+
+/* TWA: header-actions gap kichikroq */
+body.twa .header-actions {
+    gap: 10px;
+}
+
+/* TWA: search bar ni headerda ko'rsatamiz */
+body.twa .search-container {
+    display: block;
+    margin: 0 12px;
+    max-width: none;
+    flex: 1;
+}
+
+body.twa .search-input {
+    font-size: 0.9rem;
+    padding: 10px 14px 10px 40px;
+    border-radius: var(--radius-xl);
+    background: var(--border-light);
+    height: 40px;
+}
+
+/* TWA: hero section kichikroq */
+body.twa .hero {
+    padding: 20px 0 12px;
+}
+
+body.twa .hero h1 {
+    font-size: 1.75rem;
+    margin-bottom: 8px;
+}
+
+body.twa .hero p {
+    font-size: 0.9rem;
+}
+
+/* TWA: bottom nav yaxshilangan */
+body.twa .bottom-nav {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    height: 62px;
+    border-radius: 22px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+body.twa .nav-item {
+    font-size: 0.7rem;
+    padding: 6px 10px;
+    min-width: 52px;
+}
+
+body.twa .nav-item.active {
+    background: var(--primary);
+    color: white;
+    border-radius: 14px;
+}
+
+body.twa .nav-item.active svg {
+    color: white;
+}
+
+/* TWA: body padding */
+body.twa {
+    padding-bottom: calc(62px + 24px);
+}
+
+/* TWA: karta rasmlari balandligi */
+body.twa .card-image-wrapper {
+    height: 200px;
+}
+
+/* TWA: karta hover effektini o'chirish (touch qurilma) */
+body.twa .property-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-md);
+}
+
+/* TWA: touch feedback */
+body.twa .property-card:active {
+    transform: scale(0.98);
+    transition: transform 0.1s;
+}
+
+body.twa .category-pill:active,
+body.twa .btn:active,
+body.twa .nav-item:active {
+    transform: scale(0.95);
+    transition: transform 0.1s;
+}
+
+/* TWA: category pills kichikroq */
+body.twa .category-pill {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}
+
+body.twa .category-container {
+    padding: 12px 0;
+}
+
+/* TWA: AI bubble pozitsiyasi */
+body.twa .ai-bubble {
+    bottom: 90px;
+    right: 16px;
+    width: 52px;
+    height: 52px;
+}
+
+/* TWA: AI chat window */
+body.twa .ai-chat-window {
+    bottom: 155px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    height: 65vh;
+    border-radius: 24px;
+}
+
+/* TWA: property detail — rasm balandligi */
+body.twa .image-gallery-hero {
+    height: 280px !important;
+    border-radius: 16px !important;
+}
+
+/* TWA: property detail — feature grid */
+body.twa .feature-grid {
+    padding: 16px !important;
+    gap: 12px !important;
+}
+
+/* TWA: sticky sidebar yo'q, pastga tushadi */
+body.twa .sidebar-contact {
+    position: static !important;
+}
+
+/* TWA: filter modal pastdan chiqadi */
+body.twa #filter-modal {
+    align-items: flex-end;
+}
+
+/* TWA: Telegram rang sxemasiga mos dark mode */
+body.twa.dark-mode .bottom-nav {
+    background: var(--bg-card);
+    border-color: var(--border);
+}
+
+body.twa.dark-mode header {
+    background: var(--bg-card);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* TWA: user-profile tugmasi */
+body.twa .user-profile {
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary);
+    border-radius: 20px;
+    padding: 0 12px;
+    width: auto;
+    min-width: 40px;
+    font-size: 0.85rem;
+}
+
+/* TWA: login tugmasi */
+body.twa #login-btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    border-radius: var(--radius-xl);
+}
+
+/* TWA: section header */
+body.twa .section-header h2 {
+    font-size: 1.4rem;
+}
+
+/* TWA: card content padding */
+body.twa .card-content {
+    padding: 14px 16px;
+}
+
+body.twa .card-price {
+    font-size: 1.25rem;
+}
+
+body.twa .card-title {
+    font-size: 1rem;
+}
+
+/* TWA: scrollbar yashirish */
+body.twa ::-webkit-scrollbar {
+    display: none;
+}
+
+body.twa {
+    scrollbar-width: none;
+}
+
+/* TWA: safe area (iPhone notch/home indicator) */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    body.twa .bottom-nav {
+        bottom: calc(12px + env(safe-area-inset-bottom));
+    }
+    body.twa {
+        padding-bottom: calc(62px + 24px + env(safe-area-inset-bottom));
+    }
+}
+
+/* TWA: Telegram dark theme auto-detect */
+body.twa[data-tg-color-scheme="dark"] {
+    --bg-main: #1c1c1e;
+    --bg-card: #2c2c2e;
+    --text-main: #ffffff;
+    --text-muted: #8e8e93;
+    --border: #3a3a3c;
+    --border-light: #3a3a3c;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+}
+
+/* Smooth page transitions */
+body.twa main {
+    animation: twaPageIn 0.25s ease-out;
+}
+
+@keyframes twaPageIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* TWA: filter btn */
+body.twa .filter-btn {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    border-radius: var(--radius-xl);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-main);
+    transition: all 0.2s;
+}
+
+/* TWA: section header flex wrap */
+body.twa .section-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px !important;
+}

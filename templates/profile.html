@@ -6,8 +6,14 @@
 <div class="container animate-fade-in" style="padding-top: 32px; padding-bottom: 64px;">
     <!-- Profile Header -->
     <div class="profile-header" style="background: var(--bg-card); border-radius: var(--radius-lg); padding: 40px; border: 1px solid var(--border-light); box-shadow: var(--shadow-md); margin-bottom: 32px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap;">
-        <div class="profile-avatar" style="width: 100px; height: 100px; background: var(--primary-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; font-weight: 800;">
-            {{ user.first_name|first|upper|default:user.username|first|upper }}
+        <div class="profile-avatar" style="width: 100px; height: 100px; background: var(--primary-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; font-weight: 800; overflow: hidden;">
+            {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" alt="{{ user.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">
+            {% elif user.profile.telegram_photo_url %}
+                <img src="{{ user.profile.telegram_photo_url }}" alt="{{ user.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">
+            {% else %}
+                {{ user.first_name|first|upper|default:user.username|first|upper }}
+            {% endif %}
         </div>
         <div class="profile-info" style="flex: 1; min-width: 250px;">
             <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 4px;">

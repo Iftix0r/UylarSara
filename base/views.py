@@ -85,6 +85,30 @@ def telegram_auth(request):
     return JsonResponse({"ok": True})
 
 
+def _fetch_telegram_photo(telegram_id: int) -> str:
+    """Bot API orqali foydalanuvchi profil rasmini oladi."""
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    if not token:
+        return ""
+    try:
+        import urllib.request
+        url = f"https://api.telegram.org/bot{token}/getUserProfilePhotos?user_id={telegram_id}&limit=1"
+        with urllib.request.urlopen(url, timeout=5) as resp:
+            data = json.loads(resp.read())
+        if not data.get("ok") or not data["result"]["total_count"]:
+            return ""
+        file_id = data["result"]["photos"][0][-1]["file_id"]
+
+        url2 = f"https://api.telegram.org/bot{token}/getFile?file_id={file_id}"
+        with urllib.request.urlopen(url2, timeout=5) as resp:
+            data2 = json.loads(resp.read())
+        file_path = data2["result"]["file_path"]
+        return f"https://api.telegram.org/file/bot{token}/{file_path}"
+    except Exception as e:
+        print(f"[TG PHOTO] error: {e}")
+        return ""
+
+
 def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_username):
     from django.contrib.auth.models import User
     from .models import UserProfile
@@ -92,7 +116,6 @@ def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_use
     profile = UserProfile.objects.filter(telegram_id=telegram_id).select_related("user").first()
     if profile:
         user = profile.user
-        # Har safar ismni yangilaymiz (Telegram da ism o'zgarishi mumkin)
         update_fields = []
         if first_name and user.first_name != first_name:
             user.first_name = first_name
@@ -100,13 +123,22 @@ def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_use
         if last_name != user.last_name:
             user.last_name = last_name
             update_fields.append("last_name")
-        if tg_username and profile.telegram_username != tg_username:
-            profile.telegram_username = tg_username
-            profile.save(update_fields=["telegram_username"])
         if update_fields:
             user.save(update_fields=update_fields)
+
+        profile_fields = []
+        if tg_username and profile.telegram_username != tg_username:
+            profile.telegram_username = tg_username
+            profile_fields.append("telegram_username")
+        # Rasm yo'q bo'lsa yangilaymiz
+        if not profile.telegram_photo_url:
+            photo = _fetch_telegram_photo(telegram_id)
+            if photo:
+                profile.telegram_photo_url = photo
+                profile_fields.append("telegram_photo_url")
+        if profile_fields:
+            profile.save(update_fields=profile_fields)
     else:
-        # Username: @telegram_username yoki tg_<id>
         if tg_username:
             candidate = tg_username.lower()
             username = candidate if not User.objects.filter(username=candidate).exists() else f"tg_{telegram_id}"
@@ -118,11 +150,13 @@ def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_use
             first_name=first_name,
             last_name=last_name,
         )
+        photo = _fetch_telegram_photo(telegram_id)
         profile, _ = UserProfile.objects.get_or_create(user=user)
         profile.telegram_id = telegram_id
         profile.telegram_username = tg_username
+        profile.telegram_photo_url = photo
         profile.save()
-        print(f"[TG AUTH] New user: {username} ({first_name} {last_name})")
+        print(f"[TG AUTH] New user: {username} ({first_name}) photo={'yes' if photo else 'no'}")
 
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
