@@ -5,99 +5,62 @@
 {% block content %}
 
 <!-- ══ TWA TOP BAR ══ -->
-<div id="twa-topbar" style="display:none;align-items:center;justify-content:space-between;padding:12px 16px 8px;background:#fff;transition:transform .25s ease,margin .25s ease;border-bottom:1px solid #f0f4ff">
-    <span style="font-size:1.25rem;font-weight:800;color:#0f172a;letter-spacing:-.02em">SaraUylar</span>
-    <div style="display:flex;gap:4px;background:#f0f4ff;padding:3px;border-radius:10px">
-        <a href="{% url 'set_language' 'uz' %}" style="padding:4px 10px;border-radius:7px;font-size:.72rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'uz' or not request.session.lang %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">UZ</a>
-        <a href="{% url 'set_language' 'ru' %}" style="padding:4px 10px;border-radius:7px;font-size:.72rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'ru' %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">RU</a>
-    </div>
-</div>
-
-<!-- ══ STORIES ══ -->
-<div class="tg-stories">
-    <!-- Foydalanuvchi hikoyasi -->
-    <div class="story-item">
-        <div class="story-avatar {% if user.is_authenticated %}story-has-ring{% endif %}">
-            {% if user.is_authenticated %}
-                {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" alt="">
-                {% elif user.profile.telegram_photo_url %}<img src="{{ user.profile.telegram_photo_url }}" alt="">
-                {% else %}<span>{{ user.first_name|first|upper|default:user.username|first|upper }}</span>{% endif %}
-                <div class="story-plus-btn">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                </div>
-            {% else %}
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            {% endif %}
+<div id="twa-topbar" style="display:none;flex-direction:column;background:#fff;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+    <!-- Sarlavha -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 6px">
+        <span style="font-size:1.25rem;font-weight:800;color:#0f172a;letter-spacing:-.02em">SaraUylar</span>
+        <div style="display:flex;gap:4px;background:#f0f4ff;padding:3px;border-radius:10px">
+            <a href="{% url 'set_language' 'uz' %}" style="padding:4px 10px;border-radius:7px;font-size:.72rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'uz' or not request.session.lang %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">UZ</a>
+            <a href="{% url 'set_language' 'ru' %}" style="padding:4px 10px;border-radius:7px;font-size:.72rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'ru' %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">RU</a>
         </div>
-        <span>{% if user.is_authenticated %}{{ user.first_name|default:user.username|truncatechars:7 }}{% else %}Siz{% endif %}</span>
     </div>
 
-    {% for cat in categories %}
-    <a href="?category={{ cat.slug }}" class="story-item" style="text-decoration:none">
-        <div class="story-avatar {% if request.GET.category == cat.slug %}story-active-ring{% endif %}" style="background:{% cycle '#e0f2fe' '#fce7f3' '#dcfce7' '#fef3c7' '#ede9fe' '#fee2e2' '#e0e7ff' %}">
-            <i data-lucide="{{ cat.icon|default:'home' }}" style="width:24px;height:24px;color:#2563eb"></i>
+    <!-- Hikoyalar -->
+    <div class="tg-stories" style="padding:6px 16px 10px;margin:0">
+        <div class="story-item">
+            <div class="story-avatar {% if user.is_authenticated %}story-has-ring{% endif %}">
+                {% if user.is_authenticated %}
+                    {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" alt="">
+                    {% elif user.profile.telegram_photo_url %}<img src="{{ user.profile.telegram_photo_url }}" alt="">
+                    {% else %}<span>{{ user.first_name|first|upper|default:user.username|first|upper }}</span>{% endif %}
+                    <div class="story-plus-btn">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </div>
+                {% else %}
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                {% endif %}
+            </div>
+            <span>{% if user.is_authenticated %}{{ user.first_name|default:user.username|truncatechars:7 }}{% else %}Siz{% endif %}</span>
         </div>
-        <span>{{ cat.name|truncatechars:7 }}</span>
-    </a>
-    {% endfor %}
-</div>
+        {% for cat in categories %}
+        <a href="?category={{ cat.slug }}" class="story-item" style="text-decoration:none">
+            <div class="story-avatar {% if request.GET.category == cat.slug %}story-active-ring{% endif %}" style="background:{% cycle '#e0f2fe' '#fce7f3' '#dcfce7' '#fef3c7' '#ede9fe' '#fee2e2' '#e0e7ff' %}">
+                <i data-lucide="{{ cat.icon|default:'home' }}" style="width:24px;height:24px;color:#2563eb"></i>
+            </div>
+            <span>{{ cat.name|truncatechars:7 }}</span>
+        </a>
+        {% endfor %}
+    </div>
 
-<!-- ══ SEARCH (faqat oddiy brauzerda) ══ -->
-<div class="tg-search-wrap" id="main-search-wrap">
-    <form action="/" method="GET" id="search-form">
-        <div class="tg-search-box">
-            <i data-lucide="search" style="width:16px;height:16px;color:#94a3b8;flex-shrink:0"></i>
-            <input type="text" name="q" id="search-input" autocomplete="off"
-                placeholder="{% if request.session.lang == 'ru' %}Поиск недвижимости...{% else %}Uy-joy qidirish...{% endif %}"
-                value="{{ request.GET.q }}" onfocus="showSearchHistory()">
-            <button type="button" class="voice-search-btn" id="voice-search-btn" style="position:static;transform:none;width:28px;height:28px">
-                <i data-lucide="mic" style="width:16px;height:16px"></i>
-            </button>
-        </div>
-        <div id="search-history-dropdown" class="search-history-dropdown"></div>
-    </form>
-</div>
-<script>
-if (window.Telegram?.WebApp?.initData) {
-    document.getElementById('main-search-wrap').style.display = 'none';
-}
-</script>
-
-
-<!-- ══ SEARCH ══ -->
-<div class="tg-search-wrap">
-    <form action="/" method="GET" id="search-form">
-        <div class="tg-search-box">
-            <i data-lucide="search" style="width:16px;height:16px;color:#94a3b8;flex-shrink:0"></i>
-            <input type="text" name="q" id="search-input" autocomplete="off"
-                placeholder="Uy-joy qidirish..."
-                value="" onfocus="showSearchHistory()">
-            <button type="button" id="voice-search-btn" style="background:none;border:none;cursor:pointer;padding:0;display:flex;color:#2563eb">
-                <i data-lucide="mic" style="width:16px;height:16px"></i>
-            </button>
-        </div>
-        <div id="search-history-dropdown" class="search-history-dropdown"></div>
-    </form>
+    <!-- Qidiruv -->
+    <div style="padding:0 16px 10px">
+        <form action="/" method="GET" id="search-form-sticky">
+            <div class="tg-search-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" name="q" id="search-input" autocomplete="off"
+                    placeholder="{% if request.session.lang == 'ru' %}Поиск недвижимости...{% else %}Uy-joy qidirish...{% endif %}"
+                    value="{{ request.GET.q }}" style="flex:1;border:none;background:transparent;outline:none;font-size:.9rem;color:#0f172a">
+                <button type="button" id="voice-search-btn" style="background:none;border:none;cursor:pointer;padding:0;display:flex;color:#2563eb">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
 if (window.Telegram?.WebApp?.initData) {
-    const topbar = document.getElementById("twa-topbar");
-    topbar.style.display = "flex";
-
-    // Faqat topbar yashirinadi, hikoyalar qoladi
-    let lastY = 0;
-    window.addEventListener('scroll', () => {
-        const y = window.scrollY;
-        if (y > lastY && y > 60) {
-            topbar.style.transform = 'translateY(-100%)';
-            topbar.style.marginBottom = '-' + topbar.offsetHeight + 'px';
-        } else {
-            topbar.style.transform = 'translateY(0)';
-            topbar.style.marginBottom = '0';
-        }
-        lastY = y;
-    }, { passive: true });
+    document.getElementById("twa-topbar").style.display = "flex";
 }
 </script>
 
