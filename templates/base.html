@@ -141,36 +141,108 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Bottom Navigation (Mobile) -->
+    <!-- Bottom Navigation -->
     <nav class="bottom-nav">
-        <a href="{% url 'home' %}" class="nav-item active">
+        <a href="{% url 'home' %}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
             <i data-lucide="home"></i>
             <span>{% if request.session.lang == 'ru' %}Главная{% else %}Asosiy{% endif %}</span>
         </a>
-        <a href="{% url 'favorites' %}" class="nav-item">
+        <a href="{% url 'favorites' %}" class="nav-item {% if request.resolver_match.url_name == 'favorites' %}active{% endif %}">
             <i data-lucide="heart"></i>
             <span>{% if request.session.lang == 'ru' %}Избранное{% else %}Saralangan{% endif %}</span>
         </a>
-        <a href="{% url 'add_property' %}" class="nav-item">
-            <i data-lucide="plus-square"></i>
-            <span>{% if request.session.lang == 'ru' %}Объявление{% else %}Elon{% endif %}</span>
+        <a href="{% url 'add_property' %}" class="nav-item nav-item-add">
+            <div class="nav-add-btn"><i data-lucide="plus"></i></div>
+            <span>{% if request.session.lang == 'ru' %}Добавить{% else %}E'lon{% endif %}</span>
         </a>
         {% if user.is_authenticated %}
-            <a href="{% url 'profile' %}" class="nav-item">
-                <i data-lucide="user"></i>
+            <a href="{% url 'profile' %}" class="nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                <div class="nav-avatar">
+                    {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" alt="">
+                    {% elif user.profile.telegram_photo_url %}<img src="{{ user.profile.telegram_photo_url }}" alt="">
+                    {% else %}{{ user.first_name|first|upper|default:user.username|first|upper }}{% endif %}
+                </div>
                 <span>{% if request.session.lang == 'ru' %}Профиль{% else %}Profil{% endif %}</span>
             </a>
         {% else %}
-            <a href="{% url 'signup' %}" class="nav-item">
-                <i data-lucide="user-plus"></i>
-                <span>{% if request.session.lang == 'ru' %}Регистрация{% else %}Ro'yxat{% endif %}</span>
-            </a>
-            <a href="{% url 'login' %}" class="nav-item">
+            <a href="{% url 'login' %}" class="nav-item {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
                 <i data-lucide="user"></i>
                 <span>{% if request.session.lang == 'ru' %}Вход{% else %}Kirish{% endif %}</span>
             </a>
         {% endif %}
+        <button class="nav-item" onclick="openDrawer()" id="nav-menu-btn">
+            <i data-lucide="menu"></i>
+            <span>{% if request.session.lang == 'ru' %}Меню{% else %}Menu{% endif %}</span>
+        </button>
     </nav>
+
+    <!-- Drawer Menu -->
+    <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+    <div class="drawer" id="drawer">
+        <div class="drawer-handle"></div>
+        <div class="drawer-header">
+            {% if user.is_authenticated %}
+            <div class="drawer-user">
+                <div class="drawer-avatar">
+                    {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" alt="">
+                    {% elif user.profile.telegram_photo_url %}<img src="{{ user.profile.telegram_photo_url }}" alt="">
+                    {% else %}<span>{{ user.first_name|first|upper|default:user.username|first|upper }}</span>{% endif %}
+                </div>
+                <div>
+                    <div class="drawer-username">{{ user.get_full_name|default:user.username }}</div>
+                    {% if user.profile.telegram_username %}<div class="drawer-tg">@{{ user.profile.telegram_username }}</div>{% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="drawer-auth-btns">
+                <a href="{% url 'login' %}" class="btn btn-primary" style="flex:1">{% if request.session.lang == 'ru' %}Войти{% else %}Kirish{% endif %}</a>
+                <a href="{% url 'signup' %}" class="btn" style="flex:1;background:var(--border-light)">{% if request.session.lang == 'ru' %}Регистрация{% else %}Ro'yxat{% endif %}</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="drawer-links">
+            <a href="{% url 'home' %}" class="drawer-link" onclick="closeDrawer()">
+                <i data-lucide="home"></i><span>{% if request.session.lang == 'ru' %}Главная{% else %}Asosiy{% endif %}</span>
+            </a>
+            <a href="{% url 'add_property' %}" class="drawer-link" onclick="closeDrawer()">
+                <i data-lucide="plus-square"></i><span>{% if request.session.lang == 'ru' %}Подать объявление{% else %}E'lon berish{% endif %}</span>
+            </a>
+            <a href="{% url 'favorites' %}" class="drawer-link" onclick="closeDrawer()">
+                <i data-lucide="heart"></i><span>{% if request.session.lang == 'ru' %}Избранное{% else %}Saralangan{% endif %}</span>
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'profile' %}" class="drawer-link" onclick="closeDrawer()">
+                <i data-lucide="user"></i><span>{% if request.session.lang == 'ru' %}Профиль{% else %}Profil{% endif %}</span>
+            </a>
+            {% endif %}
+            <a href="{% url 'about' %}" class="drawer-link" onclick="closeDrawer()">
+                <i data-lucide="info"></i><span>{% if request.session.lang == 'ru' %}О нас{% else %}Biz haqimizda{% endif %}</span>
+            </a>
+            <a href="{% url 'help' %}" class="drawer-link" onclick="closeDrawer()">
+                <i data-lucide="help-circle"></i><span>{% if request.session.lang == 'ru' %}Помощь{% else %}Yordam{% endif %}</span>
+            </a>
+        </div>
+
+        <div class="drawer-footer">
+            <!-- Til -->
+            <div class="drawer-setting">
+                <span><i data-lucide="languages" style="width:16px;height:16px;vertical-align:middle;margin-right:6px"></i>{% if request.session.lang == 'ru' %}Язык{% else %}Til{% endif %}</span>
+                <div style="display:flex;gap:4px;background:var(--border-light);padding:3px;border-radius:10px">
+                    <a href="{% url 'set_language' 'uz' %}" class="lang-opt {% if request.session.lang == 'uz' or not request.session.lang %}lang-opt-active{% endif %}">UZ</a>
+                    <a href="{% url 'set_language' 'ru' %}" class="lang-opt {% if request.session.lang == 'ru' %}lang-opt-active{% endif %}">RU</a>
+                </div>
+            </div>
+            {% if user.is_authenticated %}
+            <form action="{% url 'logout' %}" method="POST" style="margin-top:8px">
+                {% csrf_token %}
+                <button type="submit" class="drawer-logout">
+                    <i data-lucide="log-out"></i>{% if request.session.lang == 'ru' %}Выйти{% else %}Chiqish{% endif %}
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
 
     <!-- AI Assistant -->
     <div class="ai-bubble" id="ai-bubble" title="AI Yordamchi">
@@ -311,6 +383,28 @@
                 item.classList.add('active');
             }
         });
+
+        // Drawer
+        function openDrawer() {
+            document.getElementById('drawer').classList.add('open');
+            document.getElementById('drawer-overlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+            if (window.lucide) lucide.createIcons();
+        }
+        function closeDrawer() {
+            document.getElementById('drawer').classList.remove('open');
+            document.getElementById('drawer-overlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        // swipe down to close
+        let touchStartY = 0;
+        const drawer = document.getElementById('drawer');
+        if (drawer) {
+            drawer.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+            drawer.addEventListener('touchend', e => {
+                if (e.changedTouches[0].clientY - touchStartY > 80) closeDrawer();
+            }, { passive: true });
+        }
 
         // Voice Search Logic (Whisper)
         let searchMediaRecorder;
