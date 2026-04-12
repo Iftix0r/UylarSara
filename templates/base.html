@@ -17,6 +17,17 @@
     
     <!-- TWA SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+    // Header ni darhol yashiramiz — flicker bo'lmasin
+    if (window.Telegram?.WebApp?.initData || window.location.search.includes('tgWebAppData')) {
+        document.documentElement.style.setProperty('--hide-header','none');
+    }
+    </script>
+    <style>
+    #main-header, .top-bar { display: var(--hide-header, flex); }
+    #main-header { display: var(--hide-header, flex); }
+    .top-bar { display: var(--hide-header, block); }
+    </style>
     
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
@@ -32,6 +43,9 @@
     body.twa .top-bar { display: none !important; }
     body.twa #main-header { display: none !important; }
     body.twa main { padding-top: 0 !important; }
+    /* Oldindan yashirish — JS yuklanishidan oldin ham */
+    #main-header.twa-hidden { display: none !important; }
+    .top-bar.twa-hidden { display: none !important; }
     
     .drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;backdrop-filter:blur(3px)}
     .drawer-overlay.open{display:block}
