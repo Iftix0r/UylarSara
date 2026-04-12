@@ -82,7 +82,8 @@ class UserProfile(models.Model):
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='profile')
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True)
-    telegram_username = models.CharField(max_length=50, blank=True)
+    telegram_id = models.BigIntegerField(null=True, blank=True, unique=True, verbose_name='Telegram ID')
+    telegram_username = models.CharField(max_length=100, blank=True)
     bio = models.TextField(blank=True)
     
     def __str__(self):

@@ -16,6 +16,7 @@ urlpatterns = [
     path('ai-chat/', views.ai_chat, name='ai_chat'),
     path('ai-whisper/', views.ai_whisper, name='ai_whisper'),
     path('ai-tts/', views.ai_tts, name='ai_tts'),
+    path('telegram-auth/', views.telegram_auth, name='telegram_auth'),
     path('set-city/<str:city>/', views.set_city, name='set_city'),
     path('set-language/<str:lang>/', views.set_language, name='set_language'),
     path('accounts/', include('django.contrib.auth.urls')),

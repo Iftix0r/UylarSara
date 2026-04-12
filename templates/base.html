@@ -208,6 +208,25 @@
             
             // Set header color
             tg.setHeaderColor(tg.themeParams?.secondary_bg_color || '#ffffff');
+
+            // Auto-login if not already authenticated
+            {% if not user.is_authenticated %}
+            (async () => {
+                try {
+                    const res = await fetch('/telegram-auth/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ initData: tg.initData })
+                    });
+                    const data = await res.json();
+                    if (data.ok) {
+                        window.location.reload();
+                    }
+                } catch (e) {
+                    console.error('Telegram auth error:', e);
+                }
+            })();
+            {% endif %}
         }
 
         // Initialize Icons

@@ -3,14 +3,102 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from .models import Category, Property, Favorite
 from .forms import PropertyForm
 import openai
 import os
+import json
+import hmac
+import hashlib
+from urllib.parse import parse_qsl, unquote
 from dotenv import load_dotenv
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+
+def verify_telegram_init_data(init_data: str) -> dict | None:
+    """Telegram WebApp initData ni tekshiradi va user ma'lumotlarini qaytaradi."""
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    try:
+        parsed = dict(parse_qsl(init_data, strict_parsing=True))
+        received_hash = parsed.pop("hash", None)
+        if not received_hash:
+            return None
+
+        data_check_string = "\n".join(
+            f"{k}={v}" for k, v in sorted(parsed.items())
+        )
+        secret_key = hmac.new(b"WebAppData", token.encode(), hashlib.sha256).digest()
+        expected_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+
+        if not hmac.compare_digest(expected_hash, received_hash):
+            return None
+
+        user_data = json.loads(unquote(parsed.get("user", "{}")))
+        return user_data
+    except Exception:
+        return None
+
+
+@csrf_exempt
+def telegram_auth(request):
+    """Telegram WebApp dan kelgan initData orqali foydalanuvchi yaratadi yoki login qiladi."""
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        init_data = data.get("initData", "")
+    except Exception:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    user_data = verify_telegram_init_data(init_data)
+    if not user_data:
+        return JsonResponse({"error": "Invalid initData"}, status=403)
+
+    telegram_id = user_data.get("id")
+    first_name = user_data.get("first_name", "")
+    last_name = user_data.get("last_name", "")
+    tg_username = user_data.get("username", "")
+
+    from django.contrib.auth.models import User
+    from .models import UserProfile
+
+    # Mavjud profilni topamiz
+    profile = UserProfile.objects.filter(telegram_id=telegram_id).select_related("user").first()
+
+    if profile:
+        user = profile.user
+    else:
+        # Yangi foydalanuvchi yaratamiz
+        username = f"tg_{telegram_id}"
+        if tg_username:
+            base = tg_username.lower()
+            username = base if not User.objects.filter(username=base).exists() else f"tg_{telegram_id}"
+
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults={
+                "first_name": first_name,
+                "last_name": last_name,
+            }
+        )
+        # Profilni yangilaymiz
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.telegram_id = telegram_id
+        profile.telegram_username = tg_username
+        profile.save()
+
+    # Django session orqali login
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+
+    return JsonResponse({
+        "ok": True,
+        "username": user.username,
+        "first_name": user.first_name,
+    })
 
 def set_language(request, lang):
     if lang in ['uz', 'ru']:
@@ -337,7 +425,6 @@ def ai_chat(request):
             return JsonResponse({'message': "Kechirasiz, hozirda bog'lanishda muammo bo'ldi."}, status=500)
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
-from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def ai_whisper(request):
