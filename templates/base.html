@@ -169,103 +169,63 @@
     </main>
 
     <!-- Bottom Navigation -->
-    <nav class="bottom-nav">
-        <a href="{% url 'home' %}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-            <i data-lucide="home"></i>
-            <span>{% if request.session.lang == 'ru' %}Главная{% else %}Asosiy{% endif %}</span>
-        </a>
-        <a href="{% url 'favorites' %}" class="nav-item {% if request.resolver_match.url_name == 'favorites' %}active{% endif %}">
-            <i data-lucide="heart"></i>
-            <span>{% if request.session.lang == 'ru' %}Избранное{% else %}Saralangan{% endif %}</span>
-        </a>
-        <a href="{% url 'add_property' %}" class="nav-item nav-item-add">
-            <div class="nav-add-btn"><i data-lucide="plus"></i></div>
-            <span>{% if request.session.lang == 'ru' %}Добавить{% else %}E'lon{% endif %}</span>
-        </a>
+    <nav id="bnav" style="position:fixed;bottom:16px;left:16px;right:16px;height:64px;background:#fff;border:1px solid #e2e8f0;border-radius:28px;display:flex;justify-content:space-around;align-items:center;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,.12)">
+        <a href="{% url 'home' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;padding:6px 10px;border-radius:14px;min-width:46px;{% if request.resolver_match.url_name == 'home' %}color:#2563eb;background:rgba(37,99,235,.1){% else %}color:#94a3b8{% endif %}">
+            <i data-lucide="home" style="width:20px;height:20px"></i><span>Asosiy</span></a>
+        <a href="{% url 'favorites' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;padding:6px 10px;border-radius:14px;min-width:46px;{% if request.resolver_match.url_name == 'favorites' %}color:#2563eb;background:rgba(37,99,235,.1){% else %}color:#94a3b8{% endif %}">
+            <i data-lucide="heart" style="width:20px;height:20px"></i><span>Saralangan</span></a>
+        <a href="{% url 'add_property' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;color:#94a3b8;min-width:46px">
+            <div style="width:44px;height:44px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(37,99,235,.4)"><i data-lucide="plus" style="width:22px;height:22px;color:#fff"></i></div></a>
         {% if user.is_authenticated %}
-            <a href="{% url 'profile' %}" class="nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
-                <div class="nav-avatar">
-                    {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" alt="">
-                    {% elif user.profile.telegram_photo_url %}<img src="{{ user.profile.telegram_photo_url }}" alt="">
-                    {% else %}{{ user.first_name|first|upper|default:user.username|first|upper }}{% endif %}
-                </div>
-                <span>{% if request.session.lang == 'ru' %}Профиль{% else %}Profil{% endif %}</span>
-            </a>
+        <a href="{% url 'profile' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;padding:6px 10px;border-radius:14px;min-width:46px;{% if request.resolver_match.url_name == 'profile' %}color:#2563eb;background:rgba(37,99,235,.1){% else %}color:#94a3b8{% endif %}">
+            <div style="width:26px;height:26px;border-radius:50%;background:rgba(37,99,235,.1);border:2px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#2563eb;overflow:hidden">{% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" style="width:100%;height:100%;object-fit:cover" alt="">{% elif user.profile.telegram_photo_url %}<img src="{{ user.profile.telegram_photo_url }}" style="width:100%;height:100%;object-fit:cover" alt="">{% else %}{{ user.first_name|first|upper|default:user.username|first|upper }}{% endif %}</div>
+            <span>Profil</span></a>
         {% else %}
-            <a href="{% url 'login' %}" class="nav-item {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
-                <i data-lucide="user"></i>
-                <span>{% if request.session.lang == 'ru' %}Вход{% else %}Kirish{% endif %}</span>
-            </a>
+        <a href="{% url 'login' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;color:#94a3b8;min-width:46px">
+            <i data-lucide="user" style="width:20px;height:20px"></i><span>Kirish</span></a>
         {% endif %}
-        <button class="nav-item" onclick="openDrawer()" id="nav-menu-btn">
-            <i data-lucide="menu"></i>
-            <span>{% if request.session.lang == 'ru' %}Меню{% else %}Menu{% endif %}</span>
-        </button>
+        <button onclick="openDrw()" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;font-size:.68rem;font-weight:600;color:#94a3b8;padding:6px 10px;min-width:46px">
+            <i data-lucide="menu" style="width:20px;height:20px"></i><span>Menu</span></button>
     </nav>
 
-    <!-- Drawer Menu -->
-    <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
-    <div class="drawer" id="drawer">
-        <div class="drawer-handle"></div>
-        <div class="drawer-header">
+    <!-- Drawer overlay -->
+    <div id="drw-ov" onclick="closeDrw()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1100"></div>
+
+    <!-- Drawer -->
+    <div id="drw" style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;z-index:1200;max-height:88vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease">
+        <div style="width:40px;height:4px;border-radius:2px;background:#e2e8f0;margin:12px auto 4px"></div>
+        <div style="padding:16px 20px 12px;border-bottom:1px solid #f1f5f9">
             {% if user.is_authenticated %}
-            <div class="drawer-user">
-                <div class="drawer-avatar">
-                    {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" alt="">
-                    {% elif user.profile.telegram_photo_url %}<img src="{{ user.profile.telegram_photo_url }}" alt="">
-                    {% else %}<span>{{ user.first_name|first|upper|default:user.username|first|upper }}</span>{% endif %}
-                </div>
-                <div>
-                    <div class="drawer-username">{{ user.get_full_name|default:user.username }}</div>
-                    {% if user.profile.telegram_username %}<div class="drawer-tg">@{{ user.profile.telegram_username }}</div>{% endif %}
-                </div>
+            <div style="display:flex;align-items:center;gap:14px">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(37,99,235,.1);border:2px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;color:#2563eb;overflow:hidden;flex-shrink:0">{% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" style="width:100%;height:100%;object-fit:cover" alt="">{% elif user.profile.telegram_photo_url %}<img src="{{ user.profile.telegram_photo_url }}" style="width:100%;height:100%;object-fit:cover" alt="">{% else %}{{ user.first_name|first|upper|default:user.username|first|upper }}{% endif %}</div>
+                <div><div style="font-weight:700;font-size:1rem;color:#0f172a">{{ user.get_full_name|default:user.username }}</div>{% if user.profile.telegram_username %}<div style="font-size:.85rem;color:#0088cc">@{{ user.profile.telegram_username }}</div>{% endif %}</div>
             </div>
             {% else %}
-            <div class="drawer-auth-btns">
-                <a href="{% url 'login' %}" class="btn btn-primary" style="flex:1">{% if request.session.lang == 'ru' %}Войти{% else %}Kirish{% endif %}</a>
-                <a href="{% url 'signup' %}" class="btn" style="flex:1;background:var(--border-light)">{% if request.session.lang == 'ru' %}Регистрация{% else %}Ro'yxat{% endif %}</a>
+            <div style="display:flex;gap:10px">
+                <a href="{% url 'login' %}" style="flex:1;padding:11px;background:#2563eb;color:#fff;border-radius:12px;font-weight:700;text-align:center;text-decoration:none">Kirish</a>
+                <a href="{% url 'signup' %}" style="flex:1;padding:11px;background:#f1f5f9;color:#0f172a;border-radius:12px;font-weight:700;text-align:center;text-decoration:none">Ro'yxat</a>
             </div>
             {% endif %}
         </div>
-
-        <div class="drawer-links">
-            <a href="{% url 'home' %}" class="drawer-link" onclick="closeDrawer()">
-                <i data-lucide="home"></i><span>{% if request.session.lang == 'ru' %}Главная{% else %}Asosiy{% endif %}</span>
-            </a>
-            <a href="{% url 'add_property' %}" class="drawer-link" onclick="closeDrawer()">
-                <i data-lucide="plus-square"></i><span>{% if request.session.lang == 'ru' %}Подать объявление{% else %}E'lon berish{% endif %}</span>
-            </a>
-            <a href="{% url 'favorites' %}" class="drawer-link" onclick="closeDrawer()">
-                <i data-lucide="heart"></i><span>{% if request.session.lang == 'ru' %}Избранное{% else %}Saralangan{% endif %}</span>
-            </a>
-            {% if user.is_authenticated %}
-            <a href="{% url 'profile' %}" class="drawer-link" onclick="closeDrawer()">
-                <i data-lucide="user"></i><span>{% if request.session.lang == 'ru' %}Профиль{% else %}Profil{% endif %}</span>
-            </a>
-            {% endif %}
-            <a href="{% url 'about' %}" class="drawer-link" onclick="closeDrawer()">
-                <i data-lucide="info"></i><span>{% if request.session.lang == 'ru' %}О нас{% else %}Biz haqimizda{% endif %}</span>
-            </a>
-            <a href="{% url 'help' %}" class="drawer-link" onclick="closeDrawer()">
-                <i data-lucide="help-circle"></i><span>{% if request.session.lang == 'ru' %}Помощь{% else %}Yordam{% endif %}</span>
-            </a>
+        <div>
+            <a href="{% url 'home' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc"><i data-lucide="home" style="width:20px;height:20px;color:#64748b"></i>Asosiy</a>
+            <a href="{% url 'add_property' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc"><i data-lucide="plus-square" style="width:20px;height:20px;color:#64748b"></i>E'lon berish</a>
+            <a href="{% url 'favorites' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc"><i data-lucide="heart" style="width:20px;height:20px;color:#64748b"></i>Saralangan</a>
+            {% if user.is_authenticated %}<a href="{% url 'profile' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc"><i data-lucide="user" style="width:20px;height:20px;color:#64748b"></i>Profil</a>{% endif %}
+            <a href="{% url 'about' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc"><i data-lucide="info" style="width:20px;height:20px;color:#64748b"></i>Biz haqimizda</a>
+            <a href="{% url 'help' %}" onclick="closeDrw()" style="display:flex;align-items:center;gap:14px;padding:14px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none"><i data-lucide="help-circle" style="width:20px;height:20px;color:#64748b"></i>Yordam</a>
         </div>
-
-        <div class="drawer-footer">
-            <!-- Til -->
-            <div class="drawer-setting">
-                <span><i data-lucide="languages" style="width:16px;height:16px;vertical-align:middle;margin-right:6px"></i>{% if request.session.lang == 'ru' %}Язык{% else %}Til{% endif %}</span>
-                <div style="display:flex;gap:4px;background:var(--border-light);padding:3px;border-radius:10px">
-                    <a href="{% url 'set_language' 'uz' %}" class="lang-opt {% if request.session.lang == 'uz' or not request.session.lang %}lang-opt-active{% endif %}">UZ</a>
-                    <a href="{% url 'set_language' 'ru' %}" class="lang-opt {% if request.session.lang == 'ru' %}lang-opt-active{% endif %}">RU</a>
+        <div style="padding:14px 20px 20px;border-top:1px solid #f1f5f9">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <span style="font-weight:600;font-size:.9rem;color:#0f172a">Til</span>
+                <div style="display:flex;gap:4px;background:#f1f5f9;padding:3px;border-radius:10px">
+                    <a href="{% url 'set_language' 'uz' %}" style="padding:5px 14px;border-radius:8px;font-size:.82rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'uz' or not request.session.lang %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">UZ</a>
+                    <a href="{% url 'set_language' 'ru' %}" style="padding:5px 14px;border-radius:8px;font-size:.82rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'ru' %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">RU</a>
                 </div>
             </div>
             {% if user.is_authenticated %}
-            <form action="{% url 'logout' %}" method="POST" style="margin-top:8px">
-                {% csrf_token %}
-                <button type="submit" class="drawer-logout">
-                    <i data-lucide="log-out"></i>{% if request.session.lang == 'ru' %}Выйти{% else %}Chiqish{% endif %}
-                </button>
+            <form action="{% url 'logout' %}" method="POST">{% csrf_token %}
+                <button type="submit" style="width:100%;padding:13px;border-radius:14px;background:rgba(239,68,68,.08);color:#ef4444;border:1px solid rgba(239,68,68,.2);font-weight:700;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><i data-lucide="log-out" style="width:18px;height:18px"></i>Chiqish</button>
             </form>
             {% endif %}
         </div>
@@ -412,24 +372,24 @@
         });
 
         // Drawer
-        function openDrawer() {
-            document.getElementById('drawer').classList.add('open');
-            document.getElementById('drawer-overlay').classList.add('open');
+        function openDrw() {
+            document.getElementById('drw').style.transform = 'translateY(0)';
+            document.getElementById('drw-ov').style.display = 'block';
             document.body.style.overflow = 'hidden';
             if (window.lucide) lucide.createIcons();
         }
-        function closeDrawer() {
-            document.getElementById('drawer').classList.remove('open');
-            document.getElementById('drawer-overlay').classList.remove('open');
+        function closeDrw() {
+            document.getElementById('drw').style.transform = 'translateY(100%)';
+            document.getElementById('drw-ov').style.display = 'none';
             document.body.style.overflow = '';
         }
         // swipe down to close
         let touchStartY = 0;
-        const drawer = document.getElementById('drawer');
-        if (drawer) {
-            drawer.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
-            drawer.addEventListener('touchend', e => {
-                if (e.changedTouches[0].clientY - touchStartY > 80) closeDrawer();
+        const drwEl = document.getElementById('drw');
+        if (drwEl) {
+            drwEl.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+            drwEl.addEventListener('touchend', e => {
+                if (e.changedTouches[0].clientY - touchStartY > 80) closeDrw();
             }, { passive: true });
         }
 
