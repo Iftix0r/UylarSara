@@ -44,7 +44,7 @@
     </div>
 
     <!-- Qidiruv — yupqa -->
-    <div style="padding:0 14px 8px">
+    <div style="padding:0 14px 6px">
         <form action="/" method="GET" id="search-form-sticky">
             <div style="display:flex;align-items:center;gap:8px;background:#f0f4ff;border-radius:12px;padding:7px 12px">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -57,6 +57,22 @@
             </div>
         </form>
     </div>
+
+    <!-- Kategoriya chips -->
+    <div style="display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:0 14px 8px">
+        <a href="/" style="display:flex;align-items:center;padding:5px 14px;border-radius:20px;font-size:.8rem;font-weight:600;white-space:nowrap;text-decoration:none;flex-shrink:0;{% if not request.GET.category and not request.GET.q %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">
+            {% if request.session.lang == 'ru' %}Все{% else %}Barchasi{% endif %}
+        </a>
+        {% for cat in categories %}
+        <a href="?category={{ cat.slug }}" style="display:flex;align-items:center;padding:5px 14px;border-radius:20px;font-size:.8rem;font-weight:600;white-space:nowrap;text-decoration:none;flex-shrink:0;{% if request.GET.category == cat.slug %}background:#2563eb;color:#fff{% else %}background:#f0f4ff;color:#64748b{% endif %}">
+            {{ cat.name }}
+        </a>
+        {% endfor %}
+        <div onclick="openFilter()" style="display:flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:.8rem;font-weight:600;white-space:nowrap;cursor:pointer;flex-shrink:0;background:#f0f4ff;color:#64748b">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+            Filter
+        </div>
+    </div>
 </div>
 
 <script>
@@ -64,22 +80,6 @@ if (window.Telegram?.WebApp?.initData) {
     document.getElementById("twa-topbar").style.display = "flex";
 }
 </script>
-
-<!-- ══ FILTER CHIPS ══ -->
-<div class="tg-chips">
-    <a href="/" class="chip {% if not request.GET.category and not request.GET.q %}chip-active{% endif %}">
-        {% if request.session.lang == 'ru' %}Все{% else %}Barchasi{% endif %}
-    </a>
-    {% for cat in categories %}
-    <a href="?category={{ cat.slug }}" class="chip {% if request.GET.category == cat.slug %}chip-active{% endif %}">
-        {{ cat.name }}
-    </a>
-    {% endfor %}
-    <div class="chip" onclick="openFilter()" style="cursor:pointer">
-        <i data-lucide="sliders-horizontal" style="width:13px;height:13px"></i>
-        Filter
-    </div>
-</div>
 
 <!-- ══ SECTION HEADER ══ -->
 <div class="tg-section-head">
