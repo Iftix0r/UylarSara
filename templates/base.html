@@ -23,27 +23,31 @@
     <script>
     // Drawer va Catalog funksiyalarini DARHOL global scope ga qo'yamiz
     // Tungi rejim toggle (TWA uchun)
+    function applyTwaTopbarTheme(dark) {
+        var tb = document.getElementById('twa-topbar');
+        var sc = document.getElementById('sticky-chips');
+        var title = document.getElementById('twa-title');
+        var btn = document.getElementById('twa-theme-btn');
+        var icon = document.getElementById('twa-theme-icon');
+        if (dark) {
+            if (tb) { tb.style.background='#0d1117'; tb.style.borderBottomColor='#30363d'; }
+            if (sc) { sc.style.background='#0d1117'; sc.style.borderBottomColor='#30363d'; }
+            if (title) title.style.color='#e6edf3';
+            if (btn) { btn.style.background='#21262d'; btn.style.borderColor='#30363d'; }
+            if (icon) { icon.setAttribute('stroke','#e6edf3'); icon.innerHTML='<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>'; }
+        } else {
+            if (tb) { tb.style.background='#fff'; tb.style.borderBottomColor='#eef1f8'; }
+            if (sc) { sc.style.background='#fff'; sc.style.borderBottomColor='#eef1f8'; }
+            if (title) title.style.color='#0f172a';
+            if (btn) { btn.style.background='#f0f4ff'; btn.style.borderColor='#e2e8f0'; }
+            if (icon) { icon.setAttribute('stroke','#64748b'); icon.innerHTML='<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'; }
+        }
+    }
+
     function toggleTwaTheme() {
         var dark = document.body.classList.toggle('dark-mode');
         localStorage.setItem('theme', dark ? 'dark' : 'light');
-        var icon = document.getElementById('twa-theme-icon');
-        var btn  = document.getElementById('twa-theme-btn');
-        var title = document.getElementById('twa-title');
-        if (dark) {
-            if (icon) icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
-            if (btn)  btn.style.background = '#1e293b';
-            if (icon) icon.setAttribute('stroke','#f1f5f9');
-            if (title) title.style.color = '#f1f5f9';
-            document.getElementById('twa-topbar') && (document.getElementById('twa-topbar').style.background = '#0f172a');
-            document.getElementById('twa-topbar') && (document.getElementById('twa-topbar').style.borderBottomColor = '#1e293b');
-        } else {
-            if (icon) icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
-            if (btn)  btn.style.background = '#f0f4ff';
-            if (icon) icon.setAttribute('stroke','#64748b');
-            if (title) title.style.color = '#0f172a';
-            document.getElementById('twa-topbar') && (document.getElementById('twa-topbar').style.background = '#fff');
-            document.getElementById('twa-topbar') && (document.getElementById('twa-topbar').style.borderBottomColor = '#eef1f8');
-        }
+        applyTwaTopbarTheme(dark);
     }
 
     function openDrw() {
@@ -449,9 +453,16 @@
         let isDark = false;
 
         if (isTWA) {
-            // TWA da har doim kunduzgi rejim
-            isDark = false;
-            // Telegram tema o'zgarganda ham kunduzgi saqlaymiz
+            // Telegram colorScheme ga qarab tema
+            isDark = (window.Telegram.WebApp.colorScheme === 'dark');
+            // Telegram tema o'zgarganda yangilaymiz
+            window.Telegram.WebApp.onEvent('themeChanged', () => {
+                const newDark = (window.Telegram.WebApp.colorScheme === 'dark');
+                body.classList.toggle('dark-mode', newDark);
+                updateThemeIcon(newDark);
+                // TWA topbar rangini ham yangilaymiz
+                applyTwaTopbarTheme(newDark);
+            });
         } else {
             const saved = localStorage.getItem('theme');
             isDark = saved === 'dark';
@@ -459,6 +470,8 @@
 
         body.classList.toggle('dark-mode', isDark);
         updateThemeIcon(isDark);
+        // TWA topbar rangini ham darhol qo'llaymiz
+        if (isTWA) setTimeout(() => applyTwaTopbarTheme(isDark), 100);
 
         if (themeToggle) {
             themeToggle.addEventListener('click', () => {
