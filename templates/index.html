@@ -81,28 +81,34 @@ const CAT_SLUGS = ['', {% for cat in categories %}'{{ cat.slug }}',{% endfor %}]
 const currentCat = '{{ request.GET.category|default:"" }}';
 const currentIdx = CAT_SLUGS.indexOf(currentCat);
 
-// Swipe bilan kategoriya o'zgartirish — faqat kontent maydonida
+// Swipe bilan kategoriya o'zgartirish — butun sahifada
 let swipeStartX = 0, swipeStartY = 0;
-const swipeArea = document.getElementById('tg-list-wrap');
-if (swipeArea) {
-    swipeArea.addEventListener('touchstart', e => {
-        swipeStartX = e.touches[0].clientX;
-        swipeStartY = e.touches[0].clientY;
-    }, { passive: true });
-    swipeArea.addEventListener('touchend', e => {
-        const dx = e.changedTouches[0].clientX - swipeStartX;
-        const dy = e.changedTouches[0].clientY - swipeStartY;
-        // Faqat horizontal swipe (vertikal scroll emas)
-        if (Math.abs(dx) < 80 || Math.abs(dy) > Math.abs(dx)) return;
-        if (dx < 0 && currentIdx < CAT_SLUGS.length - 1) {
-            const next = CAT_SLUGS[currentIdx + 1];
-            window.location.href = next ? '/?category=' + next : '/';
-        } else if (dx > 0 && currentIdx > 0) {
-            const prev = CAT_SLUGS[currentIdx - 1];
-            window.location.href = prev ? '/?category=' + prev : '/';
-        }
-    }, { passive: true });
-}
+document.addEventListener('touchstart', e => {
+    swipeStartX = e.touches[0].clientX;
+    swipeStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', e => {
+    // Drawer yoki catalog ochiq bo'lsa ishlamasin
+    const drw = document.getElementById('drw');
+    const cat = document.getElementById('cat-modal');
+    const sv  = document.getElementById('story-viewer');
+    if ((drw && drw.style.transform === 'translateY(0px)') ||
+        (cat && cat.style.transform === 'translateY(0px)') ||
+        (sv  && sv.classList.contains('open'))) return;
+
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    const dy = e.changedTouches[0].clientY - swipeStartY;
+    // Faqat horizontal swipe (vertikal scroll emas)
+    if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.8) return;
+
+    if (dx < 0 && currentIdx < CAT_SLUGS.length - 1) {
+        const next = CAT_SLUGS[currentIdx + 1];
+        window.location.href = next ? '/?category=' + next : '/';
+    } else if (dx > 0 && currentIdx > 0) {
+        const prev = CAT_SLUGS[currentIdx - 1];
+        window.location.href = prev ? '/?category=' + prev : '/';
+    }
+}, { passive: true });
 
 if (window.Telegram?.WebApp?.initData) {
     const topbar = document.getElementById("twa-topbar");
