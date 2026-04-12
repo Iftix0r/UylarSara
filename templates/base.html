@@ -97,7 +97,7 @@
     </div>
     <!-- Header -->
     <!-- Top Bar -->
-    <div class="top-bar" id="site-topbar">
+    <div class="top-bar" id="site-topbar" style="display:none">
         <div class="container" style="display: flex; justify-content: space-between; align-items: center; height: 100%;">
             <div class="city-selector" onclick="openCityModal()">
                 <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
@@ -110,7 +110,7 @@
         </div>
     </div>
 
-    <header id="main-header">
+    <header id="main-header" style="display:none">
         <div class="container nav-wrapper">
             <a href="/" class="logo" style="display: flex; align-items: center; gap: 12px; height: 100%;">
                 <img src="{% static 'img/logo.png' %}" alt="SaraUylar Logo" style="height: 48px; width: auto; object-fit: contain;">
@@ -312,6 +312,14 @@
             document.body.classList.add('twa');
             tg.expand();
             tg.ready();
+            // Header yashirilgan, TWA da shunday qoladi
+        } else {
+            // Oddiy brauzerda header ko'rsatamiz
+            const h = document.getElementById('main-header');
+            const tb = document.getElementById('site-topbar');
+            if (h) h.style.display = '';
+            if (tb) tb.style.display = '';
+        }
             tg.setHeaderColor && tg.setHeaderColor(tg.themeParams?.secondary_bg_color || '#ffffff');
 
             // Telegram rang sxemasini body ga qo'shamiz
@@ -420,6 +428,7 @@
             document.getElementById('drw').style.transform = 'translateY(100%)';
             document.getElementById('drw-ov').style.display = 'none';
             document.body.style.overflow = '';
+            document.body.style.position = '';
         }
         function openCatalog() {
             document.getElementById('cat-modal').style.transform = 'translateY(0)';
@@ -431,6 +440,7 @@
             document.getElementById('cat-modal').style.transform = 'translateY(100%)';
             document.getElementById('cat-ov').style.display = 'none';
             document.body.style.overflow = '';
+            document.body.style.position = '';
         }
         // swipe down to close
         let touchStartY = 0;
