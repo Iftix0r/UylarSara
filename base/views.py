@@ -80,7 +80,8 @@ def telegram_auth(request):
 
     _create_or_login_tg_user(
         request, int(user_data["id"]),
-        user_data.get("first_name", ""), user_data.get("last_name", ""), user_data.get("username", "")
+        user_data.get("first_name", ""), user_data.get("last_name", ""),
+        user_data.get("username", ""), user_data.get("photo_url", "")
     )
     return JsonResponse({"ok": True})
 
@@ -173,9 +174,16 @@ def _fetch_telegram_photo(telegram_id: int) -> str:
         return ""
 
 
-def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_username):
+def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_username, init_photo_url=""):
     from django.contrib.auth.models import User
     from .models import UserProfile
+
+    # Rasm: avval initData dagi photo_url, keyin Bot API
+    def get_best_photo():
+        if init_photo_url:
+            print(f"[TG PHOTO] Using initData photo_url for {telegram_id}")
+            return init_photo_url
+        return _fetch_telegram_photo(telegram_id)
 
     profile = UserProfile.objects.filter(telegram_id=telegram_id).select_related("user").first()
     if profile:
@@ -194,8 +202,8 @@ def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_use
         if tg_username and profile.telegram_username != tg_username:
             profile.telegram_username = tg_username
             profile_fields.append("telegram_username")
-        # Har safar rasmni yangilaymiz (Telegram da rasm o'zgarishi mumkin)
-        photo = _fetch_telegram_photo(telegram_id)
+        # Rasm: initData dan kelsa har doim yangilaymiz
+        photo = get_best_photo()
         if photo and profile.telegram_photo_url != photo:
             profile.telegram_photo_url = photo
             profile_fields.append("telegram_photo_url")
@@ -213,7 +221,7 @@ def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_use
             first_name=first_name,
             last_name=last_name,
         )
-        photo = _fetch_telegram_photo(telegram_id)
+        photo = get_best_photo()
         profile, _ = UserProfile.objects.get_or_create(user=user)
         profile.telegram_id = telegram_id
         profile.telegram_username = tg_username
