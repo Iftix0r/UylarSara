@@ -92,20 +92,34 @@ def _fetch_telegram_photo(telegram_id: int) -> str:
         return ""
     try:
         import urllib.request
+        # 1. Profil rasmlarini olish
         url = f"https://api.telegram.org/bot{token}/getUserProfilePhotos?user_id={telegram_id}&limit=1"
-        with urllib.request.urlopen(url, timeout=5) as resp:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
             data = json.loads(resp.read())
+
+        print(f"[TG PHOTO] getUserProfilePhotos: ok={data.get('ok')} total={data.get('result', {}).get('total_count', 0)}")
+
         if not data.get("ok") or not data["result"]["total_count"]:
             return ""
-        file_id = data["result"]["photos"][0][-1]["file_id"]
 
+        # Eng katta o'lchamdagi rasmni olish
+        photos = data["result"]["photos"][0]
+        best = max(photos, key=lambda p: p.get("file_size", 0))
+        file_id = best["file_id"]
+
+        # 2. File path olish
         url2 = f"https://api.telegram.org/bot{token}/getFile?file_id={file_id}"
-        with urllib.request.urlopen(url2, timeout=5) as resp:
+        req2 = urllib.request.Request(url2, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req2, timeout=8) as resp:
             data2 = json.loads(resp.read())
+
         file_path = data2["result"]["file_path"]
-        return f"https://api.telegram.org/file/bot{token}/{file_path}"
+        photo_url = f"https://api.telegram.org/file/bot{token}/{file_path}"
+        print(f"[TG PHOTO] Got photo: {photo_url[:60]}...")
+        return photo_url
     except Exception as e:
-        print(f"[TG PHOTO] error: {e}")
+        print(f"[TG PHOTO] error for {telegram_id}: {e}")
         return ""
 
 
@@ -130,12 +144,11 @@ def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_use
         if tg_username and profile.telegram_username != tg_username:
             profile.telegram_username = tg_username
             profile_fields.append("telegram_username")
-        # Rasm yo'q bo'lsa yangilaymiz
-        if not profile.telegram_photo_url:
-            photo = _fetch_telegram_photo(telegram_id)
-            if photo:
-                profile.telegram_photo_url = photo
-                profile_fields.append("telegram_photo_url")
+        # Har safar rasmni yangilaymiz (Telegram da rasm o'zgarishi mumkin)
+        photo = _fetch_telegram_photo(telegram_id)
+        if photo and profile.telegram_photo_url != photo:
+            profile.telegram_photo_url = photo
+            profile_fields.append("telegram_photo_url")
         if profile_fields:
             profile.save(update_fields=profile_fields)
     else:
