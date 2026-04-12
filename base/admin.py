@@ -97,10 +97,10 @@ def reset_views(modeladmin, request, queryset):
     n = queryset.update(views_count=0)
     modeladmin.message_user(request, f"{n} ta e'lon ko'rishlar soni nolga tushirildi.")
 
-@admin.action(description="✅ Faol qilish")
+@admin.action(description="✅ Tasdiqlash (Faol qilish)")
 def mark_active(modeladmin, request, queryset):
     n = queryset.update(status='active')
-    modeladmin.message_user(request, f"{n} ta e'lon faol qilindi.")
+    modeladmin.message_user(request, f"{n} ta e'lon tasdiqlandi va faollashtirildi.")
 
 @admin.action(description="🔴 Nofaol qilish")
 def mark_inactive(modeladmin, request, queryset):
@@ -313,7 +313,7 @@ class PropertyAdmin(admin.ModelAdmin):
                           'property_type', 'price_fmt',
                           'rooms', 'area', 'premium_badge', 'views_badge', 'created_at')
     list_display_links = ('thumb', 'title_link')
-    list_filter        = ('category', 'property_type', 'is_premium', 'created_at')
+    list_filter        = ('category', 'property_type', 'is_premium', 'status', 'created_at')
     search_fields      = ('title', 'location', 'description', 'owner__username')
     readonly_fields    = ('views_count', 'created_at', 'main_image_preview', 'site_link', 'map_preview')
     ordering           = ('-created_at',)

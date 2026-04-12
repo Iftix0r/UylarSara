@@ -304,7 +304,7 @@ def home(request):
     max_price = request.GET.get('max_price')
     
     categories = Category.objects.all()
-    properties = Property.objects.all().prefetch_related('images').order_by('-created_at')
+    properties = Property.objects.filter(status='active').prefetch_related('images').order_by('-created_at')
     
     if category_slug:
         properties = properties.filter(category__slug=category_slug)
@@ -411,18 +411,42 @@ def property_detail(request, pk):
     }
     return render(request, 'property_detail.html', context)
 
+@login_required
 def add_property(request):
     if request.method == 'POST':
         form = PropertyForm(request.POST, request.FILES)
         if form.is_valid():
-            property = form.save(commit=False)
-            if request.user.is_authenticated:
-                property.owner = request.user
-            property.save()
-            return redirect('property_detail', pk=property.pk)
+            prop = form.save(commit=False)
+            prop.owner = request.user
+            prop.status = 'pending'  # Admin tasdiqlaguncha kutadi
+            prop.save()
+            return redirect('profile')
     else:
         form = PropertyForm()
     return render(request, 'add_property.html', {'form': form})
+
+
+@login_required
+def edit_property(request, pk):
+    prop = get_object_or_404(Property, pk=pk, owner=request.user)
+    if request.method == 'POST':
+        form = PropertyForm(request.POST, request.FILES, instance=prop)
+        if form.is_valid():
+            p = form.save(commit=False)
+            p.status = 'pending'  # Tahrirlanganda qayta tasdiq kerak
+            p.save()
+            return redirect('profile')
+    else:
+        form = PropertyForm(instance=prop)
+    return render(request, 'add_property.html', {'form': form, 'edit': True, 'prop': prop})
+
+
+@login_required
+def delete_property(request, pk):
+    prop = get_object_or_404(Property, pk=pk, owner=request.user)
+    if request.method == 'POST':
+        prop.delete()
+    return redirect('profile')
 
 @login_required
 def profile(request):

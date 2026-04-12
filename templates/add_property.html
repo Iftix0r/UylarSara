@@ -1,90 +1,120 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}{% if request.session.lang == 'ru' %}Добавить объявление{% else %}E'lon qo'shish{% endif %} - SaraUylar{% endblock %}
+{% block title %}{% if edit %}E'lonni tahrirlash{% else %}E'lon berish{% endif %} - SaraUylar{% endblock %}
 
 {% block content %}
-<div class="container animate-fade-in" style="max-width: 720px; padding-top: 24px;">
-    <!-- Header -->
-    <div style="margin-bottom: 32px; text-align: center;">
-        <div style="background: var(--primary-light); color: var(--primary); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
-            <i data-lucide="plus-square" style="width: 32px; height: 32px;"></i>
-        </div>
-        <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.03em;">Yangi e'lon qo'shish</h1>
-        <p style="color: var(--text-muted);">Uyingiz haqida ma'lumotlarni to'ldiring va xaridorlarni toping</p>
+<div style="max-width:560px;margin:0 auto;padding:16px 16px 80px">
+
+    <div style="text-align:center;margin-bottom:20px">
+        <h1 style="font-size:1.4rem;font-weight:800;color:var(--text)">{% if edit %}E'lonni tahrirlash{% else %}Yangi e'lon{% endif %}</h1>
+        <p style="color:var(--text-muted);font-size:.85rem">{% if edit %}Ma'lumotlarni yangilang{% else %}Uyingizni sotish yoki ijaraga berish{% endif %}</p>
     </div>
-    
-    <div class="form-card" style="background: var(--bg-card); padding: 40px; border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-lg);">
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
-                {% for field in form %}
-                <div class="form-group">
-                    <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.95rem; color: var(--text-main);">
-                        {{ field.label }}
-                    </label>
-                    
-                    <div class="input-wrapper" style="position: relative;">
-                        {% if field.name == 'description' %}
-                            <textarea name="{{ field.name }}" class="form-input" placeholder="{{ field.label }}ni kiriting..." rows="4">{{ field.value|default:'' }}</textarea>
-                        {% elif field.name == 'category' or field.name == 'property_type' %}
-                            <select name="{{ field.name }}" class="form-input">
-                                {% for choice in field.field.choices %}
-                                    <option value="{{ choice.0 }}" {% if field.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
-                                {% endfor %}
-                            </select>
-                            <i data-lucide="chevron-down" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; pointer-events: none; color: var(--text-muted);"></i>
-                        {% elif field.name == 'image' %}
-                            <div class="file-input-wrapper">
-                                <i data-lucide="upload-cloud" style="width: 32px; height: 32px; color: var(--primary); margin-bottom: 8px;"></i>
-                                <p style="font-size: 0.9rem; color: var(--text-muted);">Rasmni tanlang yoki shu yerga tashlang</p>
-                                <input type="file" name="{{ field.name }}" id="id_{{ field.name }}" style="position: absolute; inset: 0; opacity: 0; cursor: pointer;">
-                            </div>
-                        {% else %}
-                            <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.name }}" value="{{ field.value|default:'' }}" class="form-input" placeholder="{{ field.label }}ni kiriting...">
-                        {% endif %}
-                    </div>
-                    
-                    {% if field.errors %}
-                        {% for error in field.errors %}
-                            <div style="color: var(--danger); font-size: 0.85rem; margin-top: 6px; display: flex; align-items: center; gap: 4px;">
-                                <i data-lucide="alert-circle" style="width: 14px; height: 14px;"></i> {{ error }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" id="prop-form">
+        {% csrf_token %}
+
+        <!-- Rasm -->
+        <div style="margin-bottom:16px">
+            <label style="display:block;font-weight:700;font-size:.85rem;color:var(--text);margin-bottom:6px">📷 Rasm</label>
+            <div style="position:relative;border:2px dashed var(--border);border-radius:14px;padding:20px;text-align:center;background:var(--border-light);cursor:pointer" onclick="document.getElementById('id_image').click()">
+                <div id="img-preview" style="display:none;margin-bottom:8px">
+                    <img id="img-preview-src" style="max-height:160px;border-radius:10px;max-width:100%">
                 </div>
-                {% endfor %}
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" style="margin-bottom:6px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <p style="color:var(--text-muted);font-size:.82rem;margin:0">Rasmni tanlash uchun bosing</p>
+                <input type="file" name="image" id="id_image" accept="image/*" style="display:none" onchange="previewImg(this)">
             </div>
-            
-            <div style="margin-top: 40px; border-top: 1px solid var(--border-light); padding-top: 24px;">
-                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 18px; font-size: 1.1rem; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);">
-                    <i data-lucide="send"></i> E'lonni joylashtirish
-                </button>
-                <a href="/" class="btn" style="width: 100%; margin-top: 12px; color: var(--text-muted); font-weight: 600;">Bekor qilish</a>
+        </div>
+
+        <!-- Sarlavha -->
+        <div style="margin-bottom:12px">
+            <label style="display:block;font-weight:700;font-size:.85rem;color:var(--text);margin-bottom:6px">🏠 Sarlavha</label>
+            <input type="text" name="title" value="{{ form.title.value|default:'' }}" class="form-input" placeholder="Masalan: 3 xonali kvartira, Yunusobod" required>
+        </div>
+
+        <!-- Narx -->
+        <div style="margin-bottom:12px">
+            <label style="display:block;font-weight:700;font-size:.85rem;color:var(--text);margin-bottom:6px">💵 Narx (USD)</label>
+            <input type="number" name="price" value="{{ form.price.value|default:'' }}" class="form-input" placeholder="Masalan: 85000" required>
+        </div>
+
+        <!-- Manzil -->
+        <div style="margin-bottom:12px">
+            <label style="display:block;font-weight:700;font-size:.85rem;color:var(--text);margin-bottom:6px">📍 Manzil</label>
+            <input type="text" name="location" value="{{ form.location.value|default:'' }}" class="form-input" placeholder="Masalan: Toshkent, Yunusobod 19-kv" required>
+        </div>
+
+        <!-- Xonalar va Maydon -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+            <div>
+                <label style="display:block;font-weight:700;font-size:.85rem;color:var(--text);margin-bottom:6px">🚪 Xonalar</label>
+                <input type="number" name="rooms" value="{{ form.rooms.value|default:'' }}" class="form-input" placeholder="3" min="1" max="20" required>
             </div>
-        </form>
-    </div>
+            <div>
+                <label style="display:block;font-weight:700;font-size:.85rem;color:var(--text);margin-bottom:6px">📐 Maydon (m²)</label>
+                <input type="number" name="area" value="{{ form.area.value|default:'' }}" class="form-input" placeholder="90" required>
+            </div>
+        </div>
+
+        <!-- Kategoriya va Tur -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+            <div>
+                <label style="display:block;font-weight:700;font-size:.85rem;color:var(--text);margin-bottom:6px">📂 Kategoriya</label>
+                <select name="category" class="form-input" required>
+                    {% for choice in form.category.field.choices %}
+                    <option value="{{ choice.0 }}" {% if form.category.value == choice.0|stringformat:"s" %}selected{% endif %}>{{ choice.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display:block;font-weight:700;font-size:.85rem;color:var(--text);margin-bottom:6px">🏷 Turi</label>
+                <select name="property_type" class="form-input" required>
+                    {% for choice in form.property_type.field.choices %}
+                    <option value="{{ choice.0 }}" {% if form.property_type.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Tavsif -->
+        <div style="margin-bottom:20px">
+            <label style="display:block;font-weight:700;font-size:.85rem;color:var(--text);margin-bottom:6px">📝 Tavsif</label>
+            <textarea name="description" class="form-input" rows="3" placeholder="Uy haqida qo'shimcha ma'lumot...">{{ form.description.value|default:'' }}</textarea>
+        </div>
+
+        <!-- Xatolar -->
+        {% if form.errors %}
+        <div style="background:#fee2e2;color:#991b1b;padding:12px;border-radius:10px;margin-bottom:16px;font-size:.85rem">
+            {% for field in form %}{% for error in field.errors %}{{ field.label }}: {{ error }}<br>{% endfor %}{% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Submit -->
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:15px;font-size:1rem">
+            {% if edit %}✏️ Saqlash{% else %}📤 Yuborish (tasdiq uchun){% endif %}
+        </button>
+        <a href="{% url 'profile' %}" style="display:block;text-align:center;margin-top:10px;color:var(--text-muted);font-size:.85rem">Bekor qilish</a>
+    </form>
 </div>
 
-<style>
-.form-card{padding:28px}
-@media(max-width:600px){.form-card{padding:20px}}
-</style>
-
 <script>
-    // TWA Integration for Add Property Page
-    const tgAdd = window.Telegram?.WebApp;
-    if (tgAdd && tgAdd.initData) {
-        tgAdd.MainButton.setText("JOYLASHTIRISH");
-        tgAdd.MainButton.show();
-        tgAdd.MainButton.onClick(() => {
-            document.querySelector('form').submit();
-        });
-        
-        tgAdd.BackButton.show();
-        tgAdd.BackButton.onClick(() => {
-            window.location.href = "/";
-        });
+function previewImg(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('img-preview-src').src = e.target.result;
+            document.getElementById('img-preview').style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
     }
+}
+const tgAdd = window.Telegram?.WebApp;
+if (tgAdd && tgAdd.initData) {
+    tgAdd.MainButton.setText("{% if edit %}SAQLASH{% else %}YUBORISH{% endif %}");
+    tgAdd.MainButton.show();
+    tgAdd.MainButton.onClick(() => document.getElementById('prop-form').submit());
+    tgAdd.BackButton.show();
+    tgAdd.BackButton.onClick(() => window.location.href = "{% url 'profile' %}");
+}
 </script>
 {% endblock %}

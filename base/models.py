@@ -27,13 +27,14 @@ class Property(models.Model):
         ('NEW_CONSTRUCTION', 'New Construction'),
     )
     STATUS_CHOICES = (
+        ('pending',   'Tasdiq kutilmoqda'),
         ('active',    'Faol'),
         ('inactive',  'Nofaol'),
         ('sold',      'Sotilgan'),
         ('rented',    'Ijarada'),
     )
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='properties', null=True, blank=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active', verbose_name="Holat")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', verbose_name="Holat")
 
     title = models.CharField(max_length=200)
     description = models.TextField()
