@@ -173,16 +173,38 @@
         <a href="{% url 'add_property' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;color:#94a3b8;min-width:46px">
             <div style="width:44px;height:44px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(37,99,235,.4)"><i data-lucide="plus" style="width:22px;height:22px;color:#fff"></i></div></a>
         {% if user.is_authenticated %}
-        <a href="{% url 'profile' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;padding:6px 10px;border-radius:14px;min-width:46px;{% if request.resolver_match.url_name == 'profile' %}color:#2563eb;background:rgba(37,99,235,.1){% else %}color:#94a3b8{% endif %}">
+        <button onclick="openDrw()" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;font-size:.68rem;font-weight:600;padding:6px 10px;border-radius:14px;min-width:46px;color:#94a3b8">
             <div style="width:26px;height:26px;border-radius:50%;background:rgba(37,99,235,.1);border:2px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#2563eb;overflow:hidden">{% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" style="width:100%;height:100%;object-fit:cover" alt="">{% elif user.profile.telegram_photo_url %}<img src="{{ user.profile.telegram_photo_url }}" style="width:100%;height:100%;object-fit:cover" alt="">{% else %}{{ user.first_name|first|upper|default:user.username|first|upper }}{% endif %}</div>
-            <span>Profil</span></a>
+            <span style="opacity:0;font-size:.5rem">·</span></button>
         {% else %}
         <a href="{% url 'login' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;color:#94a3b8;min-width:46px">
             <i data-lucide="user" style="width:20px;height:20px"></i><span>Kirish</span></a>
         {% endif %}
-        <button onclick="openDrw()" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;font-size:.68rem;font-weight:600;color:#94a3b8;padding:6px 10px;min-width:46px">
-            <i data-lucide="menu" style="width:20px;height:20px"></i><span style="opacity:0;font-size:.5rem">·</span></button>
+        <button onclick="openCatalog()" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;font-size:.68rem;font-weight:600;color:#94a3b8;padding:6px 10px;min-width:46px">
+            <i data-lucide="layout-grid" style="width:20px;height:20px"></i><span>Katalog</span></button>
     </nav>
+
+    <!-- Catalog Modal -->
+    <div id="cat-ov" onclick="closeCatalog()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1100"></div>
+    <div id="cat-modal" style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;z-index:1200;max-height:80vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease">
+        <div style="width:40px;height:4px;border-radius:2px;background:#e2e8f0;margin:12px auto 8px"></div>
+        <div style="padding:4px 20px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between">
+            <span style="font-weight:800;font-size:1.1rem;color:#0f172a">Kategoriyalar</span>
+            <button onclick="closeCatalog()" style="background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px"><i data-lucide="x" style="width:20px;height:20px"></i></button>
+        </div>
+        <div style="padding:8px 0 20px">
+            <a href="/" onclick="closeCatalog()" style="display:flex;align-items:center;gap:14px;padding:13px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc">
+                <div style="width:40px;height:40px;border-radius:12px;background:#e0e7ff;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i data-lucide="layout-grid" style="width:20px;height:20px;color:#6366f1"></i></div>
+                Barchasi
+            </a>
+            {% for cat in categories %}
+            <a href="/?category={{ cat.slug }}" onclick="closeCatalog()" style="display:flex;align-items:center;gap:14px;padding:13px 20px;color:#0f172a;font-weight:600;font-size:.95rem;text-decoration:none;border-bottom:1px solid #f8fafc">
+                <div style="width:40px;height:40px;border-radius:12px;background:#e0f2fe;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i data-lucide="{{ cat.icon|default:'home' }}" style="width:20px;height:20px;color:#0ea5e9"></i></div>
+                {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
 
     <!-- Drawer overlay -->
     <div id="drw-ov" onclick="closeDrw()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1100"></div>
@@ -379,6 +401,17 @@
             document.getElementById('drw-ov').style.display = 'none';
             document.body.style.overflow = '';
         }
+        function openCatalog() {
+            document.getElementById('cat-modal').style.transform = 'translateY(0)';
+            document.getElementById('cat-ov').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            if (window.lucide) lucide.createIcons();
+        }
+        function closeCatalog() {
+            document.getElementById('cat-modal').style.transform = 'translateY(100%)';
+            document.getElementById('cat-ov').style.display = 'none';
+            document.body.style.overflow = '';
+        }
         // swipe down to close
         let touchStartY = 0;
         const drwEl = document.getElementById('drw');
@@ -386,6 +419,13 @@
             drwEl.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
             drwEl.addEventListener('touchend', e => {
                 if (e.changedTouches[0].clientY - touchStartY > 80) closeDrw();
+            }, { passive: true });
+        }
+        const catEl = document.getElementById('cat-modal');
+        if (catEl) {
+            catEl.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+            catEl.addEventListener('touchend', e => {
+                if (e.changedTouches[0].clientY - touchStartY > 80) closeCatalog();
             }, { passive: true });
         }
 
