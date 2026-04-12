@@ -426,28 +426,28 @@
         });
 
         // Drawer
-        function openDrw() {
+        window.openDrw = function() {
             document.getElementById('drw').style.transform = 'translateY(0)';
             document.getElementById('drw').style.pointerEvents = 'auto';
             document.getElementById('drw-ov').style.display = 'block';
             document.body.style.overflow = 'hidden';
             if (window.lucide) lucide.createIcons();
         }
-        function closeDrw() {
+        window.closeDrw = function() {
             document.getElementById('drw').style.transform = 'translateY(100%)';
             document.getElementById('drw').style.pointerEvents = 'none';
             document.getElementById('drw-ov').style.display = 'none';
             document.body.style.overflow = '';
             document.body.style.position = '';
         }
-        function openCatalog() {
+        window.openCatalog = function() {
             document.getElementById('cat-modal').style.transform = 'translateY(0)';
             document.getElementById('cat-modal').style.pointerEvents = 'auto';
             document.getElementById('cat-ov').style.display = 'block';
             document.body.style.overflow = 'hidden';
             if (window.lucide) lucide.createIcons();
         }
-        function closeCatalog() {
+        window.closeCatalog = function() {
             document.getElementById('cat-modal').style.transform = 'translateY(100%)';
             document.getElementById('cat-modal').style.pointerEvents = 'none';
             document.getElementById('cat-ov').style.display = 'none';
