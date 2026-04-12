@@ -89,7 +89,7 @@ if (window.Telegram?.WebApp?.initData) {
 
     window.addEventListener('scroll', () => {
         const y = window.scrollY;
-        if (y > lastY && y > 10 && !collapsed) {
+        if (y > lastY && y > 50 && !collapsed) {
             // Pastga — yashir
             collapsed = true;
             if (searchRow) { searchRow.style.maxHeight = '0'; searchRow.style.opacity = '0'; searchRow.style.padding = '0 14px'; }
