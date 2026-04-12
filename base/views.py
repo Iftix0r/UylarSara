@@ -21,18 +21,21 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 def verify_telegram_init_data(init_data: str) -> dict | None:
     """Telegram WebApp initData ni HMAC-SHA256 bilan tekshiradi."""
     token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    print(f"[TG VERIFY] token_len={len(token)} initData_len={len(init_data)}")
     if not token or not init_data:
+        print(f"[TG VERIFY] FAILED: token={bool(token)} initData={bool(init_data)}")
         return None
     try:
         parsed = dict(parse_qsl(init_data, strict_parsing=False))
         received_hash = parsed.pop("hash", None)
+        print(f"[TG VERIFY] parsed keys={list(parsed.keys())} hash={received_hash[:10] if received_hash else 'YOQ'}")
         if not received_hash:
             return None
         data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
         secret_key = hmac.new(b"WebAppData", token.encode(), hashlib.sha256).digest()
         expected_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+        print(f"[TG VERIFY] expected={expected_hash[:16]} received={received_hash[:16]} match={hmac.compare_digest(expected_hash, received_hash)}")
         if not hmac.compare_digest(expected_hash, received_hash):
-            print(f"[TG] Hash mismatch. expected={expected_hash[:16]} got={received_hash[:16]}")
             return None
         user_str = parsed.get("user", "")
         return json.loads(user_str) if user_str else None
@@ -45,6 +48,7 @@ def verify_telegram_init_data(init_data: str) -> dict | None:
 def telegram_auth(request):
     """Telegram WebApp initData yoki Login Widget orqali login/register."""
     import time
+    print(f"[TG AUTH] method={request.method} path={request.path}")
 
     # ── Telegram Login Widget (GET) ──────────────────────────────────────────
     if request.method == "GET":
@@ -71,11 +75,15 @@ def telegram_auth(request):
     try:
         body = json.loads(request.body)
         init_data = body.get("initData", "")
+        print(f"[TG AUTH POST] initData[:80]={init_data[:80]}")
     except Exception:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
     user_data = verify_telegram_init_data(init_data)
     if not user_data or not user_data.get("id"):
+        # Hash tekshiruvi o'tmasa ham, initDataUnsafe dan foydalanish imkoni yo'q
+        # Lekin development/test uchun initData parse qilib ko'ramiz
+        print(f"[TG AUTH POST] verify failed, user_data={user_data}")
         return JsonResponse({"error": "Invalid initData"}, status=403)
 
     _create_or_login_tg_user(

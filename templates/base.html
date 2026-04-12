@@ -90,10 +90,13 @@
             '#main-header, #site-topbar { display: none !important; }';
 
         // Foydalanuvchi login qilmagan bo'lsa — avtomatik Telegram login
-        // data-is-authenticated body tagida, shuning uchun DOMContentLoaded kutamiz
         document.addEventListener('DOMContentLoaded', function() {
             var isAuth = document.body.getAttribute('data-is-authenticated') === 'true';
             if (isAuth) return;
+
+            console.log('[TG] initData uzunligi:', tg.initData.length);
+            console.log('[TG] initUser:', JSON.stringify(tg.initDataUnsafe && tg.initDataUnsafe.user));
+
             var match = document.cookie.match(/csrftoken=([^;]+)/);
             var csrf = match ? match[1] : '';
             fetch('/telegram-auth/', {
@@ -104,9 +107,15 @@
                 },
                 body: JSON.stringify({ initData: tg.initData })
             })
-            .then(function(r){ return r.json(); })
-            .then(function(d){ if(d.ok) window.location.reload(); })
-            .catch(function(e){ console.error('[TG AUTO LOGIN]', e); });
+            .then(function(r){
+                console.log('[TG] response status:', r.status);
+                return r.json();
+            })
+            .then(function(d){
+                console.log('[TG] response:', JSON.stringify(d));
+                if(d.ok) window.location.reload();
+            })
+            .catch(function(e){ console.error('[TG AUTO LOGIN] error:', e); });
         });
     })();
     </script>
