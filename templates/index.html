@@ -5,41 +5,39 @@
 {% block content %}
 
 <!-- ══ TWA TOP BAR ══ -->
-<div id="twa-topbar" style="display:none;align-items:center;justify-content:space-between;padding:12px 16px 6px;background:#fff">
-    <span style="font-size:1.3rem;font-weight:800;color:#0f172a">SaraUylar</span>
+<div id="twa-topbar" style="display:none;align-items:center;justify-content:space-between;padding:12px 16px 8px;background:#fff;position:sticky;top:0;z-index:200;transition:transform .3s ease;border-bottom:1px solid #f0f4ff">
+    <span style="font-size:1.25rem;font-weight:800;color:#0f172a;letter-spacing:-.02em">SaraUylar</span>
     <div style="display:flex;gap:4px;background:#f0f4ff;padding:3px;border-radius:10px">
-        <a href="/set-language/uz/" style="padding:4px 8px;border-radius:7px;font-size:.72rem;font-weight:700;text-decoration:none;background:#2563eb;color:#fff">UZ</a>
-        <a href="/set-language/ru/" style="padding:4px 8px;border-radius:7px;font-size:.72rem;font-weight:700;text-decoration:none;color:#64748b">RU</a>
+        <a href="{% url 'set_language' 'uz' %}" style="padding:4px 10px;border-radius:7px;font-size:.72rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'uz' or not request.session.lang %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">UZ</a>
+        <a href="{% url 'set_language' 'ru' %}" style="padding:4px 10px;border-radius:7px;font-size:.72rem;font-weight:700;text-decoration:none;{% if request.session.lang == 'ru' %}background:#2563eb;color:#fff{% else %}color:#64748b{% endif %}">RU</a>
     </div>
 </div>
 
 <!-- ══ STORIES ══ -->
 <div class="tg-stories">
-    <!-- "Mening hikoyam" -->
+    <!-- Foydalanuvchi hikoyasi -->
     <div class="story-item">
-        <div class="story-ring story-add">
+        <div class="story-avatar {% if user.is_authenticated %}story-has-ring{% endif %}">
             {% if user.is_authenticated %}
-                {% if user.profile.avatar %}
-                    <img src="{{ user.profile.avatar.url }}" alt="">
-                {% elif user.profile.telegram_photo_url %}
-                    <img src="{{ user.profile.telegram_photo_url }}" alt="">
-                {% else %}
-                    <span>{{ user.first_name|first|upper|default:user.username|first|upper }}</span>
-                {% endif %}
-                <div class="story-plus"><i data-lucide="plus" style="width:10px;height:10px;color:#fff"></i></div>
+                {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" alt="">
+                {% elif user.profile.telegram_photo_url %}<img src="{{ user.profile.telegram_photo_url }}" alt="">
+                {% else %}<span>{{ user.first_name|first|upper|default:user.username|first|upper }}</span>{% endif %}
+                <div class="story-plus-btn">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </div>
             {% else %}
-                <i data-lucide="user" style="width:22px;height:22px;color:#94a3b8"></i>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             {% endif %}
         </div>
-        <span>{% if user.is_authenticated %}{{ user.first_name|default:user.username|truncatechars:8 }}{% else %}Siz{% endif %}</span>
+        <span>{% if user.is_authenticated %}{{ user.first_name|default:user.username|truncatechars:7 }}{% else %}Siz{% endif %}</span>
     </div>
-    <!-- Demo stories -->
+
     {% for cat in categories %}
     <a href="?category={{ cat.slug }}" class="story-item" style="text-decoration:none">
-        <div class="story-ring {% if request.GET.category == cat.slug %}story-active{% endif %}">
-            <i data-lucide="{{ cat.icon|default:'home' }}" style="width:22px;height:22px;color:#2563eb"></i>
+        <div class="story-avatar {% if request.GET.category == cat.slug %}story-active-ring{% endif %}" style="background:{% cycle '#e0f2fe' '#fce7f3' '#dcfce7' '#fef3c7' '#ede9fe' '#fee2e2' '#e0e7ff' %}">
+            <i data-lucide="{{ cat.icon|default:'home' }}" style="width:24px;height:24px;color:#2563eb"></i>
         </div>
-        <span>{{ cat.name|truncatechars:8 }}</span>
+        <span>{{ cat.name|truncatechars:7 }}</span>
     </a>
     {% endfor %}
 </div>
@@ -84,7 +82,20 @@ if (window.Telegram?.WebApp?.initData) {
 
 <script>
 if (window.Telegram?.WebApp?.initData) {
-    document.getElementById("twa-topbar").style.display = "flex";
+    const topbar = document.getElementById("twa-topbar");
+    topbar.style.display = "flex";
+
+    // Scroll hide/show — Telegram kabi
+    let lastY = 0;
+    window.addEventListener('scroll', () => {
+        const y = window.scrollY;
+        if (y > lastY && y > 40) {
+            topbar.style.transform = 'translateY(-100%)';
+        } else {
+            topbar.style.transform = 'translateY(0)';
+        }
+        lastY = y;
+    }, { passive: true });
 }
 </script>
 
@@ -198,16 +209,41 @@ if (window.Telegram?.WebApp?.initData) {
 </div>
 
 <style>
-/* ── Stories ── */
-.tg-stories{display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;padding:14px 16px 8px;margin:0 -16px}
+/* ── Stories — Telegram style ── */
+.tg-stories{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:10px 16px 12px;margin:0 -16px;background:#fff}
 .tg-stories::-webkit-scrollbar{display:none}
-.story-item{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;cursor:pointer}
-.story-ring{width:54px;height:54px;border-radius:50%;background:#f0f4ff;border:2.5px solid #e2e8f0;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;font-size:1.1rem;font-weight:800;color:#2563eb}
-.story-ring img{width:100%;height:100%;object-fit:cover}
-.story-active{border-color:#2563eb;border-width:2.5px}
-.story-add{border-style:dashed;border-color:#2563eb}
-.story-plus{position:absolute;bottom:0;right:0;width:18px;height:18px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
-.story-item span{font-size:.65rem;font-weight:600;color:#64748b;max-width:56px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.story-item{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.story-avatar{
+  width:56px;height:56px;border-radius:50%;
+  background:#f0f4ff;
+  border:2px solid #e2e8f0;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;
+  font-size:1.1rem;font-weight:800;color:#2563eb;
+  transition:transform .15s;
+}
+.story-avatar:active{transform:scale(.92)}
+.story-avatar img{width:100%;height:100%;object-fit:cover}
+.story-has-ring{
+  border:2.5px dashed #2563eb;
+}
+.story-active-ring{
+  border:2.5px solid transparent;
+  background-clip:padding-box;
+  box-shadow:0 0 0 2.5px #2563eb;
+}
+.story-plus-btn{
+  position:absolute;bottom:-1px;right:-1px;
+  width:18px;height:18px;
+  background:#2563eb;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid #fff;
+}
+.story-item span{
+  font-size:.65rem;font-weight:600;color:#64748b;
+  max-width:58px;text-align:center;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
 
 /* ── Search ── */
 .tg-search-wrap{padding:4px 16px 8px;margin:0 -16px}
