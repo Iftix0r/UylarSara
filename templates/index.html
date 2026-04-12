@@ -75,7 +75,6 @@ if (window.Telegram?.WebApp?.initData) {
 
     const storiesRow = document.getElementById("topbar-stories");
     const searchRow  = document.getElementById("topbar-search");
-    const chipsRow   = document.getElementById("topbar-chips");
 
     function setMainPadding() {
         const h = topbar.offsetHeight;
@@ -85,23 +84,21 @@ if (window.Telegram?.WebApp?.initData) {
     requestAnimationFrame(setMainPadding);
     new ResizeObserver(setMainPadding).observe(topbar);
 
-    let lastY = 0;
     let collapsed = false;
 
     window.addEventListener('scroll', () => {
         const y = window.scrollY;
-        if (y > lastY && y > 10 && !collapsed) {
+        if (y > 30 && !collapsed) {
             collapsed = true;
             if (storiesRow) { storiesRow.style.maxHeight='0'; storiesRow.style.opacity='0'; storiesRow.style.padding='0 14px'; }
             if (searchRow)  { searchRow.style.maxHeight='0';  searchRow.style.opacity='0';  searchRow.style.padding='0 14px'; }
             setTimeout(setMainPadding, 220);
-        } else if (y < lastY && collapsed) {
+        } else if (y <= 10 && collapsed) {
             collapsed = false;
             if (storiesRow) { storiesRow.style.maxHeight='70px'; storiesRow.style.opacity='1'; storiesRow.style.padding='4px 14px 4px'; }
             if (searchRow)  { searchRow.style.maxHeight='60px';  searchRow.style.opacity='1';  searchRow.style.padding='2px 14px 5px'; }
             setTimeout(setMainPadding, 220);
         }
-        lastY = y;
     }, { passive: true });
 }
 </script>
