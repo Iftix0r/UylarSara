@@ -175,7 +175,7 @@
         {% if user.is_authenticated %}
         <button onclick="openDrw()" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;font-size:.68rem;font-weight:600;padding:6px 10px;border-radius:14px;min-width:46px;color:#94a3b8">
             <div style="width:26px;height:26px;border-radius:50%;background:rgba(37,99,235,.1);border:2px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#2563eb;overflow:hidden">{% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" style="width:100%;height:100%;object-fit:cover" alt="">{% elif user.profile.telegram_photo_url %}<img src="{{ user.profile.telegram_photo_url }}" style="width:100%;height:100%;object-fit:cover" alt="">{% else %}{{ user.first_name|first|upper|default:user.username|first|upper }}{% endif %}</div>
-            <span style="opacity:0;font-size:.5rem">·</span></button>
+            <span>Profil</span></button>
         {% else %}
         <a href="{% url 'login' %}" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:.68rem;font-weight:600;color:#94a3b8;min-width:46px">
             <i data-lucide="user" style="width:20px;height:20px"></i><span>Kirish</span></a>
