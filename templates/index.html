@@ -17,7 +17,7 @@
   </div>
 
   <!-- Hikoyalar -->
-  <div style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:4px 14px 4px">
+  <div id="topbar-stories" style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:4px 14px 4px;overflow:hidden;transition:max-height .2s ease,opacity .2s ease,padding .2s ease;max-height:70px;opacity:1">
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
       <div style="width:40px;height:40px;border-radius:50%;background:#f0f4ff;border:2px dashed #2563eb;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;font-size:.85rem;font-weight:800;color:#2563eb">
         {% if user.is_authenticated %}
@@ -44,7 +44,7 @@
   </div>
 
   <!-- Qidiruv -->
-  <div id="topbar-search" style="padding:2px 14px 5px;overflow:hidden;transition:max-height .25s ease,opacity .25s ease;max-height:60px;opacity:1">
+  <div id="topbar-search" style="padding:2px 14px 5px;overflow:hidden;transition:max-height .2s ease,opacity .2s ease,padding .2s ease;max-height:60px;opacity:1">
     <form action="/" method="GET" id="search-form-sticky">
       <div style="display:flex;align-items:center;gap:7px;background:#f0f4ff;border-radius:10px;padding:6px 10px">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -73,8 +73,9 @@ if (window.Telegram?.WebApp?.initData) {
     const topbar = document.getElementById("twa-topbar");
     topbar.style.display = "flex";
 
-    const searchRow = document.getElementById("topbar-search");
-    const chipsRow  = document.getElementById("topbar-chips");
+    const storiesRow = document.getElementById("topbar-stories");
+    const searchRow  = document.getElementById("topbar-search");
+    const chipsRow   = document.getElementById("topbar-chips");
 
     function setMainPadding() {
         const h = topbar.offsetHeight;
@@ -89,18 +90,16 @@ if (window.Telegram?.WebApp?.initData) {
 
     window.addEventListener('scroll', () => {
         const y = window.scrollY;
-        if (y > lastY && y > 50 && !collapsed) {
-            // Pastga — yashir
+        if (y > lastY && y > 10 && !collapsed) {
             collapsed = true;
-            if (searchRow) { searchRow.style.maxHeight = '0'; searchRow.style.opacity = '0'; searchRow.style.padding = '0 14px'; }
-            if (chipsRow)  { chipsRow.style.maxHeight  = '0'; chipsRow.style.opacity  = '0'; chipsRow.style.padding  = '0 14px'; }
-            setTimeout(setMainPadding, 260);
+            if (storiesRow) { storiesRow.style.maxHeight='0'; storiesRow.style.opacity='0'; storiesRow.style.padding='0 14px'; }
+            if (searchRow)  { searchRow.style.maxHeight='0';  searchRow.style.opacity='0';  searchRow.style.padding='0 14px'; }
+            setTimeout(setMainPadding, 220);
         } else if (y < lastY && collapsed) {
-            // Tepaga — ko'rsat
             collapsed = false;
-            if (searchRow) { searchRow.style.maxHeight = '60px'; searchRow.style.opacity = '1'; searchRow.style.padding = '2px 14px 5px'; }
-            if (chipsRow)  { chipsRow.style.maxHeight  = '40px'; chipsRow.style.opacity  = '1'; chipsRow.style.padding  = '0 14px 6px'; }
-            setTimeout(setMainPadding, 260);
+            if (storiesRow) { storiesRow.style.maxHeight='70px'; storiesRow.style.opacity='1'; storiesRow.style.padding='4px 14px 4px'; }
+            if (searchRow)  { searchRow.style.maxHeight='60px';  searchRow.style.opacity='1';  searchRow.style.padding='2px 14px 5px'; }
+            setTimeout(setMainPadding, 220);
         }
         lastY = y;
     }, { passive: true });
