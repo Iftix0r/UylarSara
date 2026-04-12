@@ -42,7 +42,13 @@
     <div class="section-header animate-fade-in" style="animation-delay: 400ms; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; margin-top: 12px;">
         <div>
             <h2 style="font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em;">{% if request.session.lang == 'ru' %}Новые объявления{% else %}Yangi e'lonlar{% endif %}</h2>
-            <p style="color: var(--text-muted); font-size: 0.95rem;">{% if request.session.lang == 'ru' %}Лучшие предложения, выбранные для вас{% else %}Siz uchun tanlangan eng yaxshi takliflar{% endif %}</p>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                {% if is_demo %}
+                    <span style="background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:20px;font-size:0.8rem;font-weight:700;">Demo e'lonlar</span>
+                {% else %}
+                    {% if request.session.lang == 'ru' %}Лучшие предложения, выбранные для вас{% else %}Siz uchun tanlangan eng yaxshi takliflar{% endif %}
+                {% endif %}
+            </p>
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <div class="view-toggles" style="display: none; gap: 4px; background: var(--bg-card); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border-light); margin-right: 4px;">
@@ -68,8 +74,12 @@
     <div class="property-list">
         {% for property in properties %}
         <div class="property-item animate-fade-in" data-index="{{ forloop.counter }}" style="position: relative;">
+            {% if is_demo %}
+            <div class="property-card" style="opacity:0.85;">
+            {% else %}
             <a href="{% url 'property_detail' property.pk %}" style="text-decoration: none; color: inherit;">
             <div class="property-card">
+            {% endif %}
                 <div class="card-image-wrapper" 
                      data-gallery='["{% if property.image %}{{ property.image.url }}{% endif %}"{% for img in property.images.all %}, "{{ img.image.url }}"{% endfor %}]'
                      onmousemove="handleHoverSlider(event, this)" 
@@ -109,13 +119,17 @@
                     </div>
                 </div>
             </div>
-            </a>
+            {% if not is_demo %}</a>{% endif %}
+            {% if not is_demo %}
             <button type="button" class="fav-btn {% if property.pk in favorited_ids %}is-favorited{% endif %}" data-id="{{ property.pk }}" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: rgba(255,255,255,0.9); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #cbd5e0; box-shadow: var(--shadow-sm);">
                 <i data-lucide="heart" style="width: 20px; height: 20px;"></i>
             </button>
             <div class="compare-checkbox" data-id="{{ property.pk }}" data-title="{{ property.title }}" data-price="{{ property.price }}" data-rooms="{{ property.rooms }}" data-area="{{ property.area }}" data-image="{% if property.image %}{{ property.image.url }}{% endif %}" title="{% if request.session.lang == 'ru' %}Сравнить{% else %}Solishtirish{% endif %}">
                 <i data-lucide="layers" style="width: 14px; height: 14px;"></i>
             </div>
+            {% else %}
+            <div style="position:absolute;top:15px;right:15px;z-index:10;background:rgba(251,191,36,0.9);color:#78350f;font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:20px;">Demo</div>
+            {% endif %}
         </div>
         {% empty %}
         <div style="grid-column: 1/-1; text-align: center; padding: 100px 0;">

@@ -85,6 +85,56 @@ def telegram_auth(request):
     return JsonResponse({"ok": True})
 
 
+def _get_demo_properties():
+    """DB bo'sh bo'lganda ko'rsatiladigan 10 ta demo e'lon (fake obyektlar)."""
+    from types import SimpleNamespace
+    DEMOS = [
+        dict(pk=None, title="Yangi 3 xonali kvartira", price="85000", location="Toshkent, Yunusobod",
+             rooms=3, area="90", property_type="APARTMENT", is_premium=True,
+             image=None, views_count=142, description="Zamonaviy ta'mirli, mebelli."),
+        dict(pk=None, title="2 xonali kvartira, metro yaqin", price="55000", location="Toshkent, Chilonzor",
+             rooms=2, area="65", property_type="APARTMENT", is_premium=False,
+             image=None, views_count=98, description="Qulay joylashuv, barcha kommunal."),
+        dict(pk=None, title="Hashamatli villa, hovlili", price="320000", location="Toshkent, Mirzo Ulug'bek",
+             rooms=6, area="350", property_type="VILLA", is_premium=True,
+             image=None, views_count=310, description="Yashil bog', basseyn, garaj."),
+        dict(pk=None, title="1 xonali kvartira, yangi bino", price="38000", location="Samarqand, Markaz",
+             rooms=1, area="42", property_type="APARTMENT", is_premium=False,
+             image=None, views_count=55, description="Birinchi qavat, ta'mirli."),
+        dict(pk=None, title="Tijorat binosi, ofis uchun", price="150000", location="Toshkent, Shayxontohur",
+             rooms=8, area="200", property_type="COMMERCIAL", is_premium=True,
+             image=None, views_count=201, description="Markaziy ko'chada, 2-qavat."),
+        dict(pk=None, title="4 xonali uy, yangi qurilish", price="120000", location="Andijon, Asaka",
+             rooms=4, area="160", property_type="HOUSE", is_premium=False,
+             image=None, views_count=77, description="Hovli, garaj, barcha qulayliklar."),
+        dict(pk=None, title="Yangi qurilish, 2 xona", price="72000", location="Buxoro, Markaz",
+             rooms=2, area="75", property_type="NEW_CONSTRUCTION", is_premium=False,
+             image=None, views_count=44, description="Qurilish 90% tayyor, ipoteka mumkin."),
+        dict(pk=None, title="3 xonali penthouse", price="210000", location="Toshkent, Yakkasaroy",
+             rooms=3, area="130", property_type="APARTMENT", is_premium=True,
+             image=None, views_count=189, description="Tepa qavat, panorama ko'rinish."),
+        dict(pk=None, title="Arzon 1 xonali kvartira", price="28000", location="Namangan, Markaz",
+             rooms=1, area="38", property_type="APARTMENT", is_premium=False,
+             image=None, views_count=33, description="Tez sotiladi, hujjatlar tayyor."),
+        dict(pk=None, title="Zamonaviy 5 xonali uy", price="195000", location="Farg'ona, Fergana",
+             rooms=5, area="280", property_type="HOUSE", is_premium=True,
+             image=None, views_count=256, description="Ikki qavatli, katta hovli."),
+    ]
+
+    result = []
+    for i, d in enumerate(DEMOS):
+        obj = SimpleNamespace(**d)
+        obj.pk = f"demo_{i}"
+        obj.get_property_type_display = lambda t=d["property_type"]: {
+            "APARTMENT": "Kvartira", "HOUSE": "Uy", "VILLA": "Villa",
+            "COMMERCIAL": "Tijorat", "NEW_CONSTRUCTION": "Yangi qurilish"
+        }.get(t, t)
+        obj.images = SimpleNamespace(all=lambda: [])
+        obj.created_at = None
+        result.append(obj)
+    return result
+
+
 def _fetch_telegram_photo(telegram_id: int) -> str:
     """Bot API orqali foydalanuvchi profil rasmini oladi."""
     token = os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -274,16 +324,23 @@ def home(request):
     favorited_ids = set()
     if request.user.is_authenticated:
         favorited_ids = set(Favorite.objects.filter(user=request.user).values_list('property_id', flat=True))
-    
+
+    # Hech qanday filter yo'q va e'lonlar bo'sh bo'lsa — demo ma'lumotlar
+    is_filtered = any([category_slug, query, rooms, min_price, max_price])
+    demo_properties = []
+    if not is_filtered and not properties.exists():
+        demo_properties = _get_demo_properties()
+
     lat = request.GET.get('lat')
     lng = request.GET.get('lng')
-    
+
     context = {
         'categories': categories,
-        'properties': properties,
+        'properties': properties if not demo_properties else demo_properties,
         'favorited_ids': favorited_ids,
         'hero_title': hero_title,
         'hero_subtitle': hero_subtitle,
+        'is_demo': bool(demo_properties),
     }
 
     if lat and lng:
