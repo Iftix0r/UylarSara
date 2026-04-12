@@ -2,51 +2,82 @@
 {% load static %}
 
 {% block content %}
-<div class="container animate-fade-in" style="padding-top: 48px; max-width: 420px;">
-    <div style="background: var(--bg-card); padding: 40px 32px; border-radius: 24px; border: 1px solid var(--border-light); box-shadow: var(--shadow-lg); text-align: center;">
-
-        <!-- Logo -->
-        <img src="{% static 'img/logo.png' %}" alt="SaraUylar" style="width:72px;height:72px;border-radius:18px;object-fit:contain;margin:0 auto 16px;display:block">
-        <h1 style="font-size:1.5rem;font-weight:800;margin-bottom:6px;color:var(--text)">SaraUylar</h1>
-        <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:32px">Kirish uchun Telegram dan foydalaning</p>
-
-        <!-- Telegram Login Widget -->
-        <div style="display:flex;justify-content:center;margin-bottom:24px">
-            <script async src="https://telegram.org/js/telegram-widget.js?22"
-                data-telegram-login="SaraUylarbot"
-                data-size="large"
-                data-auth-url="https://sarauylar.uz/telegram-auth/"
-                data-request-access="write">
-            </script>
+<div class="container animate-fade-in" style="padding-top: 64px; max-width: 480px;">
+    <div style="background: var(--bg-card); padding: 48px; border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-lg); text-align: center;">
+        <div style="background: var(--primary-light); color: var(--primary); width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+            <i data-lucide="shield-check" style="width: 36px; height: 36px;"></i>
         </div>
-
-        <p style="color:var(--text-muted);font-size:.78rem">
-            Telegram akkauntingiz orqali xavfsiz kirish
-        </p>
-
-        <!-- Admin uchun yashirin forma -->
-        <details style="margin-top:24px;text-align:left">
-            <summary style="color:var(--text-muted);font-size:.75rem;cursor:pointer;text-align:center">Admin kirish</summary>
-            <form method="POST" style="margin-top:16px">
-                {% csrf_token %}
-                {% if form.non_field_errors %}
-                <div style="background:rgba(239,68,68,.1);color:#ef4444;padding:10px;border-radius:10px;margin-bottom:12px;font-size:.82rem">
+        
+        <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em;">Xush kelibsiz</h1>
+        <p style="color: var(--text-muted); margin-bottom: 40px; font-size: 1rem;">Sara Uylar platformasiga kirish</p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div style="background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 16px; border-radius: var(--radius-md); margin-bottom: 24px; font-size: 0.9rem; border: 1px solid rgba(239, 68, 68, 0.2); text-align: left; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="alert-circle" style="width: 20px; height: 20px;"></i>
                     {{ form.non_field_errors }}
                 </div>
-                {% endif %}
-                <input type="text" name="username" class="form-input" placeholder="Login" required style="margin-bottom:10px">
-                <input type="password" name="password" class="form-input" placeholder="Parol" required style="margin-bottom:12px">
-                <button type="submit" class="btn btn-primary" style="width:100%;padding:12px">Kirish</button>
-            </form>
-        </details>
+            {% endif %}
+
+            <div style="margin-bottom: 24px; text-align: left;">
+                <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.95rem;">Login</label>
+                <div style="position: relative;">
+                    <i data-lucide="user" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+                    <input type="text" name="username" class="form-input" placeholder="UserName..." required style="width: 100%; border-radius: var(--radius-md); border: 2px solid var(--border-light); padding: 14px 16px 14px 44px; font-size: 1rem; transition: all 0.2s; background: var(--bg-main);">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 32px; text-align: left;">
+                <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.95rem;">Parol</label>
+                <div style="position: relative;">
+                    <i data-lucide="lock" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+                    <input type="password" name="password" class="form-input" placeholder="••••••••" required style="width: 100%; border-radius: var(--radius-md); border: 2px solid var(--border-light); padding: 14px 16px 14px 44px; font-size: 1rem; transition: all 0.2s; background: var(--bg-main);">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 1.1rem; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);">
+                Tizimga kirish
+            </button>
+        </form>
+        
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-light); font-size: 0.95rem; color: var(--text-muted);">
+            Hisobingiz yo'qmi? <a href="{% url 'signup' %}" style="color: var(--primary); font-weight: 700; text-decoration: none;">Ro'yxatdan o'ting</a>
+        </div>
+
+        <!-- Telegram orqali kirish -->
+        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-light);">
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">yoki Telegram orqali kiring</p>
+            <div id="tg-widget-wrap" style="display:flex; justify-content:center;">
+                <script async src="https://telegram.org/js/telegram-widget.js?22"
+                    data-telegram-login="SaraUylarbot"
+                    data-size="large"
+                    data-auth-url="https://sarauylar.uz/telegram-auth/"
+                    data-request-access="write">
+                </script>
+            </div>
+        </div>
     </div>
 </div>
 
+<style>
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary) !important;
+        background: var(--bg-card) !important;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+</style>
+
 <script>
-const tgLogin = window.Telegram?.WebApp;
-if (tgLogin && tgLogin.initData) {
-    tgLogin.BackButton.show();
-    tgLogin.BackButton.onClick(() => { window.location.href = "/"; });
-}
+    // TWA Integration for Login Page
+    const tgLogin = window.Telegram?.WebApp;
+    if (tgLogin && tgLogin.initData) {
+        tgLogin.BackButton.show();
+        tgLogin.BackButton.onClick(() => {
+            window.location.href = "/";
+        });
+    }
 </script>
 {% endblock %}
