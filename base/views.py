@@ -92,25 +92,37 @@ def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_use
     profile = UserProfile.objects.filter(telegram_id=telegram_id).select_related("user").first()
     if profile:
         user = profile.user
-        changed = False
+        # Har safar ismni yangilaymiz (Telegram da ism o'zgarishi mumkin)
+        update_fields = []
         if first_name and user.first_name != first_name:
-            user.first_name = first_name; changed = True
-        if last_name and user.last_name != last_name:
-            user.last_name = last_name; changed = True
-        if changed:
-            user.save(update_fields=["first_name", "last_name"])
+            user.first_name = first_name
+            update_fields.append("first_name")
+        if last_name != user.last_name:
+            user.last_name = last_name
+            update_fields.append("last_name")
+        if tg_username and profile.telegram_username != tg_username:
+            profile.telegram_username = tg_username
+            profile.save(update_fields=["telegram_username"])
+        if update_fields:
+            user.save(update_fields=update_fields)
     else:
+        # Username: @telegram_username yoki tg_<id>
         if tg_username:
             candidate = tg_username.lower()
             username = candidate if not User.objects.filter(username=candidate).exists() else f"tg_{telegram_id}"
         else:
             username = f"tg_{telegram_id}"
-        user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name)
+
+        user = User.objects.create_user(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+        )
         profile, _ = UserProfile.objects.get_or_create(user=user)
         profile.telegram_id = telegram_id
         profile.telegram_username = tg_username
         profile.save()
-        print(f"[TG AUTH] New user: {username}")
+        print(f"[TG AUTH] New user: {username} ({first_name} {last_name})")
 
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 

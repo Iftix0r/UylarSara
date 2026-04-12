@@ -7,10 +7,21 @@
     <!-- Profile Header -->
     <div class="profile-header" style="background: var(--bg-card); border-radius: var(--radius-lg); padding: 40px; border: 1px solid var(--border-light); box-shadow: var(--shadow-md); margin-bottom: 32px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap;">
         <div class="profile-avatar" style="width: 100px; height: 100px; background: var(--primary-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; font-weight: 800;">
-            {{ user.username|first|upper }}
+            {{ user.first_name|first|upper|default:user.username|first|upper }}
         </div>
         <div class="profile-info" style="flex: 1; min-width: 250px;">
-            <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 8px;">{{ user.username }}</h1>
+            <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 4px;">
+                {{ user.get_full_name|default:user.username }}
+            </h1>
+            {% if user.get_full_name %}
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 4px;">@{{ user.username }}</p>
+            {% endif %}
+            {% if user.profile.telegram_username %}
+                <p style="color: #0088cc; font-size: 0.9rem; margin-bottom: 8px;">
+                    <i data-lucide="send" style="width:14px;height:14px;display:inline;"></i>
+                    @{{ user.profile.telegram_username }}
+                </p>
+            {% endif %}
             <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 16px;">{{ user.email|default:"Email manzili ko'rsatilmagan" }}</p>
             <div class="profile-stats" style="display: flex; gap: 24px;">
                 <div class="stat-item">
