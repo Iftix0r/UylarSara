@@ -1,6 +1,13 @@
 {% extends 'base.html' %}
-{% block title %}{{ property.title }} - SaraUylar{% endblock %}
 {% load static %}
+{% block title %}{{ property.title }} - SaraUylar{% endblock %}
+{% block meta_description %}{{ property.description|truncatechars:160 }}{% endblock %}
+{% block og_title %}{{ property.title }} — ${{ property.price|floatformat:0 }}{% endblock %}
+{% block og_description %}{{ property.rooms }} xona, {{ property.area }} m² — {{ property.location }}{% endblock %}
+{% if property.image %}{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ property.image.url }}{% endblock %}{% endif %}
+{% block twitter_title %}{{ property.title }} — ${{ property.price|floatformat:0 }}{% endblock %}
+{% block twitter_description %}{{ property.rooms }} xona, {{ property.area }} m² — {{ property.location }}{% endblock %}
+{% if property.image %}{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{{ property.image.url }}{% endblock %}{% endif %}
 
 {% block content %}
 <div class="container animate-fade-in">
@@ -156,18 +163,18 @@
                     {% endif %}
 
                     {% if property.owner.profile.telegram_username %}
-                    <a href="https://t.me/{{ property.owner.profile.telegram_username }}" class="btn" style="width: 100%; padding: 16px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;">
+                    <a href="https://t.me/{{ property.owner.profile.telegram_username }}" class="btn" rel="noopener noreferrer" target="_blank" style="width: 100%; padding: 16px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;">
                         <i data-lucide="send"></i> Telegram
                     </a>
                     {% else %}
-                    <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ property.title }}" class="btn" style="width: 100%; padding: 16px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;">
+                    <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text={{ property.title|urlencode }}" class="btn" rel="noopener noreferrer" target="_blank" style="width: 100%; padding: 16px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;">
                         <i data-lucide="send"></i> {% if request.session.lang == 'ru' %}Поделиться в Telegram{% else %}Telegramda ulashish{% endif %}
                     </a>
                     {% endif %}
 
                     {% else %}
                         <!-- No owner — share button only -->
-                        <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text={{ property.title|urlencode }}" class="btn" style="width: 100%; padding: 16px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;">
+                        <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text={{ property.title|urlencode }}" class="btn" rel="noopener noreferrer" target="_blank" style="width: 100%; padding: 16px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;">
                             <i data-lucide="send"></i> {% if request.session.lang == 'ru' %}Поделиться в Telegram{% else %}Telegramda ulashish{% endif %}
                         </a>
                     {% endif %}
@@ -341,19 +348,6 @@
             toggleFavorite(btn, btn.dataset.id);
         });
     });
-
-    function shareProperty() {
-        if (navigator.share) {
-            navigator.share({
-                title: "{{ property.title|escapejs }}",
-                url: window.location.href
-            }).catch(console.error);
-        } else {
-            navigator.clipboard.writeText(window.location.href).then(() => {
-                alert("{% if request.session.lang == 'ru' %}Ссылка скопирована!{% else %}Havola nusxalandi!{% endif %}");
-            });
-        }
-    }
 
     function copyPropertyId(idText) {
         navigator.clipboard.writeText(idText).then(() => {

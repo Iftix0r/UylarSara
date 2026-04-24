@@ -256,6 +256,38 @@ if (window.Telegram?.WebApp?.initData) {
     {% endfor %}
 </div>
 
+<!-- ══ PAGINATION ══ -->
+{% if is_paginated and page_obj %}
+<div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 0 24px">
+    {% if page_obj.has_previous %}
+    <a href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.previous_page_number }}"
+       style="display:flex;align-items:center;gap:5px;padding:9px 18px;background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;font-size:.82rem;font-weight:700;color:#64748b;text-decoration:none;transition:all .2s">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Oldingi
+    </a>
+    {% endif %}
+
+    <div style="display:flex;gap:4px">
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span style="width:34px;height:34px;border-radius:10px;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:800">{{ num }}</span>
+        {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+        <a href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ num }}"
+           style="width:34px;height:34px;border-radius:10px;background:#fff;border:1.5px solid #e2e8f0;color:#64748b;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;text-decoration:none">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+    </div>
+
+    {% if page_obj.has_next %}
+    <a href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.next_page_number }}"
+       style="display:flex;align-items:center;gap:5px;padding:9px 18px;background:#2563eb;border:1.5px solid #2563eb;border-radius:12px;font-size:.82rem;font-weight:700;color:#fff;text-decoration:none;transition:all .2s">
+        Keyingi
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
 <!-- Filter Modal -->
 <div id="filter-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(15,23,42,.4);backdrop-filter:blur(8px);align-items:flex-end;justify-content:center">
     <div style="background:#fff;width:100%;max-width:500px;padding:28px;border-radius:24px 24px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.1)">

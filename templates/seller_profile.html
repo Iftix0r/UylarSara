@@ -38,7 +38,7 @@
             {% endif %}
             
             {% if seller.profile.telegram_username %}
-            <a href="https://t.me/{{ seller.profile.telegram_username }}" class="btn" style="padding: 14px 28px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            <a href="https://t.me/{{ seller.profile.telegram_username }}" class="btn" rel="noopener noreferrer" target="_blank" style="padding: 14px 28px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="send"></i> Telegram
             </a>
             {% endif %}

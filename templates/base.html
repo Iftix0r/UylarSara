@@ -7,8 +7,21 @@
     <title>{% block title %}Sara Uylar - O'zbekistondagi eng sara uylar{% endblock %}</title>
     
     <!-- Meta Tags -->
-    <meta name="description" content="Sara Uylar - O'zbekistondagi eng sara va zamonaviy uylar platformasi.">
+    <meta name="description" content="{% block meta_description %}Sara Uylar - O'zbekistondagi eng sara va zamonaviy uylar platformasi.{% endblock %}">
     <meta name="theme-color" content="#2563eb">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="SaraUylar">
+    <meta property="og:title" content="{% block og_title %}SaraUylar — O'zbekistondagi sara uylar{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}O'zbekistondagi eng yaxshi kvartira, uy va villarni toping.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/logo.png' %}{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}SaraUylar{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}O'zbekistondagi eng yaxshi kvartira va uylarni toping.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/logo.png' %}{% endblock %}">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -94,9 +107,6 @@
             var isAuth = document.body.getAttribute('data-is-authenticated') === 'true';
             if (isAuth) return;
 
-            console.log('[TG] initData uzunligi:', tg.initData.length);
-            console.log('[TG] initUser:', JSON.stringify(tg.initDataUnsafe && tg.initDataUnsafe.user));
-
             var match = document.cookie.match(/csrftoken=([^;]+)/);
             var csrf = match ? match[1] : '';
             fetch('/telegram-auth/', {
@@ -107,15 +117,9 @@
                 },
                 body: JSON.stringify({ initData: tg.initData })
             })
-            .then(function(r){
-                console.log('[TG] response status:', r.status);
-                return r.json();
-            })
-            .then(function(d){
-                console.log('[TG] response:', JSON.stringify(d));
-                if(d.ok) window.location.reload();
-            })
-            .catch(function(e){ console.error('[TG AUTO LOGIN] error:', e); });
+            .then(function(r){ return r.json(); })
+            .then(function(d){ if(d.ok) window.location.reload(); })
+            .catch(function(e){ /* silent fail */ });
         });
     })();
     </script>
@@ -1286,11 +1290,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             if ("Notification" in window) {
                 if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-                    Notification.requestPermission().then(function (permission) {
-                        if (permission === "granted") {
-                            console.log("Bildirishnomalarga ruxsat berildi");
-                        }
-                    });
+                    Notification.requestPermission();
                 }
             }
         });

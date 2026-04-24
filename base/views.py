@@ -347,13 +347,26 @@ def home(request):
     if not is_filtered and not properties.exists():
         demo_properties = _get_demo_properties()
 
+    # Pagination — 20 ta e'lon per sahifa
+    from django.core.paginator import Paginator
+    if demo_properties:
+        page_obj = demo_properties
+        is_paginated = False
+    else:
+        paginator = Paginator(properties, 20)
+        page_number = request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+        is_paginated = paginator.num_pages > 1
+
     context = {
         'categories': categories,
-        'properties': properties if not demo_properties else demo_properties,
+        'properties': page_obj,
         'favorited_ids': favorited_ids,
         'hero_title': hero_title,
         'hero_subtitle': hero_subtitle,
         'is_demo': bool(demo_properties),
+        'is_paginated': is_paginated,
+        'page_obj': page_obj if not demo_properties else None,
     }
 
     lat = request.GET.get('lat')
