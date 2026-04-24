@@ -9,30 +9,57 @@
         <p style="color: var(--text-muted);">Sizga yoqqan va saqlab qo'yilgan e'lonlar</p>
     </div>
 
-    <div class="property-list">
+    <div class="tg-list">
         {% for fav in favorites %}
-        <div class="property-item animate-fade-in" data-index="{{ forloop.counter }}" style="position: relative;">
-            <a href="{% url 'property_detail' fav.property.pk %}" style="text-decoration: none; color: inherit;">
-                <div class="property-card">
-                    <div class="card-image-wrapper">
-                        {% if fav.property.image %}
-                            <img src="{{ fav.property.image.url }}" alt="{{ fav.property.title }}" class="card-img">
-                        {% else %}
-                            <div class="card-img" style="display: flex; align-items: center; justify-content: center; background: #f1f5f9;">
-                                <i data-lucide="image" style="width: 48px; height: 48px; color: #cbd5e0;"></i>
-                            </div>
-                        {% endif %}
-                        <div class="card-badge">{{ fav.property.get_property_type_display }}</div>
+        <div class="tg-card animate-fade-in" style="--delay:{{ forloop.counter }}">
+            <a href="{% url 'property_detail' fav.property.pk %}" class="tg-card-img">
+                {% if fav.property.image %}
+                    <img src="{{ fav.property.image.url }}" alt="{{ fav.property.title }}" loading="lazy">
+                {% else %}
+                    <div style="width:100%;height:100%;background:linear-gradient(135deg,#e0f2fe,#dbeafe);display:flex;align-items:center;justify-content:center">
+                        <i data-lucide="home" style="width:44px;height:44px;color:#93c5fd"></i>
                     </div>
-                    <div class="card-content">
-                        <div class="card-price">${{ fav.property.price|floatformat:0 }}</div>
-                        <h3 class="card-title">{{ fav.property.title }}</h3>
-                        <div class="card-loc"><i data-lucide="map-pin"></i> {{ fav.property.location }}</div>
-                    </div>
-                </div>
+                {% endif %}
+                <div class="tg-img-overlay"></div>
+                <span class="tg-badge">{{ fav.property.get_property_type_display }}</span>
+                {% if fav.property.is_premium %}<span class="tg-premium">⭐ Premium</span>{% endif %}
             </a>
-            <button onclick="toggleFavorite(this)" data-pk="{{ fav.property.pk }}" class="fav-btn active" 
-                <i data-lucide="heart" style="fill: currentColor;"></i>
+
+            <div class="tg-card-body">
+                <div class="tg-trust-row">
+                    <span class="tg-trust-green">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Sotuvchi tasdiqlangan
+                    </span>
+                    <span class="tg-trust-blue">Saralangan</span>
+                </div>
+                <div class="tg-price-row">
+                    <div class="tg-card-price">${{ fav.property.price|floatformat:0 }}</div>
+                    {% if fav.property.area %}<div class="tg-price-sqm">{% widthratio fav.property.price fav.property.area 1 %} USD/m²</div>{% endif %}
+                </div>
+                <div class="tg-card-title">{{ fav.property.title }}</div>
+                <div class="tg-card-loc">
+                    <i data-lucide="map-pin" style="width:12px;height:12px;flex-shrink:0"></i>
+                    {{ fav.property.location }}
+                </div>
+                <div class="tg-card-stats">
+                    <span class="tg-stat-pill">
+                        <i data-lucide="door-open" style="width:11px;height:11px"></i>
+                        {{ fav.property.rooms }} xona
+                    </span>
+                    <span class="tg-stat-pill">
+                        <i data-lucide="maximize-2" style="width:11px;height:11px"></i>
+                        {{ fav.property.area }} m²
+                    </span>
+                    <span class="tg-stat-pill tg-stat-views">
+                        <i data-lucide="eye" style="width:11px;height:11px"></i>
+                        {{ fav.property.views_count }}
+                    </span>
+                </div>
+            </div>
+
+            <button onclick="removeFavorite(this, {{ fav.property.pk }})" data-pk="{{ fav.property.pk }}" class="tg-fav tg-fav-on">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
         </div>
         {% empty %}
@@ -49,21 +76,21 @@
 </div>
 
 <script>
-    function toggleFavorite(btn) {
-        const pk = btn.getAttribute('data-pk');
-        fetch(`/favorite/toggle/${pk}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.is_favorite) {
-                // Remove from view if on favorites page
-                btn.closest('.property-item').remove();
-            }
-        });
-    }
+function removeFavorite(btn, pk) {
+    fetch(`/favorite/toggle/${pk}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.is_favorite) {
+            const card = btn.closest('.tg-card');
+            card.style.transition = 'opacity .25s, transform .25s';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(.96)';
+            setTimeout(() => card.remove(), 250);
+        }
+    });
+}
 </script>
 {% endblock %}

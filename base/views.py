@@ -6,41 +6,45 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Category, Property, Favorite
 from .forms import PropertyForm
-import openai
 import os
 import json
 import hmac
 import hashlib
+import logging
+import tempfile
 from urllib.parse import parse_qsl, unquote
 from dotenv import load_dotenv
 
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+logger = logging.getLogger(__name__)
+
+try:
+    import openai
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    _openai_available = True
+except ImportError:
+    _openai_available = False
 
 
 def verify_telegram_init_data(init_data: str) -> dict | None:
     """Telegram WebApp initData ni HMAC-SHA256 bilan tekshiradi."""
     token = os.getenv("TELEGRAM_BOT_TOKEN", "")
-    print(f"[TG VERIFY] token_len={len(token)} initData_len={len(init_data)}")
     if not token or not init_data:
-        print(f"[TG VERIFY] FAILED: token={bool(token)} initData={bool(init_data)}")
         return None
     try:
         parsed = dict(parse_qsl(init_data, strict_parsing=False))
         received_hash = parsed.pop("hash", None)
-        print(f"[TG VERIFY] parsed keys={list(parsed.keys())} hash={received_hash[:10] if received_hash else 'YOQ'}")
         if not received_hash:
             return None
         data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
         secret_key = hmac.new(b"WebAppData", token.encode(), hashlib.sha256).digest()
         expected_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
-        print(f"[TG VERIFY] expected={expected_hash[:16]} received={received_hash[:16]} match={hmac.compare_digest(expected_hash, received_hash)}")
         if not hmac.compare_digest(expected_hash, received_hash):
             return None
         user_str = parsed.get("user", "")
         return json.loads(user_str) if user_str else None
     except Exception as e:
-        print(f"[TG] verify error: {e}")
+        logger.warning("[TG] verify error: %s", e)
         return None
 
 
@@ -48,7 +52,6 @@ def verify_telegram_init_data(init_data: str) -> dict | None:
 def telegram_auth(request):
     """Telegram WebApp initData yoki Login Widget orqali login/register."""
     import time
-    print(f"[TG AUTH] method={request.method} path={request.path}")
 
     # ── Telegram Login Widget (GET) ──────────────────────────────────────────
     if request.method == "GET":
@@ -75,15 +78,11 @@ def telegram_auth(request):
     try:
         body = json.loads(request.body)
         init_data = body.get("initData", "")
-        print(f"[TG AUTH POST] initData[:80]={init_data[:80]}")
     except Exception:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
     user_data = verify_telegram_init_data(init_data)
     if not user_data or not user_data.get("id"):
-        # Hash tekshiruvi o'tmasa ham, initDataUnsafe dan foydalanish imkoni yo'q
-        # Lekin development/test uchun initData parse qilib ko'ramiz
-        print(f"[TG AUTH POST] verify failed, user_data={user_data}")
         return JsonResponse({"error": "Invalid initData"}, status=403)
 
     _create_or_login_tg_user(
@@ -138,7 +137,7 @@ def _get_demo_properties():
             "APARTMENT": "Kvartira", "HOUSE": "Uy", "VILLA": "Villa",
             "COMMERCIAL": "Tijorat", "NEW_CONSTRUCTION": "Yangi qurilish"
         }.get(t, t)
-        obj.images = SimpleNamespace(all=lambda: [])
+        obj.images = SimpleNamespace(count=lambda: 0)
         obj.created_at = None
         result.append(obj)
     return result
@@ -151,34 +150,27 @@ def _fetch_telegram_photo(telegram_id: int) -> str:
         return ""
     try:
         import urllib.request
-        # 1. Profil rasmlarini olish
         url = f"https://api.telegram.org/bot{token}/getUserProfilePhotos?user_id={telegram_id}&limit=1"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=8) as resp:
             data = json.loads(resp.read())
 
-        print(f"[TG PHOTO] getUserProfilePhotos: ok={data.get('ok')} total={data.get('result', {}).get('total_count', 0)}")
-
         if not data.get("ok") or not data["result"]["total_count"]:
             return ""
 
-        # Eng katta o'lchamdagi rasmni olish
         photos = data["result"]["photos"][0]
         best = max(photos, key=lambda p: p.get("file_size", 0))
         file_id = best["file_id"]
 
-        # 2. File path olish
         url2 = f"https://api.telegram.org/bot{token}/getFile?file_id={file_id}"
         req2 = urllib.request.Request(url2, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req2, timeout=8) as resp:
             data2 = json.loads(resp.read())
 
         file_path = data2["result"]["file_path"]
-        photo_url = f"https://api.telegram.org/file/bot{token}/{file_path}"
-        print(f"[TG PHOTO] Got photo: {photo_url[:60]}...")
-        return photo_url
+        return f"https://api.telegram.org/file/bot{token}/{file_path}"
     except Exception as e:
-        print(f"[TG PHOTO] error for {telegram_id}: {e}")
+        logger.warning("[TG PHOTO] error for %s: %s", telegram_id, e)
         return ""
 
 
@@ -186,10 +178,8 @@ def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_use
     from django.contrib.auth.models import User
     from .models import UserProfile
 
-    # Rasm: avval initData dagi photo_url, keyin Bot API
     def get_best_photo():
         if init_photo_url:
-            print(f"[TG PHOTO] Using initData photo_url for {telegram_id}")
             return init_photo_url
         return _fetch_telegram_photo(telegram_id)
 
@@ -210,7 +200,6 @@ def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_use
         if tg_username and profile.telegram_username != tg_username:
             profile.telegram_username = tg_username
             profile_fields.append("telegram_username")
-        # Rasm: initData dan kelsa har doim yangilaymiz
         photo = get_best_photo()
         if photo and profile.telegram_photo_url != photo:
             profile.telegram_photo_url = photo
@@ -235,7 +224,6 @@ def _create_or_login_tg_user(request, telegram_id, first_name, last_name, tg_use
         profile.telegram_username = tg_username
         profile.telegram_photo_url = photo
         profile.save()
-        print(f"[TG AUTH] New user: {username} ({first_name}) photo={'yes' if photo else 'no'}")
 
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
@@ -251,17 +239,22 @@ def set_city(request, city):
 
 def seller_profile(request, username):
     from django.contrib.auth.models import User
-    from django.shortcuts import get_object_or_404
     from django.db.models import Sum
     seller = get_object_or_404(User, username=username)
-    properties = Property.objects.filter(owner=seller).prefetch_related('images').order_by('-created_at')
-    
+    properties = (
+        Property.objects
+        .filter(owner=seller, status='active')
+        .select_related('category')
+        .prefetch_related('images')
+        .order_by('-created_at')
+    )
+
     total_views = properties.aggregate(Sum('views_count'))['views_count__sum'] or 0
-    
+
     favorited_ids = set()
     if request.user.is_authenticated:
         favorited_ids = set(Favorite.objects.filter(user=request.user).values_list('property_id', flat=True))
-        
+
     context = {
         'seller': seller,
         'properties': properties,
@@ -280,75 +273,79 @@ def home(request):
     lang = request.session.get('lang', 'uz')
     hero_title = None
     hero_subtitle = None
-    
-    try:
-        client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=4.5)
-        sys_prompt = "You are an expert real estate copywriter. Respond with exactly ONE line of text in the format TITLE|SUBTITLE and NOTHING else. No markdown, no quotes."
-        prompt = "O'zbekistondagi premium uylar platformasi (SaraUylar) uchun qisqa 3-5 so'zli jozibador sarlavha (1 ta asosiy so'zi albatta <span>...</span> qavsida bo'lsin) va 1 ta qisqa gapdan iborat ta'rif yozing."
-        if lang == 'ru':
-            prompt = "Напишите короткий креативный заголовок из 3-5 слов (1 ключевое слово строго оберните в <span>...</span>) и описание из 1 короткого привлекательного предложения для платформы недвижимости в Узбекистане (SaraUylar)."
-            
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": sys_prompt},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=60,
-            temperature=0.8,
-        )
-        content = response.choices[0].message.content.strip().replace('\n', ' ')
-        if '|' in content:
-            hero_title, hero_subtitle = content.split('|', 1)
-            hero_title = hero_title.strip()
-            hero_subtitle = hero_subtitle.strip()
-    except Exception as e:
-        print(f"OpenAI Hero Error: {e}")
+
+    if _openai_available:
+        try:
+            client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=4.5)
+            sys_prompt = "You are an expert real estate copywriter. Respond with exactly ONE line of text in the format TITLE|SUBTITLE and NOTHING else. No markdown, no quotes."
+            if lang == 'ru':
+                prompt = "Напишите короткий креативный заголовок из 3-5 слов (1 ключевое слово строго оберните в <span>...</span>) и описание из 1 короткого привлекательного предложения для платформы недвижимости в Узбекистане (SaraUylar)."
+            else:
+                prompt = "O'zbekistondagi premium uylar platformasi (SaraUylar) uchun qisqa 3-5 so'zli jozibador sarlavha (1 ta asosiy so'zi albatta <span>...</span> qavsida bo'lsin) va 1 ta qisqa gapdan iborat ta'rif yozing."
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": sys_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=60,
+                temperature=0.8,
+            )
+            content = response.choices[0].message.content.strip().replace('\n', ' ')
+            if '|' in content:
+                hero_title, hero_subtitle = content.split('|', 1)
+                hero_title = hero_title.strip()
+                hero_subtitle = hero_subtitle.strip()
+        except Exception as e:
+            logger.warning("OpenAI Hero Error: %s", e)
 
     category_slug = request.GET.get('category')
-    query = request.GET.get('q')
-    rooms = request.GET.get('rooms')
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
-    
+    query = request.GET.get('q', '').strip()
+    rooms = request.GET.get('rooms', '').strip()
+    min_price = request.GET.get('min_price', '').strip()
+    max_price = request.GET.get('max_price', '').strip()
+
     categories = Category.objects.all()
-    properties = Property.objects.filter(status='active').prefetch_related('images').order_by('-created_at')
-    
+    properties = (
+        Property.objects
+        .filter(status='active')
+        .select_related('category')
+        .prefetch_related('images')
+        .order_by('-created_at')
+    )
+
     if category_slug:
         properties = properties.filter(category__slug=category_slug)
-    
+
     if query:
         from django.db.models import Q
         properties = properties.filter(
-            Q(title__icontains=query) | 
+            Q(title__icontains=query) |
             Q(location__icontains=query) |
             Q(description__icontains=query)
         )
-    
+
     if rooms:
         if rooms == '5+':
             properties = properties.filter(rooms__gte=5)
-        else:
-            properties = properties.filter(rooms=rooms)
-            
-    if min_price:
-        properties = properties.filter(price__gte=min_price)
-    
-    if max_price:
-        properties = properties.filter(price__lte=max_price)
-    
+        elif rooms.isdigit():
+            properties = properties.filter(rooms=int(rooms))
+
+    if min_price and min_price.isdigit():
+        properties = properties.filter(price__gte=int(min_price))
+
+    if max_price and max_price.isdigit():
+        properties = properties.filter(price__lte=int(max_price))
+
     favorited_ids = set()
     if request.user.is_authenticated:
         favorited_ids = set(Favorite.objects.filter(user=request.user).values_list('property_id', flat=True))
 
-    # Hech qanday filter yo'q va e'lonlar bo'sh bo'lsa — demo ma'lumotlar
     is_filtered = any([category_slug, query, rooms, min_price, max_price])
     demo_properties = []
     if not is_filtered and not properties.exists():
         demo_properties = _get_demo_properties()
-
-    lat = request.GET.get('lat')
-    lng = request.GET.get('lng')
 
     context = {
         'categories': categories,
@@ -359,6 +356,8 @@ def home(request):
         'is_demo': bool(demo_properties),
     }
 
+    lat = request.GET.get('lat')
+    lng = request.GET.get('lng')
     if lat and lng:
         try:
             from math import radians, cos, sin, asin, sqrt
@@ -367,23 +366,14 @@ def home(request):
                 dlon = lon2 - lon1
                 dlat = lat2 - lat1
                 a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-                c = 2 * asin(sqrt(a))
-                r = 6371 # Radius of earth in kilometers
-                return c * r
+                return 2 * asin(sqrt(a)) * 6371
 
             user_lat = float(lat)
             user_lng = float(lng)
-            
-            # Filter properties with coordinates and calculate distance
             props_with_coords = properties.filter(latitude__isnull=False, longitude__isnull=False)
-            
-            # In a real app with many properties, we'd use GeoDjango.
-            # For this MVP, we'll do it in Python.
             prop_list = list(props_with_coords)
             for p in prop_list:
                 p.distance = haversine(user_lng, user_lat, p.longitude, p.latitude)
-            
-            # Sort by distance
             prop_list.sort(key=lambda x: x.distance)
             context['properties'] = prop_list[:20]
             context['nearby_active'] = True
@@ -393,24 +383,32 @@ def home(request):
     return render(request, 'index.html', context)
 
 def property_detail(request, pk):
-    property = get_object_or_404(Property, pk=pk)
-    
-    # Increment views (once per session)
+    property = get_object_or_404(
+        Property.objects.select_related('owner__profile', 'category'),
+        pk=pk, status='active'
+    )
+
     viewed_properties = request.session.get('viewed_properties', [])
     if pk not in viewed_properties:
         property.views_count += 1
         property.save(update_fields=['views_count'])
         viewed_properties.append(pk)
         request.session['viewed_properties'] = viewed_properties
-    
-    similar_properties = Property.objects.filter(category=property.category).exclude(pk=pk)[:4]
-    
+
+    similar_properties = (
+        Property.objects
+        .filter(category=property.category, status='active')
+        .exclude(pk=pk)
+        .select_related('category')
+        [:4]
+    )
+
     favorited_ids = set()
     is_favorited = False
     if request.user.is_authenticated:
         favorited_ids = set(Favorite.objects.filter(user=request.user).values_list('property_id', flat=True))
         is_favorited = property.pk in favorited_ids
-    
+
     context = {
         'property': property,
         'similar_properties': similar_properties,
@@ -426,7 +424,7 @@ def add_property(request):
         if form.is_valid():
             prop = form.save(commit=False)
             prop.owner = request.user
-            prop.status = 'pending'  # Admin tasdiqlaguncha kutadi
+            prop.status = 'pending'
             prop.save()
             return redirect('profile')
     else:
@@ -441,7 +439,7 @@ def edit_property(request, pk):
         form = PropertyForm(request.POST, request.FILES, instance=prop)
         if form.is_valid():
             p = form.save(commit=False)
-            p.status = 'pending'  # Tahrirlanganda qayta tasdiq kerak
+            p.status = 'pending'
             p.save()
             return redirect('profile')
     else:
@@ -479,7 +477,12 @@ def signup(request):
 
 @login_required
 def favorites(request):
-    user_favorites = Favorite.objects.filter(user=request.user).select_related('property').prefetch_related('property__images')
+    user_favorites = (
+        Favorite.objects
+        .filter(user=request.user)
+        .select_related('property', 'property__category')
+        .prefetch_related('property__images')
+    )
     categories = Category.objects.all()
     context = {
         'favorites': user_favorites,
@@ -490,163 +493,144 @@ def favorites(request):
 
 @login_required
 def toggle_favorite(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
     property = get_object_or_404(Property, pk=pk)
     favorite, created = Favorite.objects.get_or_create(user=request.user, property=property)
-    
+
     if not created:
         favorite.delete()
         is_favorite = False
     else:
         is_favorite = True
-        
+
     return JsonResponse({'is_favorite': is_favorite})
 
 def ai_chat(request):
-    if request.method == 'POST':
-        import json
-        data = json.loads(request.body)
-        user_message = data.get('message', '')
-        
-        # Get host for absolute URLs
-        host = request.get_host()
-        proto = 'https' if request.is_secure() else 'http'
-        base_url = f"{proto}://{host}"
-        
-        # 1. Detect potential Listing IDs (e.g., #1024 or 1024)
-        import re
-        id_match = re.search(r'#?(\d{4,})', user_message)
-        specific_context = ""
-        if id_match:
-            try:
-                # Listing ID = PK + 1024
-                target_id = int(id_match.group(1)) - 1024
-                p = Property.objects.get(pk=target_id)
-                img_url = request.build_absolute_uri(p.image.url) if p.image else ""
-                detail_url = request.build_absolute_uri(f"/property/{p.pk}/")
-                specific_context = f"""
-                SPECIFIC PROPERTY ANALYZED (ID #{target_id + 1024}):
-                Title: {p.title}
-                Location: {p.location}
-                Price: ${p.price}
-                Rooms: {p.rooms}
-                Area: {p.area}m2
-                Description: {p.description}
-                Image: {img_url}
-                Detail URL: {detail_url}
-                """
-            except Property.DoesNotExist:
-                pass
+    if not _openai_available:
+        return JsonResponse({'message': "AI xizmati mavjud emas."}, status=503)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request'}, status=400)
 
-        # 2. Get general context (top 5 for relevance)
-        top_properties = Property.objects.all().order_by('-created_at')[:5]
-        context_str = "Recent properties:\n"
-        for p in top_properties:
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    user_message = data.get('message', '').strip()
+    if not user_message:
+        return JsonResponse({'error': 'Empty message'}, status=400)
+
+    import re
+    id_match = re.search(r'#?(\d{4,})', user_message)
+    specific_context = ""
+    if id_match:
+        try:
+            target_id = int(id_match.group(1)) - 1024
+            p = Property.objects.select_related('category').get(pk=target_id, status='active')
             img_url = request.build_absolute_uri(p.image.url) if p.image else ""
             detail_url = request.build_absolute_uri(f"/property/{p.pk}/")
-            context_str += f"- {p.title} in {p.location} (${p.price})\n"
-        
-        # 3. Handle History
-        history_data = data.get('history', [])
-        messages = []
-        
-        # Get language from session
-        lang = request.session.get('lang', 'uz')
-        lang_name = "Russian" if lang == 'ru' else "Uzbek"
-        
-        system_prompt = f"""
-        You are a professional real estate assistant for 'SaraUylar' platform.
-        Speak in {lang_name}. Be persuasive and helpful.
-        
-        {specific_context}
-        
-        General listings for reference:
-        {context_str}
-        
-        If the user provides a listing ID (like #1024), focus YOUR ANALYSIS on that specific property.
-        If the user asks follow-up questions about a property (like 'how many rooms?'), use the context of the property we are discussing.
-        
-        CRITICAL: If the 'Image' URL in the context is empty or missing, DO NOT include an <img> tag in your response.
-        
-        Output format: Use simple HTML for formatting. 
-        - For property images use: <img src='URL' style='width:100%; border-radius:12px; margin:12px 0; box-shadow:0 4px 12px rgba(0,0,0,0.1);'>
-        - For property links use: <a href='URL' style='display:inline-block; background:#2563eb; color:white; padding:8px 20px; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:8px;'>Batafsil ko'rish</a>
-        - Use <br> for new lines.
-        """
-        
-        messages.append({"role": "system", "content": system_prompt})
-        
-        # Add last 10 messages from history for context
-        for h in history_data[-10:]:
-            messages.append({"role": "assistant" if h.get('isAi') else "user", "content": h.get('text', '')})
-            
-        # Add current user message
-        messages.append({"role": "user", "content": user_message})
-        
-        try:
-            client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=messages,
-                max_tokens=800
+            specific_context = (
+                f"SPECIFIC PROPERTY (ID #{target_id + 1024}):\n"
+                f"Title: {p.title}\nLocation: {p.location}\nPrice: ${p.price}\n"
+                f"Rooms: {p.rooms}\nArea: {p.area}m2\nDescription: {p.description}\n"
+                f"Image: {img_url}\nDetail URL: {detail_url}\n"
             )
-            ai_message = response.choices[0].message.content
-            return JsonResponse({'message': ai_message})
-        except Exception as e:
-            print(f"AI Error: {e}")
-            return JsonResponse({'message': "Kechirasiz, hozirda bog'lanishda muammo bo'ldi."}, status=500)
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+        except Property.DoesNotExist:
+            pass
+
+    top_properties = Property.objects.filter(status='active').order_by('-created_at')[:5]
+    context_str = "Recent properties:\n" + "".join(
+        f"- {p.title} in {p.location} (${p.price})\n" for p in top_properties
+    )
+
+    lang = request.session.get('lang', 'uz')
+    lang_name = "Russian" if lang == 'ru' else "Uzbek"
+
+    system_prompt = (
+        f"You are a professional real estate assistant for 'SaraUylar' platform.\n"
+        f"Speak in {lang_name}. Be persuasive and helpful.\n\n"
+        f"{specific_context}\n"
+        f"General listings:\n{context_str}\n\n"
+        "CRITICAL: If Image URL is empty, DO NOT include an <img> tag.\n"
+        "Output format: simple HTML. Use <br> for new lines."
+    )
+
+    messages = [{"role": "system", "content": system_prompt}]
+    for h in data.get('history', [])[-10:]:
+        messages.append({"role": "assistant" if h.get('isAi') else "user", "content": h.get('text', '')})
+    messages.append({"role": "user", "content": user_message})
+
+    try:
+        client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            max_tokens=600
+        )
+        ai_message = response.choices[0].message.content
+        return JsonResponse({'message': ai_message})
+    except Exception as e:
+        logger.error("AI chat error: %s", e)
+        return JsonResponse({'message': "Kechirasiz, hozirda bog'lanishda muammo bo'ldi."}, status=500)
 
 
 @csrf_exempt
 def ai_whisper(request):
-    if request.method == 'POST' and request.FILES.get('audio'):
-        audio_file = request.FILES['audio']
-        
-        # Save temp file with proper extension
-        temp_path = f"temp_audio_{request.user.id or 'anon'}.webm"
-        with open(temp_path, 'wb+') as destination:
-            for chunk in audio_file.chunks():
-                destination.write(chunk)
-        
+    if not _openai_available:
+        return JsonResponse({'error': 'AI service unavailable'}, status=503)
+    if request.method != 'POST' or not request.FILES.get('audio'):
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+
+    audio_file = request.FILES['audio']
+    # 10 MB limit
+    if audio_file.size > 10 * 1024 * 1024:
+        return JsonResponse({'error': 'File too large (max 10MB)'}, status=413)
+
+    tmp = tempfile.NamedTemporaryFile(suffix='.webm', delete=False)
+    try:
+        for chunk in audio_file.chunks():
+            tmp.write(chunk)
+        tmp.close()
+
+        client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        with open(tmp.name, 'rb') as f:
+            transcription = client.audio.transcriptions.create(model="whisper-1", file=f)
+        return JsonResponse({'text': transcription.text})
+    except Exception as e:
+        logger.error("Whisper error: %s", e)
+        return JsonResponse({'error': 'Transcription failed'}, status=500)
+    finally:
         try:
-            client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-            with open(temp_path, 'rb') as f:
-                transcription = client.audio.transcriptions.create(
-                    model="whisper-1", 
-                    file=f
-                )
-            if os.path.exists(temp_path): os.remove(temp_path)
-            return JsonResponse({'text': transcription.text})
-        except Exception as e:
-            print(f"Whisper Error: {e}")
-            if os.path.exists(temp_path): os.remove(temp_path)
-            return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+            os.unlink(tmp.name)
+        except OSError:
+            pass
+
 
 @csrf_exempt
 def ai_tts(request):
-    if request.method == 'POST':
-        import json
+    if not _openai_available:
+        return JsonResponse({'error': 'AI service unavailable'}, status=503)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+
+    try:
         data = json.loads(request.body)
-        text = data.get('text', '')
-        if not text:
-            return JsonResponse({'error': 'No text'}, status=400)
-        
-        # Strip HTML for TTS
-        import re
-        clean_text = re.sub('<[^<]+?>', '', text)
-        
-        try:
-            client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-            response = client.audio.speech.create(
-                model="tts-1",
-                voice="nova",
-                input=clean_text[:4000]
-            )
-            
-            from django.http import HttpResponse
-            return HttpResponse(response.content, content_type="audio/mpeg")
-        except Exception as e:
-            print(f"TTS Error: {e}")
-            return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    text = data.get('text', '').strip()
+    if not text:
+        return JsonResponse({'error': 'No text'}, status=400)
+
+    import re
+    clean_text = re.sub(r'<[^<]+?>', '', text)[:4000]
+
+    try:
+        client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        response = client.audio.speech.create(model="tts-1", voice="nova", input=clean_text)
+        from django.http import HttpResponse
+        return HttpResponse(response.content, content_type="audio/mpeg")
+    except Exception as e:
+        logger.error("TTS error: %s", e)
+        return JsonResponse({'error': 'TTS failed'}, status=500)

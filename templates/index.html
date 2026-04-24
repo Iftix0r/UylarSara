@@ -171,36 +171,73 @@ if (window.Telegram?.WebApp?.initData) {
 <div class="tg-list" id="tg-list-wrap">
     {% for property in properties %}
     <div class="tg-card animate-fade-in" style="--delay:{{ forloop.counter }}">
+
         {% if is_demo %}
+        <!-- Demo card image -->
         <div class="tg-card-img">
             <div style="width:100%;height:100%;background:linear-gradient(135deg,#e0f2fe,#dbeafe);display:flex;align-items:center;justify-content:center">
-                <i data-lucide="home" style="width:40px;height:40px;color:#93c5fd"></i>
+                <i data-lucide="home" style="width:44px;height:44px;color:#93c5fd"></i>
             </div>
+            <div class="tg-img-overlay"></div>
             <span class="tg-badge">{{ property.get_property_type_display }}</span>
             <span class="tg-demo-tag">Demo</span>
         </div>
         {% else %}
+        <!-- Real card image -->
         <a href="{% url 'property_detail' property.pk %}" class="tg-card-img">
             {% if property.image %}
                 <img src="{{ property.image.url }}" alt="{{ property.title }}" loading="lazy">
             {% else %}
                 <div style="width:100%;height:100%;background:linear-gradient(135deg,#e0f2fe,#dbeafe);display:flex;align-items:center;justify-content:center">
-                    <i data-lucide="home" style="width:40px;height:40px;color:#93c5fd"></i>
+                    <i data-lucide="home" style="width:44px;height:44px;color:#93c5fd"></i>
                 </div>
             {% endif %}
+            <div class="tg-img-overlay"></div>
             <span class="tg-badge">{{ property.get_property_type_display }}</span>
             {% if property.is_premium %}<span class="tg-premium">⭐ Premium</span>{% endif %}
+            {% with extra=property.images.count %}{% if extra %}<div class="tg-img-count">1 / {{ extra|add:1 }}</div>{% endif %}{% endwith %}
         </a>
         {% endif %}
 
         <div class="tg-card-body">
-            <div class="tg-card-price">${{ property.price|floatformat:0 }}</div>
+            <!-- Trust badges -->
+            <div class="tg-trust-row">
+                <span class="tg-trust-green">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Sotuvchi tasdiqlangan
+                </span>
+                <span class="tg-trust-blue">Savdolashish mumkin</span>
+            </div>
+
+            <!-- Price row -->
+            <div class="tg-price-row">
+                <div class="tg-card-price">${{ property.price|floatformat:0 }}</div>
+                {% if property.area %}<div class="tg-price-sqm">{% widthratio property.price property.area 1 %} USD/m²</div>{% endif %}
+            </div>
+
+            <!-- Title -->
             <div class="tg-card-title">{{ property.title }}</div>
-            <div class="tg-card-loc"><i data-lucide="map-pin" style="width:12px;height:12px"></i>{{ property.location }}</div>
-            <div class="tg-card-meta">
-                <span><i data-lucide="door-open" style="width:12px;height:12px"></i>{{ property.rooms }} xona</span>
-                <span><i data-lucide="maximize-2" style="width:12px;height:12px"></i>{{ property.area }} m²</span>
-                <span><i data-lucide="eye" style="width:12px;height:12px"></i>{{ property.views_count }}</span>
+
+            <!-- Location -->
+            <div class="tg-card-loc">
+                <i data-lucide="map-pin" style="width:12px;height:12px;flex-shrink:0"></i>
+                {{ property.location }}
+            </div>
+
+            <!-- Stats pills -->
+            <div class="tg-card-stats">
+                <span class="tg-stat-pill">
+                    <i data-lucide="door-open" style="width:11px;height:11px"></i>
+                    {{ property.rooms }} xona
+                </span>
+                <span class="tg-stat-pill">
+                    <i data-lucide="maximize-2" style="width:11px;height:11px"></i>
+                    {{ property.area }} m²
+                </span>
+                <span class="tg-stat-pill tg-stat-views">
+                    <i data-lucide="eye" style="width:11px;height:11px"></i>
+                    {{ property.views_count }}
+                </span>
             </div>
         </div>
 
@@ -307,17 +344,18 @@ if (window.Telegram?.WebApp?.initData) {
 
 /* ── Cards ── */
 .tg-list{display:flex;flex-direction:column;gap:10px;padding-bottom:32px}
-.tg-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);border:1px solid #eef1f8;position:relative;transition:transform .15s}
-.tg-card:active{transform:scale(.99)}
-.tg-card-img{display:block;height:190px;overflow:hidden;position:relative;background:#f0f4ff}
-.tg-card-img img{width:100%;height:100%;object-fit:cover}
-.tg-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.6);color:#fff;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:6px;backdrop-filter:blur(6px)}
-.tg-premium{position:absolute;top:10px;right:10px;background:#f59e0b;color:#fff;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:6px}
-.tg-demo-tag{position:absolute;top:10px;right:10px;background:rgba(251,191,36,.9);color:#78350f;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:6px}
-.tg-card-body{padding:12px 14px 14px}
-.tg-card-price{font-size:1.2rem;font-weight:800;color:#2563eb;margin-bottom:3px;letter-spacing:-.02em}
-.tg-card-title{font-size:.9rem;font-weight:700;color:#0f172a;margin-bottom:4px;line-height:1.3}
-.tg-card-loc{display:flex;align-items:center;gap:4px;color:#64748b;font-size:.78rem;margin-bottom:8px}
+.tg-card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.05);border:1px solid #eef1f8;position:relative;transition:transform .15s,box-shadow .15s}
+.tg-card:active{transform:scale(.985);box-shadow:0 1px 6px rgba(0,0,0,.07)}
+.tg-card-img{display:block;height:196px;overflow:hidden;position:relative;background:#f0f4ff}
+.tg-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+.tg-card:hover .tg-card-img img{transform:scale(1.04)}
+.tg-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);color:#fff;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:7px;backdrop-filter:blur(8px)}
+.tg-premium{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:7px;box-shadow:0 2px 6px rgba(245,158,11,.4)}
+.tg-demo-tag{position:absolute;top:10px;right:10px;background:rgba(251,191,36,.9);color:#78350f;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:7px}
+.tg-card-body{padding:11px 13px 13px}
+.tg-card-price{font-size:1.22rem;font-weight:800;color:#0f172a;letter-spacing:-.02em}
+.tg-card-title{font-size:.88rem;font-weight:700;color:#0f172a;margin-bottom:4px;line-height:1.35}
+.tg-card-loc{display:flex;align-items:center;gap:4px;color:#64748b;font-size:.76rem;margin-bottom:0}
 .tg-card-meta{display:flex;gap:12px;color:#94a3b8;font-size:.75rem;font-weight:600}
 .tg-card-meta span{display:flex;align-items:center;gap:3px}
 .tg-fav{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#cbd5e0;box-shadow:0 2px 8px rgba(0,0,0,.1);transition:all .2s}

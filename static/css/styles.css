@@ -144,6 +144,27 @@ body.twa .property-card:active{transform:scale(.98)}
 .fav-btn.is-favorited i{fill:currentColor}
 .fav-btn:active{transform:scale(.8)}
 
+/* ── TG Card v2 — enhanced listing card ── */
+.tg-img-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5) 0%,rgba(0,0,0,.1) 45%,transparent 70%);pointer-events:none}
+.tg-img-count{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.52);color:#fff;font-size:.65rem;font-weight:700;letter-spacing:.04em;padding:2px 11px;border-radius:20px;backdrop-filter:blur(4px);pointer-events:none}
+.tg-trust-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.tg-trust-green{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:7px;background:#dcfce7;color:#15803d;border:1px solid #bbf7d0}
+.tg-trust-blue{display:inline-flex;align-items:center;font-size:.68rem;font-weight:600;padding:3px 9px;border-radius:7px;background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe}
+.tg-price-row{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+.tg-card-price{font-size:1.22rem;font-weight:800;color:#0f172a;letter-spacing:-.02em}
+.tg-price-sqm{font-size:.73rem;color:#94a3b8;font-weight:500}
+.tg-card-stats{display:flex;align-items:center;gap:5px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border-light)}
+.tg-stat-pill{display:inline-flex;align-items:center;gap:4px;font-size:.71rem;font-weight:600;color:#64748b;background:#f8fafc;padding:3px 8px;border-radius:6px;border:1px solid #e8edf5}
+.tg-stat-views{margin-left:auto;background:transparent;border-color:transparent;color:#94a3b8}
+
+/* dark mode — new card elements */
+body.dark-mode .tg-card-price{color:#e6edf3}
+body.dark-mode .tg-trust-green{background:rgba(21,128,61,.2);color:#86efac;border-color:rgba(134,239,172,.25)}
+body.dark-mode .tg-trust-blue{background:rgba(29,78,216,.2);color:#93c5fd;border-color:rgba(147,197,253,.25)}
+body.dark-mode .tg-stat-pill{background:#21262d;border-color:#30363d;color:#8b949e}
+body.dark-mode .tg-stat-views{background:transparent;border-color:transparent;color:#6e7681}
+body.dark-mode .tg-card-stats{border-color:#21262d}
+
 /* ── Category pills ── */
 .category-container{padding:16px 0;overflow-x:auto;scrollbar-width:none}
 .category-container::-webkit-scrollbar{display:none}

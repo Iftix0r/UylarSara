@@ -153,10 +153,6 @@
                     <a href="tel:{{ property.owner.profile.phone_number }}" class="btn btn-primary" style="width: 100%; padding: 16px; margin-bottom: 16px; font-size: 1.1rem; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);">
                         <i data-lucide="phone"></i> {{ property.owner.profile.phone_number }}
                     </a>
-                    {% else %}
-                    <a href="tel:+998000000000" class="btn btn-primary" style="width: 100%; padding: 16px; margin-bottom: 16px; font-size: 1.1rem; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);">
-                        <i data-lucide="phone"></i> {% if request.session.lang == 'ru' %}Позвонить{% else %}Qo'ng'iroq qilish{% endif %}
-                    </a>
                     {% endif %}
 
                     {% if property.owner.profile.telegram_username %}
@@ -170,12 +166,8 @@
                     {% endif %}
 
                     {% else %}
-                        <!-- Fallback if no owner -->
-                        <a href="tel:+998000000000" class="btn btn-primary" style="width: 100%; padding: 16px; margin-bottom: 16px; font-size: 1.1rem; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);">
-                            <i data-lucide="phone"></i> {% if request.session.lang == 'ru' %}Позвонить{% else %}Qo'ng'iroq qilish{% endif %}
-                        </a>
-                        
-                        <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text={{ property.title }}" class="btn" style="width: 100%; padding: 16px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;">
+                        <!-- No owner — share button only -->
+                        <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text={{ property.title|urlencode }}" class="btn" style="width: 100%; padding: 16px; background: #229ED9; color: white; border-radius: var(--radius-md); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s;">
                             <i data-lucide="send"></i> {% if request.session.lang == 'ru' %}Поделиться в Telegram{% else %}Telegramda ulashish{% endif %}
                         </a>
                     {% endif %}
@@ -252,7 +244,7 @@
         });
         tgMain.MainButton.show();
         tgMain.MainButton.onClick(function() {
-            window.location.href = "tel:+998900000000";
+            window.location.href = "{% url 'property_detail' property.pk %}#contact";
         });
         
         // Show BackButton in detail page
@@ -264,19 +256,13 @@
 
     function shareProperty() {
         const url = window.location.href;
-        const text = "SaraUylar - {{ property.title }}\nNarxi: ${{ property.price|floatformat:0 }}\nManzil: {{ property.location }}";
-        
+        const text = "SaraUylar - {{ property.title|escapejs }}\nNarxi: ${{ property.price|floatformat:0 }}\nManzil: {{ property.location|escapejs }}";
         if (window.Telegram?.WebApp && window.Telegram.WebApp.initData) {
             window.Telegram.WebApp.switchInlineQuery(text, ['users', 'groups', 'channels']);
         } else if (navigator.share) {
-            navigator.share({
-                title: '{{ property.title }}',
-                text: text,
-                url: url,
-            }).catch(console.error);
+            navigator.share({ title: '{{ property.title|escapejs }}', text: text, url: url }).catch(console.error);
         } else {
-            alert("Havola nusxalandi!");
-            navigator.clipboard.writeText(url);
+            navigator.clipboard.writeText(url).then(() => alert("Havola nusxalandi!")).catch(() => alert(url));
         }
     }
     function toggleFavorite(btn, pk) {

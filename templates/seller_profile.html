@@ -76,7 +76,7 @@
                             </div>
                         {% endif %}
                         
-                        <button type="button" class="fav-btn {% if item.pk in favorited_ids %}is-favorited{% endif %}" data-id="{{ item.pk }}" onclick="event.preventDefault(); toggleFav(this, {{ item.pk }})">
+                        <button type="button" class="fav-btn {% if item.pk in favorited_ids %}is-favorited{% endif %}" data-id="{{ item.pk }}" onclick="event.preventDefault(); toggleFavorite(this, {{ item.pk }})">
                             <i data-lucide="heart"></i>
                         </button>
                     </div>
@@ -110,4 +110,17 @@
     {% endif %}
 
 </div>
+
+<script>
+function toggleFavorite(btn, pk) {
+    const isAuth = document.body.dataset.isAuthenticated === 'true';
+    if (!isAuth) { window.location.href = "{% url 'login' %}"; return; }
+    fetch(`/favorite/toggle/${pk}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => btn.classList.toggle('is-favorited', data.is_favorite));
+}
+</script>
 {% endblock %}
