@@ -430,6 +430,16 @@ def property_detail(request, pk):
     }
     return render(request, 'property_detail.html', context)
 
+def _save_gallery_images(prop, files):
+    """gallery_images fayllarini PropertyImage sifatida saqlaydi."""
+    from .models import PropertyImage
+    order_start = prop.images.count()
+    for i, f in enumerate(files):
+        if f.size > 8 * 1024 * 1024:
+            continue  # 8MB dan katta rasmni o'tkazib yuborish
+        PropertyImage.objects.create(property=prop, image=f, order=order_start + i)
+
+
 @login_required
 def add_property(request):
     if request.method == 'POST':
@@ -439,6 +449,9 @@ def add_property(request):
             prop.owner = request.user
             prop.status = 'pending'
             prop.save()
+            gallery_files = request.FILES.getlist('gallery_images')
+            if gallery_files:
+                _save_gallery_images(prop, gallery_files)
             return redirect('profile')
     else:
         form = PropertyForm()
@@ -447,6 +460,7 @@ def add_property(request):
 
 @login_required
 def edit_property(request, pk):
+    from .models import PropertyImage
     prop = get_object_or_404(Property, pk=pk, owner=request.user)
     if request.method == 'POST':
         form = PropertyForm(request.POST, request.FILES, instance=prop)
@@ -454,10 +468,27 @@ def edit_property(request, pk):
             p = form.save(commit=False)
             p.status = 'pending'
             p.save()
+            gallery_files = request.FILES.getlist('gallery_images')
+            if gallery_files:
+                _save_gallery_images(p, gallery_files)
             return redirect('profile')
     else:
         form = PropertyForm(instance=prop)
-    return render(request, 'add_property.html', {'form': form, 'edit': True, 'prop': prop})
+    existing_images = prop.images.all().order_by('order', 'id')
+    return render(request, 'add_property.html', {
+        'form': form, 'edit': True, 'prop': prop,
+        'existing_images': existing_images,
+    })
+
+
+@login_required
+def delete_property_image(request, pk):
+    from .models import PropertyImage
+    img = get_object_or_404(PropertyImage, pk=pk, property__owner=request.user)
+    if request.method == 'POST':
+        img.delete()
+        return JsonResponse({'ok': True})
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 @login_required

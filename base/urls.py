@@ -9,6 +9,7 @@ urlpatterns = [
     path('add/', views.add_property, name='add_property'),
     path('property/<int:pk>/edit/', views.edit_property, name='edit_property'),
     path('property/<int:pk>/delete/', views.delete_property, name='delete_property'),
+    path('property/image/<int:pk>/delete/', views.delete_property_image, name='delete_property_image'),
     path('signup/', views.signup, name='signup'),
     path('favorites/', views.favorites, name='favorites'),
     path('favorite/toggle/<int:pk>/', views.toggle_favorite, name='toggle_favorite'),
